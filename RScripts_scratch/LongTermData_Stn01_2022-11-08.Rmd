@@ -1,0 +1,886 @@
+---
+title: 'Long Term Data: Station01'
+author: "Kriddie"
+date: "2022-11-09"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+long term data for station 1
+
+```{r library}
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+library(tidyverse)
+library(plotly)
+library(here)
+library(dplyr)
+library(reshape2)
+library(purrr)
+library(sjmisc)
+```
+
+#water level
+
+```{r Solinst, echo=FALSE}
+
+setwd(here::here("WaterLevel"))
+all_files=list.files(pattern=".csv") #pulls out the csv files from CO2 folder
+sites_rp = sub('_[^_]+$', '', all_files)
+site_names=unique(sites_rp) #creates list of site names for following loop
+
+site_names = "WL_01"
+
+#rm old files, if they exist
+rm(WLData)
+rm(Temp_WLData)
+
+for (site in site_names){
+  
+  list1=list.files(pattern=site) #finds all files for the site
+  sitelist_csv=grep(".csv",list1) #creates list of all files for site
+  file_list=list1[sitelist_csv]
+  
+  #reads in files in list and appends
+  for (file in file_list){
+    if (!exists("WLData")){
+      Trash_WLData <- read.csv(file, skip=0, header = TRUE, sep = ",",
+                         quote = "\"",dec = ".", fill = TRUE, comment.char = "")
+      
+      if(str_contains(Trash_WLData[6,1],"m")){
+        print("m")
+        WLData <- read.csv(file, skip=11, header = TRUE, sep = ",",
+                    quote = "\"",dec = ".", fill = TRUE, comment.char = "")
+        colnames(WLData)=c("Date","Time","ms","WLPres_kpa","WLTemp_c")
+        WLData$WLPres_kpa <- as.numeric(as.character(WLData$WLPres_kpa), digits=6)
+        WLData$WLTemp_c <- as.numeric(as.character(WLData$WLTemp_c), digits=5)
+        WLData$WLPres_kpa <- WLData$WLPres_kpa*9.8064
+#        WLData$WLTemp_c <- (WLData$WLTemp_c - 32)/1.8000
+        } else { 
+        print("kPa")
+        WLData <- read.csv(file, skip=11, header = TRUE, sep = ",",
+            quote = "\"",dec = ".", fill = TRUE, comment.char = "")
+        colnames(WLData)=c("Date","Time","ms","WLPres_kpa","WLTemp_c")
+        WLData$WLPres_kpa <- as.numeric(as.character(WLData$WLPres_kpa), digits=6)
+        WLData$WLTemp_c <- as.numeric(as.character(WLData$WLTemp_c), digits=5)
+      }
+    }
+    if (exists("WLData")){
+      Trash_WLData <- read.csv(file, skip=0, header = FALSE, sep = ",",
+                              quote = "\"",dec = ".", fill = TRUE, comment.char = "")  
+      if(str_contains(Trash_WLData[6,1],"m")){
+        print("m")
+        Temp_WLData <- read.csv(file, skip=11, header = TRUE, sep = ",",
+                           quote = "\"",dec = ".", fill = TRUE, comment.char = "")
+        Temp_WLData <- Temp_WLData[c(-1),]
+        colnames(Temp_WLData)=c("Date","Time","ms","WLPres_kpa","WLTemp_c")
+        Temp_WLData$WLPres_kpa <- as.numeric(as.character(Temp_WLData$WLPres_kpa), digits=6)
+        Temp_WLData$WLTemp_c <- as.numeric(as.character(Temp_WLData$WLTemp_c), digits=5)
+        Temp_WLData$WLPres_kpa <- Temp_WLData$WLPres_kpa*9.8064
+#        Temp_WLData$WLTemp_c <- (Temp_WLData$WLTemp_c - 32)/1.8000
+        } else { 
+        print("kpa")
+        Temp_WLData <- read.csv(file, skip=11, header = TRUE, sep = ",",
+                                quote = "\"",dec = ".", fill = TRUE, comment.char = "")
+        Temp_WLData <- Temp_WLData[c(-1),]
+        colnames(Temp_WLData)=c("Date","Time","ms","WLPres_kpa","WLTemp_c")
+        Temp_WLData$WLPres_kpa <- as.numeric(as.character(Temp_WLData$WLPres_kpa), digits=6)
+        Temp_WLData$WLTemp_c <- as.numeric(as.character(Temp_WLData$WLTemp_c), digits=5)
+      }
+      
+      WLData <- rbind(WLData, Temp_WLData)
+      rm(Temp_WLData)
+    }
+    
+  }
+  WLData=unique(WLData)
+  WLData$DateTime <- paste(WLData$Date, WLData$Time)
+  WLData$DateTime <- as.POSIXct(WLData$DateTime, format="%m/%d/%Y %I:%M:%S %p", tz="UTC")
+  WLData$DateTime <- round_date(WLData$DateTime, "5 mins")
+  WLData <- WLData[,c("DateTime","WLPres_kpa","WLTemp_c")]
+  WLData$Station <- "Stn01"
+  assign((paste(site,sep="_")),WLData) #creates object with new appended data
+  rm(WLData) #removes WLdata so that multiple sites aren't appended together
+}
+
+rm(Trash_WLData)
+
+```
+##read in wl02
+we also need to read in wl02 data because we will use it to fill in a gap in station 01 data
+```{r Hobo WL}
+#First the Hobos
+
+setwd(here::here("WaterLevel"))
+all_files=list.files(pattern=".csv") #pulls out the csv files from CO2 folder
+sites_rp = sub('_[^_]+$', '', all_files)
+site_names=unique(sites_rp) #creates list of site names for following loop
+
+site_names = "WL_02"
+#site_names = site_names[c(2,3,5,6)]
+
+#rm old files, if they exist
+rm(WLData)
+rm(Temp_WLData)
+
+for (site in site_names){
+  
+  list1=list.files(pattern=site) #finds all files for the site
+  sitelist_csv=grep(".csv",list1) #creates list of all files for site
+  file_list=list1[sitelist_csv]
+  
+  #reads in files in list and appends
+  for (file in file_list){
+    if (!exists("WLData")){
+      WLData <- read.csv(file, skip=1, header = FALSE, sep = ",",
+                         quote = "\"",dec = ".", fill = TRUE, comment.char = "")
+      
+      if(str_contains(WLData[1,3],"Abs Pres, psi")){
+        WLData <- WLData[-1,]
+        colnames(WLData)=c("row","DateTime","WLPres_kpa","WLTemp_c")
+        WLData <- WLData[2:4]
+        WLData$WLPres_kpa <- as.numeric(as.character(WLData$WLPres_kpa), digits=6)
+        WLData$WLTemp_c <- as.numeric(as.character(WLData$WLTemp_c), digits=5)
+        WLData$WLPres_kpa <- WLData$WLPres_kpa*6.89476
+        WLData$WLTemp_c <- (WLData$WLTemp_c - 32)/1.8000
+
+      } else { 
+        WLData <- WLData[-1,]
+        colnames(WLData)=c("row","DateTime","WLPres_kpa","WLTemp_c")
+        WLData <- WLData[2:4]
+        WLData$WLPres_kpa <- as.numeric(as.character(WLData$WLPres_kpa), digits=6)
+        WLData$WLTemp_c <- as.numeric(as.character(WLData$WLTemp_c), digits=5)
+        }
+      
+#      WLData$DateTime <- as.POSIXct(WLData$DateTime, format="%m/%d/%y %I:%M:%S %p", tz="UTC")
+    WLData$DateTime <- as.POSIXct(WLData$DateTime, tz="UTC",
+           tryFormats = c("%m/%d/%y %I:%M:%S %p",
+                          "%m/%d/%Y %H:%M"))
+    }
+    if (exists("WLData")){
+      Temp_WLData <- read.csv(file, skip=1, header = FALSE, sep = ",",
+                              quote = "\"",dec = ".", fill = TRUE, comment.char = "")  
+#      
+      
+      if(str_contains(Temp_WLData[1,3],"Abs Pres, psi")){
+        Temp_WLData <- Temp_WLData[-1,]
+        colnames(Temp_WLData)=c("row","DateTime","WLPres_kpa","WLTemp_c")
+        Temp_WLData <- Temp_WLData[2:4]
+        Temp_WLData$WLPres_kpa <- as.numeric(as.character(Temp_WLData$WLPres_kpa), digits=6)
+        Temp_WLData$WLTemp_c <- as.numeric(as.character(Temp_WLData$WLTemp_c), digits=5)
+        Temp_WLData$WLPres_kpa <- Temp_WLData$WLPres_kpa*6.89476
+        Temp_WLData$WLTemp_c <- (Temp_WLData$WLTemp_c - 32)/1.8000
+        
+        
+      } else { 
+        Temp_WLData <- Temp_WLData[-1,]
+        colnames(Temp_WLData)=c("row","DateTime","WLPres_kpa","WLTemp_c")
+        Temp_WLData <- Temp_WLData[2:4]
+        Temp_WLData$WLPres_kpa <- as.numeric(as.character(Temp_WLData$WLPres_kpa), digits=6)
+        Temp_WLData$WLTemp_c <- as.numeric(as.character(Temp_WLData$WLTemp_c), digits=5)
+        }
+      
+#      Temp_WLData$DateTime <- as.POSIXct(Temp_WLData$DateTime, format="%m/%d/%y %I:%M:%S %p", tz="UTC")
+          Temp_WLData$DateTime <- as.POSIXct(Temp_WLData$DateTime, tz="UTC",
+           tryFormats = c("%m/%d/%y %I:%M:%S %p",
+                          "%m/%d/%Y %H:%M"))
+      
+      
+      WLData <- rbind(WLData, Temp_WLData)
+      rm(Temp_WLData)
+    }
+    
+  }
+  WLData$DateTime <- round_date(WLData$DateTime, "15 mins")
+  WLData$Station <- site
+  WLData=unique(WLData)
+  assign((paste(site,sep="_")),WLData) #creates object with new appended data
+  rm(WLData) #removes WLdata so that multiple sites aren't appended together
+}
+
+WL_02 <- WL_02%>%filter(WLPres_kpa != 62.566)
+```
+## plot 
+plot the water level so that each station data can be cleaned
+
+```{r plot, echo=FALSE}
+
+##clean data
+
+plot_ly(WL_01, x = ~DateTime, y = ~WLPres_kpa, type = 'scatter', mode = 'markers') 
+
+```
+
+
+
+
+```{r clean, echo=FALSE}
+
+WL_01$DateTime <- round_date(WL_01$DateTime,unit="15 minutes")
+
+WL_01 <- WL_01%>%filter(WLPres_kpa > 63 & WLPres_kpa < 70)
+#looks like WL changed in febuary
+#Actually no - wierd
+#WL_01$WLPres_kpa[which(WL_01$DateTime < as.POSIXct("2022-02-12 13:00", tz="UTC"))] <- WL_01$WLPres_kpa[which(WL_01$DateTime < as.POSIXct("2022-02-12 13:00", tz="UTC"))] - (64.3919-63.8785)
+WL_01 <- WL_01%>%filter(DateTime != as.POSIXct("2022-06-07 10:45", tz="UTC"))%>%filter(DateTime != as.POSIXct("2022-06-07 11:00", tz="UTC"))
+```
+
+##Unresolved issues
+there i a discontinuity on February 12 2022. My best guess is that a damn built up, raising water level, and then broke through dropping it down again
+
+ I'm not sure what I should doooo
+ 
+### Use WL_02 to predict WL_01
+we are missing some data from WL_01. I'm hoping there is a strong enough relationship between WL_01 and WL_02 to fill in missing data
+
+July 13th 10:15 to July 28 14:15
+
+
+```{r fill in wl_01, echo=FALSE}
+WL_01_02 <- full_join(WL_01,WL_02, by= "DateTime")
+WL_01_02 <- WL_01_02[,c("DateTime","WLPres_kpa.x","WLPres_kpa.y")]
+colnames(WL_01_02) <- c("DateTime","WL_01","WL_02")
+WL_01_02 <- WL_01_02%>%filter(DateTime > as.POSIXct("2021-07-01 10:15:00", tz = "UTC")& DateTime < as.POSIXct("2021-07-13 14:15:00", tz = "UTC"))
+
+mdl1_1 <- lm(WL_01_02$WL_01 ~ WL_01_02$WL_02)
+mdl2_1 <- lm(WL_01_02$WL_01 ~ WL_01_02$WL_02 + I(WL_01_02$WL_02^2))
+mdl3_1 <- lm(WL_01_02$WL_01 ~ WL_01_02$WL_02 + I(WL_01_02$WL_02^2) + I(WL_01_02$WL_02^3))
+mdl4_1 <- lm(WL_01_02$WL_01 ~ I(WL_01_02$WL_02^2))
+
+set.seed(20)
+q <- seq(from=0, to=66, by=0.5)
+y_mdl1 <- mdl1_1$coefficients[1] + mdl1_1$coefficients[2]*q
+y_mdl2 <- mdl2_1$coefficients[1] + mdl2_1$coefficients[2]*q + mdl2_1$coefficients[3]*q^2
+y_mdl3 <- mdl3_1$coefficients[1] + mdl3_1$coefficients[2]*q + mdl3_1$coefficients[3]*q^2 + mdl3_1$coefficients[4]*q^3
+y_mdl4 <- mdl4_1$coefficients[1] + mdl4_1$coefficients[2]*q^2
+
+
+plot(WL_01 ~ WL_02, data = WL_01_02 )
+#lines(q,y_mdl1,col='firebrick1',lwd=1)
+lines(q,y_mdl2,col='blue',lwd=1)
+#lines(q,y_mdl3,col='yellow',lwd=1)
+#lines(q,y_mdl4,col='green',lwd=1)
+mtext("y=  - 72380  + 3420 *x - 53.81 *x^2 + 0.2823*x^3", side=3)
+
+rm(mdl1_1,mdl2_1,mdl3_1,mdl4_1)
+rm(WL_01_02)
+```
+
+
+
+```{r wl_01 gap, echo=FALSE}
+WL_01_fill <- WL_02
+WL_01_fill$WLPres_kpa <-   1351.0808 - 40.9546  *WL_01_fill$WLPres_kpa + 0.3257 *(WL_01_fill$WLPres_kpa)^2 
+WL_01_fill <- WL_01_fill%>%filter(DateTime > as.POSIXct("2021-07-14 10:15:00", tz = "UTC")&
+                          DateTime < as.POSIXct("2021-07-27 14:15:00", tz = "UTC"))
+WL_01_fill$Station <- "WL_01"
+
+WL_01 <- rbind(WL_01,WL_01_fill)
+rm(WL_01_fill,WL_02)
+
+ggplot(WL_01, aes(x=DateTime, y=WLPres_kpa)) + geom_point()
+```
+
+## barometric data
+now read in the barometric data
+
+```{r baro loop, echo=FALSE}
+
+###merge data with baro data###
+setwd(here::here("Baro"))
+all_files=list.files(pattern=".csv") #pulls out the csv files from WL folder in HOBOware folder
+sites_rp=gsub("_.*","",all_files) #selects the correct pattern so as to seelct only desired files
+site_names=unique(sites_rp) #creates list of site names for following loop
+
+#rm old files, if they exsist
+rm(BaroData)
+rm(Temp_BaroData)
+
+for (site in site_names){
+  
+  list1=list.files(pattern=site) #finds all files for the site
+  sitelist_csv=grep(".csv",list1) #creates list of all files for site
+  file_list=list1[sitelist_csv]
+  
+  #reads in files in list and appends
+  for (file in file_list){
+    if (!exists("BaroData")){
+      BaroData <- read.csv(file, skip=10, header = TRUE, sep = ",",
+                           quote = "\"",dec = ".", fill = TRUE, comment.char = "")
+    }
+    if (exists("BaroData")){
+      Temp_BaroData <- read.csv(file, skip=10, header = TRUE, sep = ",",
+                                quote = "\"",dec = ".", fill = TRUE, comment.char = "")  
+      BaroData <- rbind(BaroData, Temp_BaroData)
+      rm(Temp_BaroData)
+    }
+    
+  }
+  colnames(BaroData)=c("Date","Time","ms","AirPres_kpa","AirTemp_c")
+  BaroData=unique(BaroData)
+  BaroData$DateTime <- paste(BaroData$Date, BaroData$Time)
+  BaroData$DateTime <- as.POSIXct(BaroData$DateTime, format="%m/%d/%Y %I:%M:%S %p", tz="UTC")
+  BaroData$DateTime <- round_date(BaroData$DateTime, "15 mins")
+  BaroData$ms <- NULL
+  BaroData$Date <- NULL
+  BaroData$Time <- NULL
+  BaroData <- BaroData[,c(3,1,2)]
+  BaroData=unique(BaroData)
+  assign((paste(site,sep="_")),BaroData) #creates object with new appended data
+  rm(BaroData) #removes WLdata so that multiple sites aren't appended together
+}
+```
+
+### clean baro
+```{r clean baro, echo=FALSE}
+
+##clean BaroData
+#plot_ly(Baro%>%filter(DateTime > as.POSIXct("2021-06-11 00:00:00", tz = "UTC")), x = ~DateTime, y = ~AirPres_kpa, type = 'scatter', mode = 'markers') 
+
+Baro <- Baro%>%filter(DateTime > as.POSIXct("2021-06-01 00:00:00", tz = "UTC"))
+
+Baro <- Baro%>%filter(DateTime < as.POSIXct("2021-07-27 15:00:00", tz = "UTC")|
+                          DateTime > as.POSIXct("2021-07-28 13:30:00", tz = "UTC"))
+
+#ggplot(Baro,aes(x=DateTime,y=AirPres_kpa))+ geom_point()
+
+```
+
+### correct for barometric pressure
+```{r baro correct, echo=FALSE}
+
+#correct for baro 
+
+WL_01 <- left_join(Baro,WL_01,by="DateTime")
+
+WL_01$Corrected_kpa <- WL_01$WLPres_kpa - WL_01$AirPres_kpa
+
+#calculate total pressure to correct viasala readings
+WL_01$Total_kpa <- 
+  WL_01$WLPres_kpa
+
+#convert kpa to meters of water
+# constant, 1 kpa = 0.101972 m water
+WL_01$WL_m <- WL_01$Corrected_kpa * 0.101972
+WL_01$Corrected_kpa <- NULL
+
+```
+#plot data
+```{r plot final, echo=FALSE}
+
+##Now we can graph 
+    ## will need to change the right limit accordingly
+
+ggplot(data = WL_01 %>% filter(DateTime > "2021-06-10"), 
+       aes(DateTime, WL_m)) +
+  geom_point(color = "steelblue") +
+  labs(title = "Station 01 Water level",
+    y = "water level [m]", x = "") 
+
+```
+
+#Time for discharge!
+this will take awhile so buckle up, baby
+
+```{r Find WL data for rating curve, echo=FALSE}
+
+#enter date of collection
+date <- "2022-07-27"
+#enter start and end time that wetland was sampled
+time <- "09:15:00"
+
+
+WL_m <- WL_01%>%filter(DateTime == as.POSIXct(paste(date, time), format="%Y-%m-%d %H:%M:%S", tz = "UTC"))
+
+print(WL_m)
+
+```
+
+#dischage rating curve
+see excel file for station 01
+field season 2022 looks compatible with field season 2021
+
+This is before adding dummy data to improve x axis intercet
+y = -0.0647x2 + 0.4162x - 0.0554
+R² = 0.9567
+
+This is after dummey data
+y = .1789x2 + 0.2095x - 0.0246
+R² = 0.9478
+
+This is breaking up low and high flows
+>low 
+y = 2.0906x2 - 0.5608x + 0.0439
+R² = 0.8983
+
+>high with dummy values
+y = 0.126*x2 + 0.255x - 0.0314
+R² = 0.9473
+
+intersect: 0.3019385
+
+```{r discharge, echo=FALSE}
+intercept <- 0.276817
+
+#low
+WL_01$Q_m3s <- NA
+WL_01[which(WL_01$WL_m < intercept),]$Q_m3s <- 2.0906*(WL_01[which(WL_01$WL_m < intercept),]$WL_m)^2 - 0.5608*WL_01[which(WL_01$WL_m < intercept),]$WL_m + 0.0439
+#high
+WL_01[which(WL_01$WL_m > intercept),]$Q_m3s <- 0.126*(WL_01[which(WL_01$WL_m > intercept),]$WL_m)^2 + 0.255*WL_01[which(WL_01$WL_m > intercept),]$WL_m - 0.0314
+
+#WL_01$Q_m3s <- 0.126*(WL_01$WL_m)^2 + 0.255*WL_01$WL_m - 0.0314
+```
+
+#plot discharge
+```{r plot final, echo=FALSE}
+
+##Now we can graph 
+    ## will need to change the right limit accordingly
+
+ggplot(data = WL_01 %>% filter(DateTime > "2021-06-10"), 
+       aes(DateTime, Q_m3s)) +
+  geom_point(color = "steelblue") +
+  labs(title = "Station 01 Discharge",
+    y = "Q [m3 s-1]", x = "") 
+
+ggplot(data = WL_01 %>% filter(DateTime > "2021-06-10"), 
+       aes(DateTime, WL_m)) +
+  geom_point(color = "steelblue") +
+  labs(title = "Station 01 Water level",
+    y = "water level [m]", x = "") 
+
+#write.csv(WL_01, here::here("Prelims_SensativityAnalysis/Stn01_Q.csv"), row.names = FALSE)
+
+```
+
+#CO2 time
+
+```{r pressure, echo=FALSE}
+
+setwd(here::here("CO2"))
+all_files=list.files(pattern=".csv") #pulls out the csv files from WL folder in HOBOware folder
+#sites_rp=gsub("_.*","",all_files) #selects the correct pattern so as to seelct only desired files
+sites_rp = sub('_[^_]+$', '', all_files)
+site_names=unique(sites_rp) #creates list of site names for following loop
+
+site_names="CO2_01"
+
+
+#rm old files, if they exist
+rm(CO2Data)
+rm(Temp_CO2Data)
+
+for (site in site_names){
+ # if(site == "CO2_02"){
+
+  list1=list.files(pattern=site) #finds all files for the site
+  sitelist_csv=grep(".csv",list1) #creates list of all files for site
+  file_list=list1[sitelist_csv]
+  
+  #reads in files in list and appends
+  for (file in file_list){
+    if (!exists("CO2Data")){
+      CO2Data <- read.csv(file, skip=6, header = TRUE)
+      CO2Data=CO2Data[,1:3]
+        if(names(CO2Data)[1] == "Date"){
+          colnames(CO2Data) <- c("Date","Time","ppm")
+        CO2Data$DateTime <- as.POSIXct(paste(CO2Data$Date, CO2Data$Time),  format="%m/%d/%Y %I:%M:%S %p", tz = "UTC")
+      } else { 
+        colnames(CO2Data) <- c("Date","Time","ppm")
+        CO2Data$DateTime <- as.POSIXct(paste(CO2Data$Date, CO2Data$Time), format="%d/%m/%Y %H:%M:%S", tz = "UTC")
+      }
+      
+      CO2Data$Station <- site
+    }
+    if (exists("CO2Data")) {
+      Temp_CO2Data <- read.csv(file, skip=6, header = TRUE)  
+      Temp_CO2Data=Temp_CO2Data[,1:3]
+      if(colnames(Temp_CO2Data)[1]=="Date"){
+        colnames(Temp_CO2Data) <- c("Date","Time","ppm")
+        Temp_CO2Data$DateTime <- as.POSIXct(paste(Temp_CO2Data$Date, Temp_CO2Data$Time), format="%m/%d/%Y %I:%M:%S %p", tz = "UTC")
+        Temp_CO2Data$Station <- site
+      } else {
+#        Temp_CO2Data$Fecha <- as.Date(Temp_CO2Data$Fecha, format = "%d / %m / %Y")
+        Temp_CO2Data$DateTime <- as.POSIXct(paste(Temp_CO2Data$Fecha, Temp_CO2Data$Tiempo), format="%d/%m/%Y %H:%M:%S", tz = "UTC")
+        colnames(Temp_CO2Data) <- c("Date","Time","ppm","DateTime")
+        Temp_CO2Data$Station <- site
+      }
+      CO2Data <- rbind(CO2Data, Temp_CO2Data)
+      rm(Temp_CO2Data)
+    }
+    
+  }
+  
+#   CO2Data$DateTime <- round_date(CO2Data$DateTime, "15 mins")
+
+  CO2Data=unique(CO2Data)
+  CO2Data$Date <- NULL
+  CO2Data$Time <- NULL
+  CO2Data <- CO2Data[,c(3,2,1)]
+  assign((paste(site,sep="_")),CO2Data) #creates object with new appended data
+  rm(CO2Data) #removes CO2 data so that multiple sites aren't appended together
+}
+
+CO2_01$Station <- "Stn01"
+
+```
+
+#check data 
+
+```{r check CO2 data plot, echo=FALSE}
+
+
+##check data
+plot_ly(CO2_01, x = ~DateTime, y = ~ppm, type = 'scatter', mode = 'markers') 
+
+plot_ly(CO2_01%>%
+  filter(DateTime > as.POSIXct("2022-06-01 00:00:00", tz = "UTC")), x = ~DateTime, y = ~ppm, type = 'scatter', mode = 'markers') 
+
+```
+
+```{r clean, echo=FALSE}
+#CO2_01
+#old from 2019 to 2022
+CO2_01$ppm <- as.numeric(CO2_01$ppm)
+CO2_01  <- CO2_01%>%
+  filter(DateTime < as.POSIXct("2021-06-09 11:30:00", tz = "UTC") | DateTime >= as.POSIXct("2021-06-09 12:15:00", tz = "UTC")) %>%
+  filter(DateTime < as.POSIXct("2021-07-13 10:30:00", tz = "UTC") | DateTime > as.POSIXct("2021-07-16 11:30:00", tz = "UTC")) %>%
+  filter(DateTime < as.POSIXct("2021-07-23 10:30:00", tz = "UTC") | DateTime > as.POSIXct("2021-07-27 13:00:00", tz = "UTC"))%>%
+#sensor out of water
+  filter(DateTime < as.POSIXct("2021-06-19 04:15:00", tz = "UTC") | DateTime > as.POSIXct("2021-06-25 10:30:00", tz = "UTC"))%>%
+  filter(DateTime != as.POSIXct("2021-06-02 12:00:00", tz = "UTC"))
+
+CO2_01 <- CO2_01%>%filter(ppm>20)
+```
+
+#plot
+
+```{r plot, echo=FALSE}
+
+
+ggplot(data = CO2_01, aes(DateTime, ppm)) +
+  geom_point(color = "steelblue") +
+  labs(#title = "CO2  stations",
+       y = "CO2 ppm", x = "") 
+
+```
+
+##Create Station Dataframes
+we two different models of vaisala
+
+
+```{r stations df, echo=FALSE}
+
+Stn01 <- full_join(WL_01,CO2_01, by=c("DateTime","Station"))
+
+#convert baro to hpa
+#1 kPa = 10 hPa
+#1 kPa = 0.101972 m
+Stn01$Total_hPa <- Stn01$Total_kpa * 10
+
+```
+
+#correction vaisala data
+make adjustments to ppm using water level data
+
+```{r corect viaslal, echo=FALSE}
+#new
+
+#The new viasalas are set to 700hPa and have an internal temperature, so do not ned to be corrected for temp
+#the units for new vasialas are half of what they should be! 
+
+#Station 2, 3 and Well 1 and 2 are new V
+
+#df_new$adjusted_ppm <- df_new$ppm * (1 + (700 - df_new$Total_hPa) * 0.0015) * (1 - (6.7 - df_new$WLTemp_c) * 0.003)
+Stn01$adjusted_ppm <- (Stn01$ppm * 2 )* (1 + (700 - Stn01$Total_hPa) * 0.0015) 
+
+```
+
+#plot
+
+```{r plot, echo=FALSE}
+
+
+co2 <- ggplot(data = Stn01, aes(DateTime, adjusted_ppm)) +
+  geom_point(color = "steelblue") +
+  labs(#title = "CO2  stations",
+       y = "CO2 ppm", x = "") 
+  
+Q <- ggplot(data = Stn01, aes(DateTime, Q_m3s)) +
+  geom_point(color = "steelblue") +
+  labs(#title = "Q  stations",
+       y = "Q", x = "") 
+
+library(ggpubr)
+library(gridExtra)
+library(dplyr)
+
+grid.arrange(co2, Q, ncol=1)
+
+all.figs <- ggarrange(NULL,co2, NULL,Q, ncol = 1,
+               heights = c(0.2,1,0.2,1),
+               labels = c("A","","B",""),
+               font.label = list(size = 24, color = "black", face = "bold"),
+              # label.x = .1,
+              # label.y = .1,
+               align="h", common.legend = FALSE
+               )
+
+```
+
+
+#dissolved o2
+
+```{r loop}
+
+setwd(here::here("DO"))
+all_files=list.files(pattern=".csv") #pulls out the csv files from CO2 folder
+sites_rp = sub('_[^_]+$', '', all_files)
+site_names=unique(sites_rp) #creates list of site names for following loop
+
+site_names = "DO_01"
+#site_names = site_names[c(2,3,5,6)]
+
+#rm old files, if they exist
+rm(DOData)
+rm(Temp_DOData)
+
+for (site in site_names){
+  
+  list1=list.files(pattern=site) #finds all files for the site
+  sitelist_csv=grep(".csv",list1) #creates list of all files for site
+  file_list=list1[sitelist_csv]
+  
+  #reads in files in list and appends
+  for (file in file_list){
+    if (!exists("DOData")){
+      DOData <- read.csv(file, skip=1, header = TRUE, sep = ",",
+                         quote = "\"",dec = ".", fill = TRUE, comment.char = "")
+      
+  
+        colnames(DOData)=c("row","DateTime","DO_mgL","DOTemp_c")
+        DOData <- DOData[2:4]
+        DOData$DO_mgL <- as.numeric(as.character(DOData$DO_mgL), digits=6)
+        DOData$DOTemp_c <- as.numeric(as.character(DOData$DOTemp_c), digits=5)
+      
+
+    DOData$DateTime <- as.POSIXct(DOData$DateTime, tz="UTC",
+           tryFormats = c("%m/%d/%y %I:%M:%S %p",
+                          "%m/%d/%Y %H:%M"))
+    }
+    if (exists("DOData")){
+      Temp_DOData <- read.csv(file, skip=1, header = TRUE, sep = ",",
+                              quote = "\"",dec = ".", fill = TRUE, comment.char = "")  
+
+        colnames(Temp_DOData)=c("row","DateTime","DO_mgL","DOTemp_c")
+        Temp_DOData <- Temp_DOData[2:4]
+        Temp_DOData$DO_mgL <- as.numeric(as.character(Temp_DOData$DO_mgL), digits=6)
+        Temp_DOData$DOTemp_c <- as.numeric(as.character(Temp_DOData$DOTemp_c), digits=5)
+        }
+      
+
+          Temp_DOData$DateTime <- as.POSIXct(Temp_DOData$DateTime, tz="UTC",
+           tryFormats = c("%m/%d/%y %I:%M:%S %p",
+                          "%m/%d/%Y %H:%M"))
+      
+      
+      DOData <- rbind(DOData, Temp_DOData)
+      rm(Temp_DOData)
+#    }
+    
+  }
+  DOData$DateTime <- round_date(DOData$DateTime, "15 mins")
+  DOData$Station <- site
+  DOData=unique(DOData)
+  assign((paste(site,sep="_")),DOData) #creates object with new appended data
+  rm(DOData) #removes DOdata so that multiple sites aren't appended together
+}
+
+DO_01$Station <- "Stn01"
+
+```
+
+#check do data
+
+```{r check CO2 data plot, echo=FALSE}
+
+
+##check data
+plot_ly(DO_01, x = ~DateTime, y = ~DO_mgL, type = 'scatter', mode = 'markers') 
+
+```
+
+
+```{r check Lux data plot, echo=FALSE}
+##set folder for site ##
+
+setwd(here::here("Lux"))
+
+all_files=list.files(pattern=".csv") #pulls out the csv files from WL folder in HOBOware folder
+#sites_rp=gsub("_.*","",all_files) #selects the correct pattern so as to seelct only desired files
+sites_rp = sub('_[^_]+$', '', all_files)
+site_names=unique(sites_rp) #creates list of site names for following loop
+
+site_names = c("LUXabajo_01","LUXarriba_01")
+
+#rm old files, if they exist
+rm(LuxData)
+rm(Temp_LuxData)
+
+for (site in site_names){
+  
+  list1=list.files(pattern=site) #finds all files for the site
+  sitelist_csv=grep(".csv",list1) #creates list of all files for site
+  file_list=list1[sitelist_csv]
+  
+  #reads in files in list and appends
+  for (file in file_list){
+    if (!exists("LuxData")){
+      LuxData <- read.csv(file, skip=2, header = FALSE, sep = ",",
+                         quote = "\"",dec = ".", fill = TRUE, comment.char = "")
+      LuxData=LuxData[,2:4]
+      colnames(LuxData)=c("DateTime","Temp_C","Lux")  
+      
+    }
+    if (exists("LuxData")){
+      Temp_LuxData <- read.csv(file, skip=2, header = FALSE, sep = ",",
+                              quote = "\"",dec = ".", fill = TRUE, comment.char = "")  
+      #if (!"Temp_C" %in% colnames(Temp_LuxData)){Temp_LuxData$Temp_C <- NA}
+      Temp_LuxData=Temp_LuxData[,2:4]
+      colnames(Temp_LuxData)=c("DateTime","Temp_C","Lux")  
+      
+      
+      LuxData <- rbind(LuxData, Temp_LuxData)
+      rm(Temp_LuxData)
+    }
+    
+    
+  }
+  #colnames(LuxData)=c("row","DateTime","Temp_C","Lux")
+  #LuxData=LuxData[,2:4]
+  LuxData=unique(LuxData)
+  LuxData$DateTime <- as.POSIXct(LuxData$DateTime, format="%m/%d/%y %I:%M:%S %p", tz="UTC")
+ # LuxData$DateTime <- as.POSIXct(LuxData$DateTime, format="%m/%d/%y %H:%M", tz="UTC")
+  assign((paste(site,"Lux_data",sep="_")),LuxData) #creates object with new appended data
+  rm(LuxData) #removes WLdata so that multiple sites aren't appended together
+}
+
+LUXabajo_01_Lux_data$Station <- "Stn01"
+LUXabajo_01_Lux_data <- LUXabajo_01_Lux_data %>%rename("Luxabajo" = "Lux")
+
+LUXarriba_01_Lux_data$Station <- "Stn01"
+LUXarriba_01_Lux_data <- LUXarriba_01_Lux_data %>%rename("Luxarriba" = "Lux")
+```
+
+#plot lux
+
+```{r check CO2 data plot, echo=FALSE}
+
+
+##check data
+plot_ly(LUXabajo_01_Lux_data, x = ~DateTime, y = ~Lux, type = 'scatter', mode = 'lines') 
+
+
+plot_ly(LUXarriba_01_Lux_data, x = ~DateTime, y = ~Lux, type = 'scatter', mode = 'lines') 
+
+#clean 
+#DO_06 <- DO_06%>%filter(DO_mgL > -100)
+```
+
+#merge data
+
+```{r merge data, echo=FALSE}
+
+
+Stn01 <- full_join(CO2_01,DO_01, by=c('DateTime','Station'))
+Stn01 <- full_join(Stn01,WL_01, by=c('DateTime','Station'))
+Stn01 <- full_join(Stn01,LUXabajo_01_Lux_data, by=c('DateTime','Station'))
+Stn01 <- full_join(Stn01,LUXarriba_01_Lux_data, by=c('DateTime','Station'))
+
+Stn01_filter <- Stn01%>%filter(DateTime > as.POSIXct("2021-0-01 00:00:00", tz = "UTC") & DateTime <= as.POSIXct("2022-06-01 12:00:00", tz = "UTC"))
+
+DO_filter <- DO_01%>%filter(DateTime > as.POSIXct("2021-08-10 00:00:00", tz = "UTC") & DateTime <= as.POSIXct("2021-08-25 00:00:00", tz = "UTC"))%>%filter(DO_mgL < 2)
+
+
+```
+
+
+#plot for prelim paper
+
+```{r merge data, echo=FALSE}
+
+
+library(ggpubr)
+library(gridExtra)
+library(dplyr)
+
+O2 <- ggplot(data = Stn01_filter , aes(DateTime, DO_mgL)) +
+  geom_point(color = "#E69F00") +
+  labs(#title = "CO2  stations",
+       y = "O2 mg/L", x = "") 
+co2 <- ggplot(data = Stn01_filter, aes(DateTime, ppm)) +
+  geom_point(color = "#56B4E9") +
+  labs(#title = "CO2  stations",
+       y = "CO2 ppm", x = "") 
+Stn01_filter$Q_Ls <- Stn01_filter$Q_m3s * 1000
+Q <- ggplot(data = Stn01_filter, aes(DateTime, Q_Ls)) +
+  geom_point(color = "#009E73") +
+  labs(#title = "Q  stations",
+       y = "Q L/s", x = "") 
+LuxUP <- ggplot(data = Stn01_filter, aes(DateTime, Luxarriba)) +
+  geom_point(color = "#F0E442") +
+  labs(#title = "Q  stations",
+       y = "LUX above water", x = "") 
+LuxDOWN <- ggplot(data = Stn01_filter, aes(DateTime, Luxabajo)) +
+  geom_point(color = "#0072B2") +
+  labs(#title = "Q  stations",
+       y = "LUX below water", x = "") 
+
+grid.arrange(O2, co2, Q, LuxUP,LuxDOWN, ncol=1)
+
+all.figs <- ggarrange(NULL,co2, NULL,Q, ncol = 1,
+               heights = c(0.2,1,0.2,1),
+               labels = c("A","","B",""),
+               font.label = list(size = 24, color = "black", face = "bold"),
+              # label.x = .1,
+              # label.y = .1,
+               align="h", common.legend = FALSE
+               )
+
+
+#########
+Stn01_filter2 <- Stn01_filter%>%select(c("DateTime","DO_mgL","ppm","Q_Ls","Luxarriba","Luxabajo"))
+
+mdata <- melt(Stn01_filter2, id=c("DateTime")) 
+
+#fall
+f <- ggplot(mdata,
+            aes(x=DateTime, y=value,color = variable)) + 
+  geom_line(size = 3) 
+
+f2 <-f + facet_wrap(~variable,ncol=1, scales = "free") +
+  theme_bw(base_size = 18) +
+  theme(axis.title.x=element_blank(),
+        axis.title.y=element_blank())  + 
+theme(
+  strip.background = element_blank(),
+  strip.text.x = element_blank()
+) +
+       scale_color_discrete(labels=c('DO [mg/L]', 'CO2 [ppm]', 'Q [L/s]', 'Light above water [LUX]','Light below water [LUX]'))
+
+
+#using tiff() and dev.off
+tiff('LongTermData.tiff', units="in", width=5, height=4, res=300, compression = 'lzw')
+f2
+dev.off()
+
+
+```
