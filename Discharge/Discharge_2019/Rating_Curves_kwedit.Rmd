@@ -1,0 +1,330 @@
+---
+title: "Rating Curves"
+author: "Andrew"
+date: "10/30/2019"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(tidyverse)
+library(here)
+library(plotly)
+```
+
+# Can we interpolate the missing data?
+```{r loadData}
+# Sensor data with water level -  we will add discharge to this
+df <- read.csv(here("data_4_analysis/All_Stream_Data.csv"))
+
+# Discharge Data - we will create rating curves with this
+discharge <- read.csv(here("data_4_analysis/recorded_discharge.csv"))
+discharge$DateTime <-as.POSIXct(paste0(discharge$Date,"",discharge$Time),format = "%m/%d/%Y %H:%M")
+discharge <- discharge%>%
+  select(DateTime,Stn,Level,Discharge)
+```
+
+# Now let's work on the rating curves
+```{r discharge}
+discharge <- read.csv(here("data_4_analysis/recorded_discharge.csv"))
+discharge$DateTime <-as.POSIXct(paste0(discharge$Date,"",discharge$Time),format = "%m/%d/%Y %H:%M")
+discharge <- discharge%>%
+  select(DateTime,Stn,Level,Discharge)
+
+ggplot(discharge)+
+  geom_point(aes(x = Discharge, y = Level, col = Stn), size = 3)
+```
+
+## Station 1 Rating Curve
+Set up variables:
+```{r stn1var, echo=FALSE, warning=FALSE}
+stn1 <- discharge%>%
+  filter(Stn == "Station 1")%>%
+  na.omit()%>%
+  arrange(Level)
+
+x<-stn1$Level
+y<-stn1$Discharge
+```
+
+### Exponential model (Station 1)
+Test exponential model for station 1:
+```{r stn1Exp}
+
+exponential.model <- lm(log(y)~ x)  # Create the model
+exp.predict <- exp(predict(exponential.model,list(Level=x)))  # Create predicted values for recorded discharge values
+
+ggplot()+
+  geom_point(aes(x,y))+
+  geom_line(aes(x,exp.predict),col = 'red')+
+  labs(x = "Level (m)", y = expression(paste("Discharge ", m^{3}/s^{-1})), title ="Station 1 Exponential Model ")
+
+# Print the Summary
+summary(exponential.model)
+```
+
+### Quadratic Model (Station 1)
+Test Quadratic model for station 1:
+```{r stn1Quad}
+
+x2 <- x^2
+quadratic.model <-lm(y ~ x + x2)
+
+# Use the model to predict values for the rating curve
+quadPred <- predict(quadratic.model,list(Level=x, Level2=x^2))
+
+# plot the predicted(line) vs observed (points)
+ggplot()+
+  geom_point(aes(x,y))+
+  geom_line(aes(x,quadPred),col = 'red')+
+  labs(x = "Level (m)", y = expression(paste("Discharge ", m^{3}/s^{-1})), title ="Station 1 Quadratic Model ")
+
+# Print the summary of the quadratic model
+summary(quadratic.model)
+```
+
+
+### Kriddie Model (Station 1)
+```{r}
+#df$stn1_Q_kw <- 0.8823-10.3227*(df$lvl_421_m)+32.2560*(df$lvl_421_m)^2
+```
+
+
+
+### Decide on model and write it to dataset
+Units here are liters per second
+```{r stn1Choice}
+# Exponential Model:
+#df$stn1_Q <- exp(predict(exponential.model,data.frame(x=df$lvl_436_m)))*1000
+
+# Quadratic Model
+#df$stn1_Q <- predict(quadratic.model,list(x=df$lvl_436_m, x2=df$lvl_436_m^2))*1000
+
+# Kriddies way
+df$stn1_Q <- (0.8823-10.3227*(df$lvl_421_m)+32.2560*(df$lvl_421_m)^2)*1000
+
+#plot(df$stn1_Q~df$stn1_Q_kw)
+```
+
+## Station 2 Rating Curve
+Set up variables:
+```{r stn2var, echo=FALSE, warning=FALSE}
+stn2 <- discharge%>%
+  filter(Stn == "Station 2")%>%
+  na.omit()%>%
+  arrange(Level)
+
+x<-stn2$Level
+y<-stn2$Discharge
+```
+
+### Exponential model (Station 2)
+Test exponential model for station 2:
+```{r stn2Exp}
+
+exponential.model <- lm(log(y)~ x)  # Create the model
+exp.predict <- exp(predict(exponential.model,list(Level=x)))  # Create predicted values for recorded discharge values
+
+plot_ly(x = x, y=y)%>%
+  add_markers()%>%
+  add_lines(x = x, y=exp.predict)%>%
+  layout(
+    xaxis = list(title = "Water Level (m)", type = "log"),
+    yaxis = list(title = "Discharge")
+  )
+
+# Print the Summary
+summary(exponential.model)
+```
+
+### Quadratic Model (Station 2)
+Test Quadratic model for station 2:
+```{r stn2Quad}
+
+x2 <- x^2
+quadratic.model <-lm(y ~ x + x2)
+
+# Use the model to predict values for the rating curve
+quadPred <- predict(quadratic.model,list(Level=x, Level2=x^2))
+
+# plot the predicted(line) vs observed (points)
+ggplot()+
+  geom_point(aes(x,y))+
+  geom_line(aes(x,quadPred),col = 'red')+
+  labs(x = "Level (m)", y = expression(paste("Discharge ", m^{3}/s^{-1})), title ="Station 2 Quadratic Model ")
+
+# Print the summary of the quadratic model
+summary(quadratic.model)
+```
+
+### Kriddie Model (Station 2)
+```{r}
+#df$stn2_Q_kw <- (0.8823-10.3227*(df$lvl_421_m)+32.2560*(df$lvl_421_m)^2)*1000
+```
+
+### Decide on model and write it to dataset
+Units here are liters per second
+```{r stn2Choice}
+# Exponential Model:
+#df$stn2_Q <- exp(predict(exponential.model,data.frame(x=df$lvl_436_m))) *1000
+
+# kriddie's way
+df$stn2_Q <- (0.8823-10.3227*(df$lvl_421_m)+32.2560*(df$lvl_421_m)^2)*1000
+```
+
+## Station 3 Rating Curve
+Set up variables:
+```{r stn3var, echo=FALSE, warning=FALSE}
+stn3 <- discharge%>%
+  filter(Stn == "Station 3")%>%
+  na.omit()%>%
+  arrange(Level)
+
+x<-stn3$Level
+y<-stn3$Discharge
+```
+
+### Exponential model (Station 3)
+Test exponential model for station 3:
+```{r stn3Exp}
+
+exponential.model <- lm(log(y)~ x)  # Create the model
+exp.predict <- exp(predict(exponential.model,list(Level=x)))  # Create predicted values for recorded discharge values
+
+ggplot()+
+  geom_point(aes(x,y))+
+  geom_line(aes(x,exp.predict),col = 'red')+
+  labs(x = "Level (m)", y = expression(paste("Discharge ", m^{3}/s^{-1})), title ="Station 3 Exponential Model ")
+
+# Print the Summary
+summary(exponential.model)
+```
+
+### Quadratic Model (Station 3)
+Test Quadratic model for station 3:
+```{r stn3Quad}
+
+x2 <- x^2
+quadratic.model <-lm(y ~ x + x2)
+
+# Use the model to predict values for the rating curve
+quadPred <- predict(quadratic.model,list(Level=x, Level2=x^2))
+
+# plot the predicted(line) vs observed (points)
+ggplot()+
+  geom_point(aes(x,y))+
+  geom_line(aes(x,quadPred),col = 'red')+
+  labs(x = "Level (m)", y = expression(paste("Discharge ", m^{3}/s^{-1})), title ="Station 3 Quadratic Model ")
+
+# Print the summary of the quadratic model
+summary(quadratic.model)
+```
+
+### Kriddie Model (Station 3)
+```{r}
+#df$stn3_Q_kw <-(0.3427-4.5198*(df$lvl_421_m)+17.0234*(df$lvl_421_m)^2)*1000
+```
+
+### Decide on model and write it to dataset
+Units here are liters per second
+```{r stn3Choice}
+# Exponential Model:
+#df$stn3_Q <- exp(predict(exponential.model,data.frame(x=df$lvl_421_m)))*1000
+
+# kriddie model
+df$stn3_Q <-(0.3427-4.5198*(df$lvl_421_m)+17.0234*(df$lvl_421_m)^2)*1000
+
+#plot(df$stn3_Q~df$stn3_Q_kw)
+```
+
+## Station 4 Rating Curve
+Set up variables:
+```{r stn4var, echo=FALSE, warning=FALSE}
+stn4 <- discharge%>%
+  filter(Stn == "Station 4")%>%
+  na.omit()%>%
+  arrange(Level)
+
+x<-stn4$Level
+y<-stn4$Discharge
+```
+
+### Exponential model (Station 4)
+Test exponential model:
+```{r stn4Exp}
+
+exponential.model <- lm(log(y)~ x)  # Create the model
+exp.predict <- exp(predict(exponential.model,list(Level=x)))  # Create predicted values for recorded discharge values
+
+ggplot()+
+  geom_point(aes(x,y))+
+  geom_line(aes(x,exp.predict),col = 'red')+
+  labs(x = "Level (m)", y = expression(paste("Discharge ", m^{3}/s^{-1})), title ="Station 4 Exponential Model ")
+
+# Print the Summary
+summary(exponential.model)
+```
+
+
+### Quadratic Model (Station 4)
+Test Quadratic model for station 4:
+```{r stn4Quad}
+
+x2 <- x^2
+quadratic.model <-lm(y ~ x + x2)
+
+# Use the model to predict values for the rating curve
+quadPred <- predict(quadratic.model,list(Level=x, Level2=x^2))
+
+# plot the predicted(line) vs observed (points)
+ggplot()+
+  geom_point(aes(x,y))+
+  geom_line(aes(x,quadPred),col = 'red')+
+  labs(x = "Level (m)", y = expression(paste("Discharge ", m^{3}/s^{-1})), title ="Station 4 Quadratic Model ")
+
+# Print the summary of the quadratic model
+summary(quadratic.model)
+```
+
+### Kriddie Model (Station 4)
+```{r}
+#df$stn4_Q_kw <- (0.02759-1.4345*(df$lvl_421_m)+9.84825*(df$lvl_421_m)^2)*1000
+```
+
+### Decide on model and write it to dataset
+Units here are liters per second
+```{r stn4Choice}
+# Exponential Model:
+#df$stn4_Q <- exp(predict(exponential.model,data.frame(x=df$lvl_421_m)))*1000
+
+# KW model
+df$stn4_Q <- (0.02759-1.4345*(df$lvl_421_m)+9.84825*(df$lvl_421_m)^2)*1000
+
+#plot(df$stn4_Q_kw~df$stn4_Q)
+```
+
+
+
+## Export the updated data
+```{r}
+write.csv(df,here("data_4_analysis/All_Stream_Data_2020-02-25.csv"))
+```
+
+
+
+## Let's plot the discharge over time
+```{r dischargePlot}
+df.sub <- df%>%
+  select(DateTime,stn1_Q,stn2_Q,stn3_Q,stn4_Q)%>%
+  gather(Station,Discharge,-DateTime)
+df.sub$DateTime <- as.POSIXct(df.sub$DateTime)
+ggplot(df.sub)+
+  geom_point(aes(x=DateTime, y=Discharge, col=Station))
+
+```
+
+
