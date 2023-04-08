@@ -379,13 +379,13 @@ DO_06$Station <- "Stn06"
 #check do data
 
 ```{r check CO2 data plot, echo=FALSE}
-
+#clean 
+DO_06 <- DO_06%>%filter(DO_mgL > -100)
 
 ##check data
 plot_ly(DO_06, x = ~DateTime, y = ~DO_mgL, type = 'scatter', mode = 'markers') 
 
-#clean 
-DO_06 <- DO_06%>%filter(DO_mgL > -100)
+
 ```
 
 #lux data

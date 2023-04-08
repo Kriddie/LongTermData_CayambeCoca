@@ -33,7 +33,7 @@ library(gridExtra)
 ```{r Hobo WL}
 #First the Hobos
 
-setwd(here::here("WaterLevel"))
+setwd(here::here("WL"))
 all_files=list.files(pattern=".csv") #pulls out the csv files from CO2 folder
 sites_rp = sub('_[^_]+$', '', all_files)
 site_names=unique(sites_rp) #creates list of site names for following loop
@@ -141,20 +141,32 @@ plot_ly(WL_02, x = ~DateTime, y = ~WLPres_kpa, type = 'scatter', mode = 'markers
 WL_02 <- WL_02%>%filter(DateTime != as.POSIXct("2022-06-30 13:30", tz="UTC"))%>%filter(DateTime != as.POSIXct("2022-07-12 10:30", tz="UTC"))
 
 #Looks like there was a shift during the last download of 2022 field seaseon. entonces:
-#64.347 - 62.987
 
 #this is hard - it looks like the sensor moved 2x, once on the first dl of the field season, again in October during dl, not only that, it seems like the baseline has moved or something--- could logger be out of the water??
 
-#WL_02$test <- WL_02$WLPres_kpa
+# Correction in October 2022: 62.981 - 62.471
 
-#below is the best I got o far
-WL_02[which(WL_02$DateTime > as.POSIXct("2022-07-27 10:15:00", tz="UTC")&WL_02$DateTime < as.POSIXct("2022-10-12 13:45:00", tz="UTC")),]$WLPres_kpa <- 
-  WL_02[which(WL_02$DateTime > as.POSIXct("2022-07-27 10:15:00", tz="UTC")&WL_02$DateTime < as.POSIXct("2022-10-12 13:45:00", tz="UTC")),]$WLPres_kpa + (64.347-63.041)
+WL_02_subset1 <- WL_02%>%filter(DateTime < as.POSIXct("2022-07-27 10:15:00", tz="UTC")|
+                                  DateTime > as.POSIXct("2022-10-12 13:30", tz="UTC"))
+WL_02_subset2 <- WL_02%>%filter(DateTime > as.POSIXct("2022-07-27 10:15:00", tz="UTC")&
+                                  DateTime < as.POSIXct("2022-10-12 13:30", tz="UTC"))
+WL_02_subset2$WLPres_kpa <- WL_02_subset2$WLPres_kpa + (62.981 - 62.471)
 
-WL_02[which(WL_02$DateTime < as.POSIXct("2022-10-12 13:45:00", tz="UTC")),]$WLPres_kpa <- 
-  WL_02[which(WL_02$DateTime < as.POSIXct("2022-10-12 13:45:00", tz="UTC")),]$WLPres_kpa - (62.981-62.541)
-#WL_02 <- WL_02%>%filter(WLPres_kpa != 62.566)
+WL_02 <- rbind(WL_02_subset1,WL_02_subset2)
 
+#correction for July 27 2022 64.347 - 63.497
+  #leave this as is for now - I need to figure out if I switched the water level logger or something? well probably not because this is the last day of field work. 
+  #
+
+WL_02_subset1 <- WL_02%>%filter(DateTime < as.POSIXct("2022-07-27 10:15:00", tz="UTC"))
+WL_02_subset2 <- WL_02%>%filter(DateTime > as.POSIXct("2022-07-27 10:15:00", tz="UTC"))
+WL_02_subset2$WLPres_kpa <- WL_02_subset2$WLPres_kpa + .2
+
+WL_02 <- rbind(WL_02_subset1,WL_02_subset2)
+
+rm(WL_02_subset1,WL_02_subset2)
+
+#should I include 2019 station 03 data so that I can have water level? Or maybe I'll just use it for discharge and DO...
 
 ```
 
@@ -225,12 +237,10 @@ for (site in site_names){
 ##clean BaroData
 #plot_ly(Baro%>%filter(DateTime > as.POSIXct("2021-06-11 00:00:00", tz = "UTC")), x = ~DateTime, y = ~AirPres_kpa, type = 'scatter', mode = 'markers') 
 
-Baro <- Baro%>%filter(DateTime > as.POSIXct("2021-06-01 00:00:00", tz = "UTC"))
 
-Baro <- Baro%>%filter(DateTime < as.POSIXct("2021-07-27 15:00:00", tz = "UTC")|
-                          DateTime > as.POSIXct("2021-07-28 13:30:00", tz = "UTC"))
+Baro <- Baro%>%filter(DateTime < as.POSIXct("2021-07-27 15:00:00", tz = "UTC")| DateTime > as.POSIXct("2021-07-28 13:30:00", tz = "UTC"))
 
-ggplot(Baro,aes(x=DateTime,y=AirPres_kpa))+ geom_point()
+#ggplot(Baro,aes(x=DateTime,y=AirPres_kpa))+ geom_point()
 
 ```
 
@@ -238,19 +248,20 @@ ggplot(Baro,aes(x=DateTime,y=AirPres_kpa))+ geom_point()
 ```{r baro correct, echo=FALSE}
 
 #correct for baro 
+#Baro <- Baro%>%filter(DateTime > as.POSIXct("2021-06-01 00:00:00", tz = "UTC"))
 
-WL_02 <- left_join(Baro,WL_02,by="DateTime")
+Stn02 <- left_join(Baro%>%filter(DateTime > as.POSIXct("2021-06-01 00:00:00", tz = "UTC")),WL_02,by="DateTime")
 
-WL_02$Corrected_kpa <- WL_02$WLPres_kpa - WL_02$AirPres_kpa
+Stn02$Corrected_kpa <- Stn02$WLPres_kpa - Stn02$AirPres_kpa
 
 #calculate total pressure to correct viasala readings
-WL_02$Total_kpa <- 
-  WL_02$WLPres_kpa
+Stn02$Total_kpa <- 
+  Stn02$WLPres_kpa
 
 #convert kpa to meters of water
 # constant, 1 kpa = 0.101972 m water
-WL_02$WL_m <- WL_02$Corrected_kpa * 0.101972
-WL_02$Corrected_kpa <- NULL
+Stn02$WL_m <- Stn02$Corrected_kpa * 0.101972
+Stn02$Corrected_kpa <- NULL
 
 ```
 #plot data
@@ -259,14 +270,14 @@ WL_02$Corrected_kpa <- NULL
 ##Now we can graph 
     ## will need to change the right limit accordingly
 
-ggplot(data = WL_02 %>% filter(DateTime > "2021-06-10"), 
+ggplot(data = Stn02 %>% filter(DateTime > "2021-06-10"), 
        aes(DateTime, WL_m)) +
   geom_point(color = "steelblue") +
   labs(title = "Station 02 Water level",
     y = "water level [m]", x = "") 
 
 ```
-
+I think I will need to remove more data from December 2021 to march...
 
 #Time for discharge!
 this will take awhile so buckle up, baby
@@ -274,28 +285,30 @@ this will take awhile so buckle up, baby
 ```{r Find WL data for rating curve, echo=FALSE}
 
 #enter date of collection
-date <- "2022-07-27"
+date <- "2022-06-02"
 #enter start and end time that wetland was sampled
-time <- "09:45:00"
+time <- "12:30:00"
 
+WL_m <- Stn02%>%filter(DateTime == as.POSIXct(paste(date, time), format="%Y-%m-%d %H:%M:%S", tz = "UTC"))
 
-WL_m <- WL_02%>%filter(DateTime == as.POSIXct(paste(date, time), format="%Y-%m-%d %H:%M:%S", tz = "UTC"))
-
-print(WL_m)
+print(WL_m$WL_m)
 
 ```
 
 #dischage rating curve
-see excel file for station 01
+see excel file for station 02
 field season 2022 looks compatible with field season 2021
 
-y = 1.4892x2 - 0.1365x + 0.0059
-R² = 0.9711
+killer rating curve. No dummy data
+
+y = 1.5733 * x2 - 0.1713 *x + 0.0079
+R² = 0.9817
+
 
 
 ```{r discharge, echo=FALSE}
 
-WL_02$Q_m3s <- 1.4892*(WL_02$WL_m)^2 - 0.1365*WL_02$WL_m + 0.0059
+Stn02$Q_m3s <- 1.5733*(Stn02$WL_m)^2 - 0.1713*Stn02$WL_m + 0.0079
 
 ```
 
@@ -305,24 +318,74 @@ WL_02$Q_m3s <- 1.4892*(WL_02$WL_m)^2 - 0.1365*WL_02$WL_m + 0.0059
 ##Now we can graph 
     ## will need to change the right limit accordingly
 
-ggplot(data = WL_02 %>% filter(DateTime > "2021-06-10"), 
+ggplot(data = Stn02 %>% filter(DateTime > "2021-06-10"), 
        aes(DateTime, Q_m3s)) +
   geom_point(color = "steelblue") +
   labs(title = "Station 02 Discharge",
     y = "Q [m3 s-1]", x = "") 
 
-ggplot(data = WL_02 %>% filter(DateTime > "2021-06-10"), 
+ggplot(data = Stn02 %>% filter(DateTime > "2021-06-10"), 
        aes(DateTime, WL_m)) +
   geom_point(color = "steelblue") +
   labs(title = "Station 02 WATER LEVEL",
     y = "water level [m]", x = "") 
 
 ```
+##add Discharge from 2019
+
+the deal with 2019 is that there was no water level at station 2. but there was one at station 3. we moved station 3 between station 2019. So I will say that station3 = station 2. we need to redo the rating curves for this 
+
+```{r discharge 2019, echo=FALSE}
+WL_2019_1 <- read.csv(here::here("WL/WL_2019stn3_2019-08-19NOTcompensated.csv"),skip=11)
+WL_2019_1$DateTime <- as.POSIXct(paste(WL_2019_1$Date, WL_2019_1$Time), format="%m/%d/%Y %H:%M:%S", tz="UTC")
+colnames(WL_2019_1) <- c("Date","Time","ms","WLPres_kpa","WLTemp_c","DateTime")
+
+WL_2019_2 <- read.csv(here::here("WL/WL_2019stn3_2020-01-24NOTcompensated.csv"),skip =11)
+WL_2019_2$DateTime <- as.POSIXct(paste(WL_2019_2$Date, WL_2019_2$Time), format="%m/%d/%Y %I:%M:%S %p", tz="UTC")
+colnames(WL_2019_2) <- c("Date","Time","ms","WLPres_kpa","WLTemp_c","DateTime")
+
+WL_2019 <- rbind(WL_2019_1,WL_2019_2)
+rm(WL_2019_1,WL_2019_2)
+
+WL_2019 <- WL_2019[c("DateTime","WLPres_kpa","WLTemp_c")]
+
+Stn02_2019 <- left_join(WL_2019,Baro%>%filter(DateTime < as.POSIXct("2021-06-01 00:00:00", tz = "UTC")),by="DateTime")
+
+Stn02_2019$Corrected_kpa <- Stn02_2019$WLPres_kpa - Stn02_2019$AirPres_kpa
+
+#calculate total pressure to correct viasala readings
+Stn02_2019$Total_kpa <- Stn02_2019$WLPres_kpa
+
+#convert kpa to meters of water
+# constant, 1 kpa = 0.101972 m water
+Stn02_2019$WL_m <- Stn02_2019$Corrected_kpa * 0.101972
+Stn02_2019$Corrected_kpa <- NULL
+
+######
+#enter date of collection
+date <- "2019-07-26"
+time <- "11:30:00"
+
+WL_m <- Stn02_2019%>%filter(DateTime == as.POSIXct(paste(date, time), format="%Y-%m-%d %H:%M:%S", tz = "UTC"))
+print(WL_m$WL_m)
+
+###Rating curve
+#y = 3.1769 * x2 - 0.9931 *x + 0.0855
+#R² = 0.9684
+Stn02_2019$Q_m3s <- 3.1769 * Stn02_2019$WL_m^2 - 0.9931 *Stn02_2019$WL_m + 0.0855
+
+Stn02_2019$Station <- "Stn02"
+Stn02_2019 <- Stn02_2019%>%filter(WL_m > .05)
+
+Stn02 <- rbind(Stn02_2019, Stn02)
+
+```
+
 
 
 #CO2 time
 
-```{r pressure, echo=FALSE}
+```{r CO2, echo=FALSE}
 
 setwd(here::here("CO2"))
 all_files=list.files(pattern=".csv") #pulls out the csv files from WL folder in HOBOware folder
@@ -407,7 +470,12 @@ plot_ly(CO2_02, x = ~DateTime, y = ~ppm, type = 'scatter', mode = 'markers')
 ```
 
 ```{r clean, echo=FALSE}
-CO2_02  <- CO2_02 %>% 
+
+#I changed the vaisala a few times, so I'm going to break up these time chunks so that. I can do the  corrextiongs in next the next chunk 
+
+#2021 field season
+
+CO2_02  <- CO2_02 %>% filter(DateTime < as.POSIXct("2022-06-20 00:00:00", tz = "UTC"))  %>%
   filter(DateTime < as.POSIXct("2021-06-11 03:34:00", tz = "UTC") | DateTime > as.POSIXct("2021-06-16 11:52:00", tz = "UTC")) %>%
     filter(DateTime < as.POSIXct("2021-06-29 14:40:00", tz = "UTC") | DateTime > as.POSIXct("2021-06-29 15:00:00", tz = "UTC")) %>%
   filter(DateTime < as.POSIXct("2021-06-30 10:42:00", tz = "UTC") | DateTime > as.POSIXct("2021-06-30 11:45:00", tz = "UTC")) %>%
@@ -420,22 +488,35 @@ CO2_02  <- CO2_02 %>%
 #injection July 13
   filter(DateTime < as.POSIXct("2021-07-13 10:15:00", tz = "UTC") | DateTime > as.POSIXct("2021-07-13 15:15:00", tz = "UTC"))%>%
 #injection July 14
-  filter(DateTime < as.POSIXct("2021-07-14 09:00:00", tz = "UTC") | DateTime > as.POSIXct("2021-07-14 15:30:00", tz = "UTC"))%>%
-#bad data
-  filter(DateTime < as.POSIXct("2022-06-20 00:00:00", tz = "UTC"))
+  filter(DateTime < as.POSIXct("2021-07-14 09:00:00", tz = "UTC") | DateTime > as.POSIXct("2021-07-14 15:30:00", tz = "UTC"))
 
-CO2_02 <- CO2_02
-CO2_02$DateTime <- round_date(CO2_02$DateTime,unit="15 minutes")
-CO2_02 <- CO2_02 %>% 
+CO2_02_2021$DateTime <- round_date(CO2_02_2021$DateTime,unit="15 minutes")
+CO2_02_2021 <- CO2_02_2021 %>% 
   group_by(DateTime) %>% 
   summarise(ppm = mean(ppm))
+
+#field season 2022
+#CO2_02  <- CO2_02 %>% filter(DateTime > as.POSIXct("2022-06-10 00:00:00", tz = "UTC") &
+#                                    DateTime < as.POSIXct("2022-06-17 00:00:00")) 
+  
+#between field season 2022 and when i checked the loggers in October, we were using a water damaged logger. so goodby to all that data >:(  
+
+#Seems like I tried to fix it in 2022-11-19 12:50:00 but then theSomething happened in November 27th, but I have no clue what. data looks bad
+
+#2022-11-21 14:05 to 2022-11-27 06:50 looks ok
+
+# 2022-12-04 01:11 to 2022-12-08 00:26 looks good, no clue why
+
+# you know what. forget it. I don't want to deal with this anymore.
+
+
 
 ```
 
 ```{r plot, echo=FALSE}
 
 
-ggplot(data = CO2_02, aes(DateTime, ppm)) +
+ggplot(data = CO2_02_2021, aes(DateTime, ppm)) +
   geom_point(color = "steelblue") +
   labs(#title = "CO2  stations",
        y = "CO2 ppm", x = "") 
@@ -452,23 +533,26 @@ Stn02 <- full_join(WL_02,CO2_02, by=c("DateTime","Station"))
 #convert baro to hpa
 #1 kPa = 10 hPa
 #1 kPa = 0.101972 m
-Stn02$Total_hPa <- Stn02$Total_kpa * 10
+Stn02$WLPres_hPa <- Stn02$WLPres_kpa * 10
 
-```
+#correction vaisala data: make adjustments to ppm using water level data
 
-#correction vaisala data
-make adjustments to ppm using water level data
-
-```{r corect viaslal, echo=FALSE}
 #new
 
 #The new viasalas are set to 700hPa and have an internal temperature, so do not ned to be corrected for temp
 #the units for new vasialas are half of what they should be! 
 
+#In 2021
 #Station 2, 3 and Well 1 and 2 are new V
 
 #df_new$adjusted_ppm <- df_new$ppm * (1 + (700 - df_new$Total_hPa) * 0.0015) * (1 - (6.7 - df_new$WLTemp_c) * 0.003)
-Stn02$adjusted_ppm <- (Stn02$ppm * 2 )* (1 + (700 - Stn02$Total_hPa) * 0.0015) 
+Stn02$adjusted_ppm <- (Stn02$ppm * 2 )* (1 + (700 - Stn02$WLPres_hPa) * 0.0015) 
+
+#for field season 2022
+
+#but then I changed it to an old vaisala at the beggining of 2022, unfortunaly, it collected very little data before totally crapping out on me (my fault, in truth)
+
+# in November 2022, I changed it back to a new viasala. 
 
 ```
 
@@ -576,13 +660,12 @@ DO_02$Station <- "Stn02"
 #check do data
 
 ```{r check DO data plot, echo=FALSE}
-
+#clean 
+DO_02 <- DO_02%>%filter(DO_mgL > -100)
 
 ##check data
 plot_ly(DO_02, x = ~DateTime, y = ~DO_mgL, type = 'scatter', mode = 'markers') 
 
-#clean 
-DO_02 <- DO_02%>%filter(DO_mgL > -100)
 ```
 
 
