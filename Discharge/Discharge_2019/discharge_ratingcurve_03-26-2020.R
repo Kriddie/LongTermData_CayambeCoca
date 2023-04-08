@@ -13,7 +13,7 @@ library(here)
 
 
 
-rating_curve <- read.csv(here::here("Analysis/Discharge/Discharge_KWCalc.csv"), 
+rating_curve <- read.csv(here::here("Discharge/Discharge_2019/Discharge_KWCalc.csv"), 
                          header=T, na.strings=c("","NA"))
 rating_curve$Level_m_compensated <-  as.numeric( as.character (rating_curve$Level_m_compensated))
 rating_curve$lvl_m_stn1 <-  as.numeric( as.character (rating_curve$lvl_m_stn1))
