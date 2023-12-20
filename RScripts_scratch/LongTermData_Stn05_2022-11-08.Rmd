@@ -31,7 +31,7 @@ library(sjmisc)
 ```{r Hobo WL}
 #First the Hobos
 
-setwd(here::here("WaterLevel"))
+setwd(here::here("WL"))
 all_files=list.files(pattern=".csv") #pulls out the csv files from CO2 folder
 sites_rp = sub('_[^_]+$', '', all_files)
 site_names=unique(sites_rp) #creates list of site names for following loop
@@ -136,12 +136,11 @@ plot_ly(WL_05, x = ~DateTime, y = ~WLPres_kpa, type = 'scatter', mode = 'markers
 ```{r clean, echo=FALSE}
 
 
-WL_05 <- WL_05%>%filter(DateTime != as.POSIXct("2021-07-28 14:00:00", tz = "UTC"))
-WL_05 <- WL_05%>%filter(WLPres_kpa > 64)
+WL_05 <- WL_05%>%
+  filter(DateTime != as.POSIXct("2021-07-28 14:00:00", tz = "UTC"))%>%
+  filter(DateTime != as.POSIXct("2022-03-16 15:30:00", tz = "UTC"))%>%
+  filter(DateTime != as.POSIXct("2022-07-26 11:30:00", tz = "UTC"))
 
-#march 16 2022, 15:30
-#june 26 2022, 11:30
-WL_05 <- WL_05%>%filter(DateTime != as.POSIXct("2022-03-16 15:30", tz="UTC"))%>%filter(DateTime != as.POSIXct("2022-07-26 11:30", tz="UTC"))
 ```
 
 ##Unresolved issues
@@ -258,19 +257,19 @@ ggplot(data = WL_05 %>% filter(DateTime > "2021-06-10"),
 ```{r Find WL data for rating curve, echo=FALSE}
 
 #enter date of collection
-date <- "2022-06-28"
+date <- "2021-06-11"
 #enter start and end time that wetland was sampled
-time <- "13:15:00"
+time <- "13:00:00"
 
 
 WL_m <- WL_05%>%filter(DateTime == as.POSIXct(paste(date, time), format="%Y-%m-%d %H:%M:%S", tz = "UTC"))
 
-print(WL_m)
+print(WL_m$WL_m)
 
 ```
 
 #dischage rating curve
-see excel file for station 01
+see excel file for station 05
 field season 2022 looks compatible with field season 2021
 
 y = 0.5715x2 + 0.5144x - 0.337
@@ -280,6 +279,9 @@ R² = 0.9577
 ```{r discharge, echo=FALSE}
 
 WL_05$Q_m3s <- 0.5715*(WL_05$WL_m)^2 + 0.5144*WL_05$WL_m - 0.337
+
+#write.csv(WL_05, here::here("MergedFiles/WL_05_2023-12-19"))
+
 
 ```
 
@@ -447,6 +449,11 @@ for (site in site_names){
 LUXabajo_05_Lux_data$Station <- "Stn05"
 LUXarriba_05_Lux_data$Station <- "Stn05"
 
+
+
+colnames(LUXabajo_05_Lux_data) <- c("DateTime","LUXabajoTemp_c","LUXabajo","Station")
+colnames(LUXarriba_05_Lux_data) <- c("DateTime","LUXarribaTemp_c","LUXarriba","Station")
+
 ```
 
 #plot lux
@@ -462,4 +469,19 @@ plot_ly(LUXarriba_05_Lux_data, x = ~DateTime, y = ~Lux, type = 'scatter', mode =
 
 #clean 
 #DO_06 <- DO_06%>%filter(DO_mgL > -100)
+```
+
+
+#now we merge everything together!!
+
+```{r merge dataframe, echo=FALSE}
+Stn05_df <- full_join(WL_05, DO_05, by=c("DateTime","Station"))
+Stn05_df <- full_join(Stn05_df, LUXabajo_05_Lux_data, by=c("DateTime","Station"))
+Stn05_df <- full_join(Stn05_df, LUXarriba_05_Lux_data, by=c("DateTime","Station"))
+
+```
+
+```{r write out data, echo=FALSE}
+write.csv(Stn05_df,here::here("MergedFiles/Stn05_df_2023-12-19.csv"))
+
 ```

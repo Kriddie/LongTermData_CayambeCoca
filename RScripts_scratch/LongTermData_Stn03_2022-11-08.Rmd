@@ -31,7 +31,7 @@ library(sjmisc)
 ```{r Hobo WL}
 #First the Hobos
 
-setwd(here::here("WaterLevel"))
+setwd(here::here("WL"))
 all_files=list.files(pattern=".csv") #pulls out the csv files from CO2 folder
 sites_rp = sub('_[^_]+$', '', all_files)
 site_names=unique(sites_rp) #creates list of site names for following loop
@@ -135,7 +135,13 @@ plot_ly(WL_03, x = ~DateTime, y = ~WLPres_kpa, type = 'scatter', mode = 'markers
 
 ```{r clean, echo=FALSE}
 
-WL_03 <- WL_03%>%filter(WLPres_kpa > 63.1)
+WL_03 <- WL_03%>%filter(DateTime != as.POSIXct("2021-06-18 13:00:00", tz = "UTC"))%>%
+  filter(DateTime < as.POSIXct("2021-06-25 13:00:00", tz = "UTC")| DateTime > as.POSIXct("2021-06-25 13:45:00", tz = "UTC"))%>%
+  filter(DateTime != as.POSIXct("2021-07-27 11:45:00", tz = "UTC"))%>%
+  filter(DateTime != as.POSIXct("2021-10-20 13:15:00", tz = "UTC"))%>%
+  filter(DateTime != as.POSIXct("2022-10-19 16:15:00", tz = "UTC"))%>%
+  filter(DateTime != as.POSIXct("2022-12-01 12:45:00", tz = "UTC"))%>%
+  filter(DateTime != as.POSIXct("2023-02-18 11:15:00", tz = "UTC"))
 
 ```
 
@@ -201,7 +207,6 @@ for (site in site_names){
 ```{r clean baro, echo=FALSE}
 
 ##clean BaroData
-#plot_ly(Baro%>%filter(DateTime > as.POSIXct("2021-06-11 00:00:00", tz = "UTC")), x = ~DateTime, y = ~AirPres_kpa, type = 'scatter', mode = 'markers') 
 
 Baro <- Baro%>%filter(DateTime > as.POSIXct("2021-06-01 00:00:00", tz = "UTC"))
 
@@ -209,6 +214,11 @@ Baro <- Baro%>%filter(DateTime < as.POSIXct("2021-07-27 15:00:00", tz = "UTC")|
                           DateTime > as.POSIXct("2021-07-28 13:30:00", tz = "UTC"))
 
 ggplot(Baro,aes(x=DateTime,y=AirPres_kpa))+ geom_point()
+
+Baro <- unique(Baro)
+
+dup <- Baro$DateTime[duplicated(Baro$DateTime)]
+dup2 <- WL_03$DateTime[duplicated(WL_03$DateTime)]
 
 ```
 
@@ -263,7 +273,7 @@ print(WL_m)
 ```
 
 #dischage rating curve
-see excel file for station 01
+see excel file for station 03
 field season 2022 looks compatible with field season 2021
 
 with dummy data:
@@ -274,6 +284,8 @@ R2 = 0.944
 ```{r discharge, echo=FALSE}
 
 WL_03$Q_m3s <- 1.3749*(WL_03$WL_m)^2 - 0.4518*WL_03$WL_m + 0.0356
+
+#write.csv(WL_03,here::here("MergedFiles/WL_03_2023-12-19.csv"))
 
 ```
 
@@ -399,6 +411,8 @@ CO2_03 <- CO2_03 %>%
 CO2_03$Station <- "Stn03"
 
 ```
+
+
 
 ```{r plot, echo=FALSE}
 
@@ -549,12 +563,14 @@ DO_03$Station <- "Stn03"
 
 ```{r check CO2 data plot, echo=FALSE}
 
+#clean 
+DO_03 <- DO_03%>%filter(DO_mgL > -100)%>%
+  filter(DateTime > as.POSIXct("2021-06-10 14:45"))%>%
+  filter(DateTime != as.POSIXct("2022-11-19 10:45"))
 
 ##check data
 plot_ly(DO_03, x = ~DateTime, y = ~DO_mgL, type = 'scatter', mode = 'markers') 
 
-#clean 
-DO_03 <- DO_03%>%filter(DO_mgL > -100)
 ```
 
 
@@ -613,6 +629,21 @@ for (site in site_names){
 
 LUXabajo_03_Lux_data$Station <- "Stn03"
 LUXarriba_03_Lux_data$Station <- "Stn03"
+
+```
+
+
+#now we merge everything together!!
+
+```{r merge dataframe, echo=FALSE}
+Stn03_df <- full_join(WL_03, DO_03, by=c("DateTime","Station"))
+Stn03_df <- full_join(Stn03_df, LUXabajo_03_Lux_data, by=c("DateTime","Station"))
+Stn03_df <- full_join(Stn03_df, LUXarriba_03_Lux_data, by=c("DateTime","Station"))
+
+```
+
+```{r write out data, echo=FALSE}
+write.csv(Stn03_df,here::here("MergedFiles/Stn03_df_2023-12-19.csv"))
 
 ```
 

@@ -996,7 +996,7 @@ Stn01 <- Stn01[ order(Stn01$DateTime , decreasing = TRUE ),]
 #read out data 
 ```{r read out data, echo=FALSE}
 
-#write.csv(Stn01, here::here("All_Station_Data/Stn01_2023-03-29.csv"),row.names = FALSE)
+#write.csv(Stn01, here::here("MergedFiles/Stn01_2023-03-29.csv"),row.names = FALSE)
 
 ```
 

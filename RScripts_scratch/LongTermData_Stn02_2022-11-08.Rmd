@@ -758,6 +758,6 @@ Stn02_df <- full_join(Stn02_df, Lux_02, by=c("DateTime","Station"))
 ```
 
 ```{r write out data, echo=FALSE}
-write.csv(Stn02_df,here::here("LongTermData/Stn02_df_2022-10-16.csv"))
+#write.csv(Stn02_df,here::here("LongTermData/MergedFiles/Stn02_df_2022-10-16.csv"))
 
 ```

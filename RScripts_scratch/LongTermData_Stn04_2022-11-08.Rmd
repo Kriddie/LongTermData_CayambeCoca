@@ -31,7 +31,7 @@ library(sjmisc)
 ```{r Hobo WL}
 #First the Hobos
 
-setwd(here::here("WaterLevel"))
+setwd(here::here("WL"))
 all_files=list.files(pattern=".csv") #pulls out the csv files from CO2 folder
 sites_rp = sub('_[^_]+$', '', all_files)
 site_names=unique(sites_rp) #creates list of site names for following loop
@@ -136,10 +136,35 @@ plot_ly(WL_04, x = ~DateTime, y = ~WLPres_kpa, type = 'scatter', mode = 'markers
 ```{r clean, echo=FALSE}
 
 
-WL_04 <- WL_04%>%filter(WLPres_kpa > 63)
-WL_04 <- WL_04%>%filter(DateTime < as.POSIXct("2022-07-27 12:30:00",tz="UTC")|DateTime > as.POSIXct("2022-07-28 11:30:00",tz="UTC"))
+#WL_04 <- WL_04%>%filter(WLPres_kpa > 63)
+WL_04 <- WL_04%>%
+  filter(DateTime != as.POSIXct("2021-06-18 13:45:00",tz="UTC"))%>%
+  filter(DateTime != as.POSIXct("2021-07-28 12:00:00",tz="UTC"))%>%
+  filter(DateTime != as.POSIXct("2022-03-16 11:15:00",tz="UTC"))%>%
+    filter(DateTime != as.POSIXct("2022-10-12 11:00:00",tz="UTC"))%>%
+  filter(DateTime <= as.POSIXct("2023-04-01 11:00:00",tz="UTC"))%>%
+  filter(DateTime <= as.POSIXct("2022-06-29 12:30:00",tz="UTC")|DateTime >= as.POSIXct("2022-06-29 14:45:00",tz="UTC"))%>%
+  filter(DateTime <= as.POSIXct("2022-07-12 12:15:00",tz="UTC")|DateTime >= as.POSIXct("2022-07-12 12:30:00",tz="UTC"))%>%
+  filter(DateTime < as.POSIXct("2022-07-27 12:30:00",tz="UTC")|DateTime > as.POSIXct("2022-07-28 11:30:00",tz="UTC"))
 
-#WL_04 shifted on July 18th - but honestly, maybe not?? because w did not download on 
+#shift oct 20 2021
+WL_04[WL_04$DateTime < as.POSIXct("2021-10-20 13:00",tz="UTC"),]$WLPres_kpa <- WL_04[WL_04$DateTime < as.POSIXct("2021-10-20 13:00",tz="UTC"),]$WLPres_kpa - (64.16333 - 63.871)
+
+#shift Dec 29 2021
+WL_04[WL_04$DateTime < as.POSIXct("2021-12-29 13:15",tz="UTC"),]$WLPres_kpa <- WL_04[WL_04$DateTime < as.POSIXct("2021-12-29 13:15",tz="UTC"),]$WLPres_kpa - (63.834 - 63.719)
+
+#shift 0ct 12 2022
+WL_04[WL_04$DateTime < as.POSIXct("2022-10-12 10:45",tz="UTC"),]$WLPres_kpa <- WL_04[WL_04$DateTime < as.POSIXct("2022-10-12 10:45",tz="UTC"),]$WLPres_kpa - (63.763 - 63.59)
+
+#shift Dec 01 2022 (0.1184201, .1138109)
+WL_04[WL_04$DateTime < as.POSIXct("2022-12-01 13:15",tz="UTC"),]$WLPres_kpa <- WL_04[WL_04$DateTime < as.POSIXct("2022-12-01 13:15",tz="UTC"),]$WLPres_kpa - (63.437 - 63.378)
+
+# Feb 18 2023, some wierd data around time of download. maybe there is also a shift, but not possbile to tell (check after baro pressure is subtracted out)
+WL_04[WL_04$DateTime > as.POSIXct("2023-02-18 10:45",tz="UTC") & WL_04$DateTime < as.POSIXct("2023-02-18 17:45",tz="UTC"),]$WLPres_kpa <- NA
+
+
+#WL_04 shifted on July 18th because of a storm, so I want to split up my rating curve with 2021 data and 2022 data for before and after the storm
+
 
 ```
 
@@ -261,26 +286,45 @@ ggplot(data = WL_04 %>% filter(DateTime > "2021-06-10"),
 #enter date of collection
 date <- "2022-07-27"
 #enter start and end time that wetland was sampled
-time <- "12:15:00"
+time <- "11:45:00"
 
 
 WL_m <- WL_04%>%filter(DateTime == as.POSIXct(paste(date, time), format="%Y-%m-%d %H:%M:%S", tz = "UTC"))
 
-print(WL_m)
+print(WL_m$WL_m)
 
 ```
 
 #dischage rating curve
-see excel file for station 01
-field season 2022 looks compatible with field season 2021
+see excel file for station 04_update2023-12-19
 
-y = 2.3908x2 - 0.4234x + 0.0212
-R² = 0.9605
+#WL_04 shifted on July 18th because of a storm, so I want to split up my rating curve with 2021 data and 2022 data for before and after the storm
+
+Before 7/18/21
+y = 0.8086* x2 + 0.3622* x - 0.0042
+R² = 0.986
+
+
+After 7/18/21
+y = 3.3124* x2 - 0.4161* x + 0.0091
+R² = 0.9879
 
 
 ```{r discharge, echo=FALSE}
 
-WL_04$Q_m3s <- 2.3908*(WL_04$WL_m)^2 - 0.4234*WL_04$WL_m + 0.0212
+WL_04$Q_m3s <- NA
+
+WL_04[WL_04$DateTime < as.POSIXct("2021-07-18 02:45",tz="UTC"),]$Q_m3s <- 0.8086*(WL_04[WL_04$DateTime < as.POSIXct("2021-07-18 02:45",tz="UTC"),]$WL_m)^2 + 0.3622*(WL_04[WL_04$DateTime < as.POSIXct("2021-07-18 02:45",tz="UTC"),]$WL_m) - .0042
+
+WL_04[WL_04$DateTime > as.POSIXct("2021-07-18 06:00",tz="UTC"),]$Q_m3s <- 3.3124*(WL_04[WL_04$DateTime > as.POSIXct("2021-07-18 06:00",tz="UTC"),]$WL_m)^2 - 0.4161*(WL_04[WL_04$DateTime > as.POSIXct("2021-07-18 06:00",tz="UTC"),]$WL_m) + 0.0091
+
+#also, delete the data between the change in rating curves
+WL_04 <- WL_04%>%drop_na(Q_m3s)
+#may need to revisit this, but perhapes it is fair to say that at certain periods the flow is basically 0. I'm going to make anything less than 0 Q, 0)
+
+WL_04[WL_04$Q_m3s < 0,]$Q_m3s <- 0
+
+#write.csv(WL_04, here::here("MergedFiles/WL_04_2023-12-19"))
 
 ```
 
@@ -407,7 +451,6 @@ CO2_04$DateTime <- round_date(CO2_04$DateTime,unit="15 minutes")
 CO2_04 <- CO2_04 %>% 
   group_by(DateTime) %>% 
   summarise(ppm = mean(ppm))
-CO2_04$Station <- "CO2_04"
 
 ```
 
@@ -427,31 +470,30 @@ ggplot(data = CO2_04, aes(DateTime, ppm)) +
 ##Create Station Dataframes
 we two different models of vaisala
 
-
-```{r stations df, echo=FALSE}
-
-Stn04 <- full_join(WL_04,CO2_04, by=c("DateTime","Station"))
-
-#convert baro to hpa
-#1 kPa = 10 hPa
-#1 kPa = 0.101972 m
-Stn04$Total_hPa <- Stn04$Total_kpa * 10
-
-```
-
 #correction vaisala data
 make adjustments to ppm using water level data
 
 ```{r corect viaslal, echo=FALSE}
+Stn04_df <- full_join(WL_04,CO2_04, by=c("DateTime","Station"))
+
+#convert baro to hpa
+#1 kPa = 10 hPa
+#1 kPa = 0.101972 m
+Stn04_df$WLPres_hPa <- Stn04_df$WLPres_kpa * 10
+
+#correction vaisala data: make adjustments to ppm using water level data
+
 #new
 
 #The new viasalas are set to 700hPa and have an internal temperature, so do not ned to be corrected for temp
 #the units for new vasialas are half of what they should be! 
 
+#In 2021
 #Station 2, 3 and Well 1 and 2 are new V
 
-#df_new$adjusted_ppm <- df_new$ppm * (1 + (700 - df_new$Total_hPa) * 0.0015) * (1 - (6.7 - df_new$WLTemp_c) * 0.003)
-Stn04$adjusted_ppm <- (Stn04$ppm * 2 )* (1 + (700 - Stn04$Total_hPa) * 0.0015) 
+Stn04_df$adjusted_ppm <- Stn04_df$ppm * (1 + (700 - Stn04_df$WLPres_hPa) * 0.0015) * (1 - (6.7 - Stn04_df$WLTemp_c) * 0.003)
+#Stn02$adjusted_ppm <- (Stn02$ppm * 2 )* (1 + (700 - Stn02$WLPres_hPa) * 0.0015) 
+
 
 ```
 
@@ -630,6 +672,13 @@ LUXabajo_04_Lux_data$Station <- "Stn04"
 LUXarriba_04_Lux_data$Lux <- as.numeric(LUXarriba_04_Lux_data$Lux)
 LUXarriba_04_Lux_data$Station  <- "Stn04"
 
+
+#bind lux data
+colnames(LUXabajo_04_Lux_data) <- c("DateTime","LUXabajoTemp_c","LUXabajo","Station")
+colnames(LUXarriba_04_Lux_data) <- c("DateTime","LUXarribaTemp_c","LUXarriba","Station")
+
+Lux_04 <- full_join(LUXarriba_04_Lux_data, LUXabajo_04_Lux_data, by=c("DateTime","Station"))
+
 ```
 
 #plot lux
@@ -643,6 +692,18 @@ plot_ly(LUXabajo_04_Lux_data, x = ~DateTime, y = ~Lux, type = 'scatter', mode = 
 
 plot_ly(LUXarriba_04_Lux_data, x = ~DateTime, y = ~Lux, type = 'scatter', mode = 'lines') 
 
-#clean 
-#DO_06 <- DO_06%>%filter(DO_mgL > -100)
+```
+
+
+#now we merge everything together!!
+
+```{r merge dataframe, echo=FALSE}
+Stn04_df <- full_join(Stn04_df, DO_04, by=c("DateTime","Station"))
+Stn04_df <- full_join(Stn04_df, Lux_04, by=c("DateTime","Station"))
+
+```
+
+```{r write out data, echo=FALSE}
+#write.csv(Stn04_df,here::here("MergedFiles/Stn04_df_2023-12-20.csv"))
+
 ```
