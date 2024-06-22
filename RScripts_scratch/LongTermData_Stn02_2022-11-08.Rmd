@@ -152,6 +152,9 @@ plot_ly(WL_02, x = ~DateTime, y = ~WLPres_kpa, type = 'scatter', mode = 'markers
 
 #clean 2019 data
 WL_02 <- WL_02%>%
+  filter(DateTime != as.POSIXct("2019-08-02 14:30",tz="UTC"))%>%
+  filter(DateTime != as.POSIXct("2019-08-09 10:45",tz="UTC"))%>%
+  filter(DateTime != as.POSIXct("2019-08-09 10:30",tz="UTC"))%>%
   filter(DateTime != as.POSIXct("2019-07-16 13:45",tz="UTC"))%>%
   filter(DateTime != as.POSIXct("2019-07-18 13:45",tz="UTC"))%>%
   filter(DateTime != as.POSIXct("2019-07-23 12:45",tz="UTC"))%>%
@@ -285,7 +288,9 @@ Baro <- Baro%>%filter(DateTime < as.POSIXct("2021-07-27 15:00:00", tz = "UTC")| 
 #correct for baro 
 #Baro <- Baro%>%filter(DateTime > as.POSIXct("2021-06-01 00:00:00", tz = "UTC"))
 
-Stn02_df <- left_join(Baro%>%filter(DateTime > as.POSIXct("2021-06-01 00:00:00", tz = "UTC")),WL_02,by="DateTime")
+Stn02_df <- left_join(Baro#%>%filter(DateTime > as.POSIXct("2019-06-01 00:00:00", tz = "UTC"))
+                      ,
+                      WL_02,by="DateTime")
 
 Stn02_df$Corrected_kpa <- Stn02_df$WLPres_kpa - Stn02_df$AirPres_kpa
 
@@ -307,7 +312,8 @@ Stn02_df$Corrected_kpa <- NULL
 ##Now we can graph 
     ## will need to change the right limit accordingly
 
-ggplot(data = Stn02_df %>% filter(DateTime > "2021-06-10"), 
+ggplot(data = Stn02_df# %>% filter(DateTime > "2021-06-10")
+       , 
        aes(DateTime, WL_m)) +
   geom_point(color = "steelblue") +
   labs(title = "Station 02 Water level",
@@ -326,7 +332,7 @@ date <- "2022-06-02"
 #enter start and end time that wetland was sampled
 time <- "12:30:00"
 
-WL_m <- Stn02%>%filter(DateTime == as.POSIXct(paste(date, time), format="%Y-%m-%d %H:%M:%S", tz = "UTC"))
+WL_m <- Stn02_df%>%filter(DateTime == as.POSIXct(paste(date, time), format="%Y-%m-%d %H:%M:%S", tz = "UTC"))
 
 print(WL_m$WL_m)
 
@@ -345,7 +351,7 @@ R² = 0.9817
 
 ```{r discharge, echo=FALSE}
 
-Stn02$Q_m3s <- 1.5733*(Stn02$WL_m)^2 - 0.1713*Stn02$WL_m + 0.0079
+Stn02_df$Q_m3s <- 1.5733*(Stn02_df$WL_m)^2 - 0.1713*Stn02_df$WL_m + 0.0079
 
 ```
 
@@ -355,13 +361,13 @@ Stn02$Q_m3s <- 1.5733*(Stn02$WL_m)^2 - 0.1713*Stn02$WL_m + 0.0079
 ##Now we can graph 
     ## will need to change the right limit accordingly
 
-ggplot(data = Stn02 %>% filter(DateTime > "2021-06-10"), 
+ggplot(data = Stn02_df %>% filter(DateTime > "2021-06-10"), 
        aes(DateTime, Q_m3s)) +
   geom_point(color = "steelblue") +
   labs(title = "Station 02 Discharge",
     y = "Q [m3 s-1]", x = "") 
 
-ggplot(data = Stn02 %>% filter(DateTime > "2021-06-10"), 
+ggplot(data = Stn02_df %>% filter(DateTime > "2021-06-10"), 
        aes(DateTime, WL_m)) +
   geom_point(color = "steelblue") +
   labs(title = "Station 02 WATER LEVEL",
