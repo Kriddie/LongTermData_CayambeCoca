@@ -32,9 +32,14 @@ long term data for station 1
 
 #water level
 
-```{r Solinst, echo=FALSE}
+```{r read in data, echo=FALSE}
 
-WL_01 <- read.csv(here::here("merged_data_raw/WL_01.csv"))
+WL_01 <- read.csv(here::here("merged_data_raw/WL_01_merged_raw.csv"))
+WL_01$DateTime <- as.POSIXct(WL_01$DateTime, format="%Y-%m-%d %H:%M:%S",tz="UTC")
+
+Baro <- read.csv(here::here("data_cleaned/Baro_data_all.csv"))
+Baro$DateTime <- as.POSIXct(Baro$DateTime, format="%Y-%m-%d %H:%M:%S",tz="UTC")
+Baro$X <- NULL
 
 ```
 ##read in wl 02 and wl 03
@@ -233,13 +238,6 @@ WL_01$Station <- "Stn01"
 ```
 
 
-## barometric data
-now read in the barometric data
-
-```{r read in baro, echo=FALSE}
-Baro <- read.csv(here::here("data_cleaned/Baro_data_all.csv"))
-```
-
 ### correct for barometric pressure
 ```{r baro correct, echo=FALSE}
 
@@ -400,6 +398,18 @@ ggplot(data = WL_01# %>% filter(DateTime > "2021-06-10")
 there may be some subtle dam build ups in 2019, where the base flow is rising and then a big peak comes through and it returns to base level flow. I'm now sure how do deal with this besides deleting. for now, here are some notes on suspicious time periods
 
 oct 6 2019, to oct 23 2019
+
+# increase baseflow?
+It seems like base flow increases starting in august 27 2022, or maybe nov 2022. Now, I was actually around during that time, and i don't remeber seeing the water backed up. But it is wierd. so I think we will keep this data for now, but remeber for later when we start thinking about metabolism
+
+```{r write out wl, echo=FALSE}
+
+write.csv(WL_01, here::here("data_cleaned/WL_01_cleaned.csv"),row.names = FALSE)
+
+
+```
+
+
 
 #CO2 time
 

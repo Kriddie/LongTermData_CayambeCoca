@@ -35,19 +35,17 @@ Baro$X <- NULL
 ## plot 
 plot the water level so that each station data can be cleaned
 xs
+
 ```{r plot, echo=FALSE}
-
 ##clean data
-
-plot_ly(WL_05, x = ~DateTime, y = ~WLPres_kpa, type = 'scatter', mode = 'markers') 
+p1 <- plot_ly(WL_05, x = ~DateTime, y = ~WLPres_kpa, type = 'scatter', mode = 'markers') 
 
 ```
 
 
-
+#clean
 
 ```{r clean, echo=FALSE}
-
 
 WL_05 <- WL_05%>%
   filter(DateTime != as.POSIXct("2021-07-28 14:00:00", tz = "UTC"))%>%
@@ -56,84 +54,11 @@ WL_05 <- WL_05%>%
 
 ```
 
-##Unresolved issues
-
-
-```{r plot, echo=FALSE}
-
-ggplot(WL_05, aes(x=DateTime, y=WLPres_kpa)) + geom_point()
-```
-
-## barometric data
-now read in the barometric data
-
-```{r baro loop, echo=FALSE}
-
-###merge data with baro data###
-setwd(here::here("Baro"))
-all_files=list.files(pattern=".csv") #pulls out the csv files from WL folder in HOBOware folder
-sites_rp=gsub("_.*","",all_files) #selects the correct pattern so as to seelct only desired files
-site_names=unique(sites_rp) #creates list of site names for following loop
-
-#rm old files, if they exsist
-rm(BaroData)
-rm(Temp_BaroData)
-
-for (site in site_names){
-  
-  list1=list.files(pattern=site) #finds all files for the site
-  sitelist_csv=grep(".csv",list1) #creates list of all files for site
-  file_list=list1[sitelist_csv]
-  
-  #reads in files in list and appends
-  for (file in file_list){
-    if (!exists("BaroData")){
-      BaroData <- read.csv(file, skip=10, header = TRUE, sep = ",",
-                           quote = "\"",dec = ".", fill = TRUE, comment.char = "")
-    }
-    if (exists("BaroData")){
-      Temp_BaroData <- read.csv(file, skip=10, header = TRUE, sep = ",",
-                                quote = "\"",dec = ".", fill = TRUE, comment.char = "")  
-      BaroData <- rbind(BaroData, Temp_BaroData)
-      rm(Temp_BaroData)
-    }
-    
-  }
-  colnames(BaroData)=c("Date","Time","ms","AirPres_kpa","AirTemp_c")
-  BaroData=unique(BaroData)
-  BaroData$DateTime <- paste(BaroData$Date, BaroData$Time)
-  BaroData$DateTime <- as.POSIXct(BaroData$DateTime, format="%m/%d/%Y %I:%M:%S %p", tz="UTC")
-  BaroData$DateTime <- round_date(BaroData$DateTime, "15 mins")
-  BaroData$ms <- NULL
-  BaroData$Date <- NULL
-  BaroData$Time <- NULL
-  BaroData <- BaroData[,c(3,1,2)]
-  BaroData=unique(BaroData)
-  assign((paste(site,sep="_")),BaroData) #creates object with new appended data
-  rm(BaroData) #removes WLdata so that multiple sites aren't appended together
-}
-```
-
-### clean baro
-```{r clean baro, echo=FALSE}
-
-##clean BaroData
-#plot_ly(Baro%>%filter(DateTime > as.POSIXct("2021-06-11 00:00:00", tz = "UTC")), x = ~DateTime, y = ~AirPres_kpa, type = 'scatter', mode = 'markers') 
-
-Baro <- Baro%>%filter(DateTime > as.POSIXct("2021-06-01 00:00:00", tz = "UTC"))
-
-Baro <- Baro%>%filter(DateTime < as.POSIXct("2021-07-27 15:00:00", tz = "UTC")|
-                          DateTime > as.POSIXct("2021-07-28 13:30:00", tz = "UTC"))
-
-ggplot(Baro,aes(x=DateTime,y=AirPres_kpa))+ geom_point()
-
-```
 
 ### correct for barometric pressure
 ```{r baro correct, echo=FALSE}
 
 #correct for baro 
-
 WL_05 <- left_join(Baro,WL_05,by="DateTime")
 
 WL_05$Corrected_kpa <- WL_05$WLPres_kpa - WL_05$AirPres_kpa
@@ -148,20 +73,14 @@ WL_05$WL_m <- WL_05$Corrected_kpa * 0.101972
 WL_05$Corrected_kpa <- NULL
 
 ```
-#plot data
-```{r plot final, echo=FALSE}
 
-##Now we can graph 
-    ## will need to change the right limit accordingly
-
-ggplot(data = WL_05 %>% filter(DateTime > "2021-06-10"), 
-       aes(DateTime, WL_m)) +
-  geom_point(color = "steelblue") +
-  labs(title = "Station 05 Water level",
-    y = "water level [m]", x = "") 
+#plot 2
+plot with wl
+```{r plot, echo=FALSE}
+##clean data
+p2 <- plot_ly(WL_05, x = ~DateTime, y = ~WL_m, type = 'scatter', mode = 'markers') 
 
 ```
-
 
 
 #Time for discharge!
@@ -170,9 +89,9 @@ ggplot(data = WL_05 %>% filter(DateTime > "2021-06-10"),
 ```{r Find WL data for rating curve, echo=FALSE}
 
 #enter date of collection
-date <- "2021-06-11"
+date <- "2021-07-19"
 #enter start and end time that wetland was sampled
-time <- "13:00:00"
+time <- "10:15:00"
 
 
 WL_m <- WL_05%>%filter(DateTime == as.POSIXct(paste(date, time), format="%Y-%m-%d %H:%M:%S", tz = "UTC"))
@@ -185,42 +104,47 @@ print(WL_m$WL_m)
 see excel file for station 05
 field season 2022 looks compatible with field season 2021
 
+high
 y = 0.5715x2 + 0.5144x - 0.337
 R² = 0.9577
 
+low
+y = 0.3109*x^2.2675
+R² = 0.5347
+
+intercept  = .5019
+
+#oh dang discharge is 0 why?
 
 ```{r discharge, echo=FALSE}
 
-WL_05$Q_m3s <- 0.5715*(WL_05$WL_m)^2 + 0.5144*WL_05$WL_m - 0.337
+WL_05_sub1 <- WL_05%>%filter(WL_m > .5019)
+WL_05_sub2 <- WL_05%>%filter(WL_m < .5019)
 
-#write.csv(WL_05, here::here("MergedFiles/WL_05_2023-12-19"))
+WL_05_sub1$Q_m3s <- 0.5715*(WL_05_sub1$WL_m)^2 + 0.5144*WL_05_sub1$WL_m - 0.337
+WL_05_sub2$Q_m3s <- 0.3109*(WL_05_sub2$WL_m)^2.2675
 
+WL_05 <- rbind(WL_05_sub1,WL_05_sub2)
+
+```
+
+#plot 3
+plot with Q
+
+```{r plot, echo=FALSE}
+##clean data
+p3 <- plot_ly(WL_05, x = ~DateTime, y = ~Q_m3s, type = 'scatter', mode = 'markers') 
 
 ```
 
-#plot discharge
-```{r plot final, echo=FALSE}
+```{r write out wl, echo=FALSE}
 
-##Now we can graph 
-    ## will need to change the right limit accordingly
-
-ggplot(data = WL_05 %>% filter(DateTime > "2021-06-10"), 
-       aes(DateTime, Q_m3s)) +
-  geom_point(color = "steelblue") +
-  labs(title = "Station 04 Discharge",
-    y = "Q [m3 s-1]", x = "") 
-
-ggplot(data = WL_05 %>% filter(DateTime > "2021-06-10"), 
-       aes(DateTime, WL_m)) +
-  geom_point(color = "steelblue") +
-  labs(title = "Station 04 WATER LEVEL",
-    y = "water level [m]", x = "") 
+write.csv(WL_05, here::here("data_cleaned/WL_05_cleaned.csv"),row.names = FALSE)
 
 ```
+
 
 #dissolved o2
-
-
 ```{r loop}
 
 setwd(here::here("DO"))
