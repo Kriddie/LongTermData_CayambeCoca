@@ -1,0 +1,663 @@
+---
+title: "Merge water level data"
+author: "Kriddie"
+date: "2024-06-22"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+library(tidyverse)
+library(plotly)
+library(here)
+library(dplyr)
+library(reshape2)
+library(purrr)
+library(sjmisc)
+library(ggpubr)
+library(gridExtra)
+```
+
+## about
+this r markdown preserved the script to loop together all water level files and write them out. but not to clean them
+
+## barometric data
+now read in the barometric data
+
+```{r baro loop, echo=FALSE}
+
+###merge data with baro data###
+setwd(here::here("Baro"))
+all_files=list.files(pattern=".csv") #pulls out the csv files from WL folder in HOBOware folder
+sites_rp=gsub("_.*","",all_files) #selects the correct pattern so as to seelct only desired files
+site_names=unique(sites_rp) #creates list of site names for following loop
+
+#rm old files, if they exsist
+rm(BaroData)
+rm(Temp_BaroData)
+
+for (site in site_names){
+  
+  list1=list.files(pattern=site) #finds all files for the site
+  sitelist_csv=grep(".csv",list1) #creates list of all files for site
+  file_list=list1[sitelist_csv]
+  
+  #reads in files in list and appends
+  for (file in file_list){
+    if (!exists("BaroData")){
+      BaroData <- read.csv(file, skip=10, header = TRUE, sep = ",",
+                           quote = "\"",dec = ".", fill = TRUE, comment.char = "")
+    }
+    if (exists("BaroData")){
+      Temp_BaroData <- read.csv(file, skip=10, header = TRUE, sep = ",",
+                                quote = "\"",dec = ".", fill = TRUE, comment.char = "")  
+      BaroData <- rbind(BaroData, Temp_BaroData)
+      rm(Temp_BaroData)
+    }
+    
+  }
+  colnames(BaroData)=c("Date","Time","ms","AirPres_kpa","AirTemp_c")
+  BaroData=unique(BaroData)
+  BaroData$DateTime <- paste(BaroData$Date, BaroData$Time)
+  BaroData$DateTime <- as.POSIXct(BaroData$DateTime, format="%m/%d/%Y %I:%M:%S %p", tz="UTC")
+  BaroData$DateTime <- round_date(BaroData$DateTime, "15 mins")
+  BaroData$ms <- NULL
+  BaroData$Date <- NULL
+  BaroData$Time <- NULL
+  BaroData <- BaroData[,c(3,1,2)]
+  BaroData=unique(BaroData)
+  assign((paste(site,sep="_")),BaroData) #creates object with new appended data
+  rm(BaroData) #removes WLdata so that multiple sites aren't appended together
+}
+
+#write.csv(Baro,here::here("merged_data_raw/Baro_merged_raw.csv"),row.names = FALSE)
+```
+
+#station 1
+
+```{r Solinst, echo=FALSE}
+
+setwd(here::here("WL"))
+all_files=list.files(pattern=".csv") #pulls out the csv files from CO2 folder
+sites_rp = sub('_[^_]+$', '', all_files)
+site_names=unique(sites_rp) #creates list of site names for following loop
+
+site_names = "WL_01"
+
+#rm old files, if they exist
+rm(WLData)
+rm(Temp_WLData)
+
+for (site in site_names){
+  
+  list1=list.files(pattern=site) #finds all files for the site
+  sitelist_csv=grep(".csv",list1) #creates list of all files for site
+  file_list=list1[sitelist_csv]
+  
+  #reads in files in list and appends
+  for (file in file_list){
+    if (!exists("WLData")){
+      Trash_WLData <- read.csv(file, skip=0, header = TRUE, sep = ",",
+                         quote = "\"",dec = ".", fill = TRUE, comment.char = "")
+      
+      if(str_contains(Trash_WLData[6,1],"m")){
+        print("m")
+        WLData <- read.csv(file, skip=11, header = TRUE, sep = ",",
+                    quote = "\"",dec = ".", fill = TRUE, comment.char = "")
+        colnames(WLData)=c("Date","Time","ms","WLPres_kpa","WLTemp_c")
+        WLData$WLPres_kpa <- as.numeric(as.character(WLData$WLPres_kpa), digits=6)
+        WLData$WLTemp_c <- as.numeric(as.character(WLData$WLTemp_c), digits=5)
+        WLData$WLPres_kpa <- WLData$WLPres_kpa*9.8064
+#        WLData$WLTemp_c <- (WLData$WLTemp_c - 32)/1.8000
+        } else { 
+        print("kPa")
+        WLData <- read.csv(file, skip=11, header = TRUE, sep = ",",
+            quote = "\"",dec = ".", fill = TRUE, comment.char = "")
+        colnames(WLData)=c("Date","Time","ms","WLPres_kpa","WLTemp_c")
+        WLData$WLPres_kpa <- as.numeric(as.character(WLData$WLPres_kpa), digits=6)
+        WLData$WLTemp_c <- as.numeric(as.character(WLData$WLTemp_c), digits=5)
+      }
+    }
+    if (exists("WLData")){
+      Trash_WLData <- read.csv(file, skip=0, header = FALSE, sep = ",",
+                              quote = "\"",dec = ".", fill = TRUE, comment.char = "")  
+      if(str_contains(Trash_WLData[6,1],"m")){
+        print("m")
+        Temp_WLData <- read.csv(file, skip=11, header = TRUE, sep = ",",
+                           quote = "\"",dec = ".", fill = TRUE, comment.char = "")
+        Temp_WLData <- Temp_WLData[c(-1),]
+        colnames(Temp_WLData)=c("Date","Time","ms","WLPres_kpa","WLTemp_c")
+        Temp_WLData$WLPres_kpa <- as.numeric(as.character(Temp_WLData$WLPres_kpa), digits=6)
+        Temp_WLData$WLTemp_c <- as.numeric(as.character(Temp_WLData$WLTemp_c), digits=5)
+        Temp_WLData$WLPres_kpa <- Temp_WLData$WLPres_kpa*9.8064
+#        Temp_WLData$WLTemp_c <- (Temp_WLData$WLTemp_c - 32)/1.8000
+        } else { 
+        print("kpa")
+        Temp_WLData <- read.csv(file, skip=11, header = TRUE, sep = ",",
+                                quote = "\"",dec = ".", fill = TRUE, comment.char = "")
+        Temp_WLData <- Temp_WLData[c(-1),]
+        colnames(Temp_WLData)=c("Date","Time","ms","WLPres_kpa","WLTemp_c")
+        Temp_WLData$WLPres_kpa <- as.numeric(as.character(Temp_WLData$WLPres_kpa), digits=6)
+        Temp_WLData$WLTemp_c <- as.numeric(as.character(Temp_WLData$WLTemp_c), digits=5)
+      }
+      
+      WLData <- rbind(WLData, Temp_WLData)
+      rm(Temp_WLData)
+    }
+    
+  }
+  WLData=unique(WLData)
+  WLData$DateTime <- paste(WLData$Date, WLData$Time)
+  WLData$DateTime <- as.POSIXct(WLData$DateTime, format="%m/%d/%Y %I:%M:%S %p", tz="UTC")
+  WLData$DateTime <- round_date(WLData$DateTime, "5 mins")
+  WLData <- WLData[,c("DateTime","WLPres_kpa","WLTemp_c")]
+  WLData$Station <- "Stn01"
+  assign((paste(site,sep="_")),WLData) #creates object with new appended data
+  rm(WLData) #removes WLdata so that multiple sites aren't appended together
+}
+
+rm(Trash_WLData)
+
+#write.csv(WL_01,here::here("merged_data_raw/WL_01_merged_raw.csv"),row.names = FALSE)
+```
+
+#station 2 wl
+
+```{r Hobo WL}
+#First the Hobos
+
+setwd(here::here("WL"))
+all_files=list.files(pattern=".csv") #pulls out the csv files from CO2 folder
+sites_rp = sub('_[^_]+$', '', all_files)
+site_names=unique(sites_rp) #creates list of site names for following loop
+
+site_names = "WL_02"
+#site_names = site_names[c(2,3,5,6)]
+
+#rm old files, if they exist
+rm(WLData)
+rm(Temp_WLData)
+
+for (site in site_names){
+  
+  list1=list.files(pattern=site) #finds all files for the site
+  sitelist_csv=grep(".csv",list1) #creates list of all files for site
+  file_list=list1[sitelist_csv]
+  
+  #reads in files in list and appends
+  for (file in file_list){
+    if (!exists("WLData")){
+      WLData <- read.csv(file, skip=1, header = FALSE, sep = ",",
+                         quote = "\"",dec = ".", fill = TRUE, comment.char = "")
+      
+      if(str_contains(WLData[1,3],"Abs Pres, psi")){
+        WLData <- WLData[-1,]
+        colnames(WLData)=c("row","DateTime","WLPres_kpa","WLTemp_c")
+        WLData <- WLData[2:4]
+        WLData$WLPres_kpa <- as.numeric(as.character(WLData$WLPres_kpa), digits=6)
+        WLData$WLTemp_c <- as.numeric(as.character(WLData$WLTemp_c), digits=5)
+        WLData$WLPres_kpa <- WLData$WLPres_kpa*6.89476
+        WLData$WLTemp_c <- (WLData$WLTemp_c - 32)/1.8000
+
+      } else { 
+        WLData <- WLData[-1,]
+        colnames(WLData)=c("row","DateTime","WLPres_kpa","WLTemp_c")
+        WLData <- WLData[2:4]
+        WLData$WLPres_kpa <- as.numeric(as.character(WLData$WLPres_kpa), digits=6)
+        WLData$WLTemp_c <- as.numeric(as.character(WLData$WLTemp_c), digits=5)
+        }
+      
+#      WLData$DateTime <- as.POSIXct(WLData$DateTime, format="%m/%d/%y %I:%M:%S %p", tz="UTC")
+    WLData$DateTime <- as.POSIXct(WLData$DateTime, tz="UTC",
+           tryFormats = c("%m/%d/%y %I:%M:%S %p",
+                          "%m/%d/%Y %H:%M"))
+    }
+    if (exists("WLData")){
+      Temp_WLData <- read.csv(file, skip=1, header = FALSE, sep = ",",
+                              quote = "\"",dec = ".", fill = TRUE, comment.char = "")  
+#      
+      
+      if(str_contains(Temp_WLData[1,3],"Abs Pres, psi")){
+        Temp_WLData <- Temp_WLData[-1,]
+        colnames(Temp_WLData)=c("row","DateTime","WLPres_kpa","WLTemp_c")
+        Temp_WLData <- Temp_WLData[2:4]
+        Temp_WLData$WLPres_kpa <- as.numeric(as.character(Temp_WLData$WLPres_kpa), digits=6)
+        Temp_WLData$WLTemp_c <- as.numeric(as.character(Temp_WLData$WLTemp_c), digits=5)
+        Temp_WLData$WLPres_kpa <- Temp_WLData$WLPres_kpa*6.89476
+        Temp_WLData$WLTemp_c <- (Temp_WLData$WLTemp_c - 32)/1.8000
+        
+        
+      } else { 
+        Temp_WLData <- Temp_WLData[-1,]
+        colnames(Temp_WLData)=c("row","DateTime","WLPres_kpa","WLTemp_c")
+        Temp_WLData <- Temp_WLData[2:4]
+        Temp_WLData$WLPres_kpa <- as.numeric(as.character(Temp_WLData$WLPres_kpa), digits=6)
+        Temp_WLData$WLTemp_c <- as.numeric(as.character(Temp_WLData$WLTemp_c), digits=5)
+        }
+      
+#      Temp_WLData$DateTime <- as.POSIXct(Temp_WLData$DateTime, format="%m/%d/%y %I:%M:%S %p", tz="UTC")
+          Temp_WLData$DateTime <- as.POSIXct(Temp_WLData$DateTime, tz="UTC",
+           tryFormats = c("%m/%d/%y %I:%M:%S %p",
+                          "%m/%d/%Y %H:%M"))
+      
+      
+      WLData <- rbind(WLData, Temp_WLData)
+      rm(Temp_WLData)
+    }
+    
+  }
+  WLData$DateTime <- round_date(WLData$DateTime, "15 mins")
+  WLData$Station <- "Stn02"
+  WLData=unique(WLData)
+  assign((paste(site,sep="_")),WLData) #creates object with new appended data
+  rm(WLData) #removes WLdata so that multiple sites aren't appended together
+}
+
+WL_02 <- WL_02%>%filter(WLPres_kpa != 62.566)
+
+
+#add 2019 data
+WL_02_2019 <- read.csv(here::here("WL/lvlgr_2020421_2019-08-14.csv"),skip=11)
+WL_02_2019$DateTime <- as.POSIXct(paste(WL_02_2019$Date, WL_02_2019$Time), format="%m/%d/%Y %I:%M:%S %p", tz = "UTC")
+WL_02_2019$WLPres_kpa <- WL_02_2019$LEVEL
+WL_02_2019$WLTemp_c <- WL_02_2019$TEMPERATURE
+WL_02_2019 <- WL_02_2019%>%select(c("DateTime","WLPres_kpa","WLTemp_c"))
+WL_02_2019$Station <- "Stn02"
+
+#bind
+WL_02 <- rbind(WL_02_2019,WL_02)
+
+#write.csv(WL_02,here::here("merged_data_raw/WL_02_merged_raw.csv"),row.names = FALSE)
+```
+
+
+#station 3 water level
+
+```{r Hobo WL}
+#First the Hobos
+
+setwd(here::here("WL"))
+all_files=list.files(pattern=".csv") #pulls out the csv files from CO2 folder
+sites_rp = sub('_[^_]+$', '', all_files)
+site_names=unique(sites_rp) #creates list of site names for following loop
+
+site_names = "WL_03"
+#site_names = site_names[c(2,3,5,6)]
+
+#rm old files, if they exist
+rm(WLData)
+rm(Temp_WLData)
+
+for (site in site_names){
+  
+  list1=list.files(pattern=site) #finds all files for the site
+  sitelist_csv=grep(".csv",list1) #creates list of all files for site
+  file_list=list1[sitelist_csv]
+  
+  #reads in files in list and appends
+  for (file in file_list){
+    if (!exists("WLData")){
+      WLData <- read.csv(file, skip=1, header = FALSE, sep = ",",
+                         quote = "\"",dec = ".", fill = TRUE, comment.char = "")
+      
+      if(str_contains(WLData[1,3],"Abs Pres, psi")){
+        WLData <- WLData[-1,]
+        colnames(WLData)=c("row","DateTime","WLPres_kpa","WLTemp_c")
+        WLData <- WLData[2:4]
+        WLData$WLPres_kpa <- as.numeric(as.character(WLData$WLPres_kpa), digits=6)
+        WLData$WLTemp_c <- as.numeric(as.character(WLData$WLTemp_c), digits=5)
+        WLData$WLPres_kpa <- WLData$WLPres_kpa*6.89476
+        WLData$WLTemp_c <- (WLData$WLTemp_c - 32)/1.8000
+
+      } else { 
+        WLData <- WLData[-1,]
+        colnames(WLData)=c("row","DateTime","WLPres_kpa","WLTemp_c")
+        WLData <- WLData[2:4]
+        WLData$WLPres_kpa <- as.numeric(as.character(WLData$WLPres_kpa), digits=6)
+        WLData$WLTemp_c <- as.numeric(as.character(WLData$WLTemp_c), digits=5)
+        }
+      
+#      WLData$DateTime <- as.POSIXct(WLData$DateTime, format="%m/%d/%y %I:%M:%S %p", tz="UTC")
+    WLData$DateTime <- as.POSIXct(WLData$DateTime, tz="UTC",
+           tryFormats = c("%m/%d/%y %I:%M:%S %p",
+                          "%m/%d/%Y %H:%M"))
+    }
+    if (exists("WLData")){
+      Temp_WLData <- read.csv(file, skip=1, header = FALSE, sep = ",",
+                              quote = "\"",dec = ".", fill = TRUE, comment.char = "")  
+#      
+      
+      if(str_contains(Temp_WLData[1,3],"Abs Pres, psi")){
+        Temp_WLData <- Temp_WLData[-1,]
+        colnames(Temp_WLData)=c("row","DateTime","WLPres_kpa","WLTemp_c")
+        Temp_WLData <- Temp_WLData[2:4]
+        Temp_WLData$WLPres_kpa <- as.numeric(as.character(Temp_WLData$WLPres_kpa), digits=6)
+        Temp_WLData$WLTemp_c <- as.numeric(as.character(Temp_WLData$WLTemp_c), digits=5)
+        Temp_WLData$WLPres_kpa <- Temp_WLData$WLPres_kpa*6.89476
+        Temp_WLData$WLTemp_c <- (Temp_WLData$WLTemp_c - 32)/1.8000
+        
+        
+      } else { 
+        Temp_WLData <- Temp_WLData[-1,]
+        colnames(Temp_WLData)=c("row","DateTime","WLPres_kpa","WLTemp_c")
+        Temp_WLData <- Temp_WLData[2:4]
+        Temp_WLData$WLPres_kpa <- as.numeric(as.character(Temp_WLData$WLPres_kpa), digits=6)
+        Temp_WLData$WLTemp_c <- as.numeric(as.character(Temp_WLData$WLTemp_c), digits=5)
+        }
+      
+#      Temp_WLData$DateTime <- as.POSIXct(Temp_WLData$DateTime, format="%m/%d/%y %I:%M:%S %p", tz="UTC")
+          Temp_WLData$DateTime <- as.POSIXct(Temp_WLData$DateTime, tz="UTC",
+           tryFormats = c("%m/%d/%y %I:%M:%S %p",
+                          "%m/%d/%Y %H:%M"))
+      
+      
+      WLData <- rbind(WLData, Temp_WLData)
+      rm(Temp_WLData)
+    }
+    
+  }
+  WLData$DateTime <- round_date(WLData$DateTime, "15 mins")
+  WLData$Station <- "Stn03"
+  WLData=unique(WLData)
+  assign((paste(site,sep="_")),WLData) #creates object with new appended data
+  rm(WLData) #removes WLdata so that multiple sites aren't appended together
+}
+
+#write.csv(WL_03,here::here("merged_data_raw/WL_03_merged_raw.csv"),row.names = FALSE)
+
+```
+
+
+##station 4 water level 
+
+```{r Hobo WL}
+#First the Hobos
+
+setwd(here::here("WL"))
+all_files=list.files(pattern=".csv") #pulls out the csv files from CO2 folder
+sites_rp = sub('_[^_]+$', '', all_files)
+site_names=unique(sites_rp) #creates list of site names for following loop
+
+site_names = "WL_04"
+#site_names = site_names[c(2,3,5,6)]
+
+#rm old files, if they exist
+rm(WLData)
+rm(Temp_WLData)
+
+for (site in site_names){
+  
+  list1=list.files(pattern=site) #finds all files for the site
+  sitelist_csv=grep(".csv",list1) #creates list of all files for site
+  file_list=list1[sitelist_csv]
+  
+  #reads in files in list and appends
+  for (file in file_list){
+    if (!exists("WLData")){
+      WLData <- read.csv(file, skip=1, header = FALSE, sep = ",",
+                         quote = "\"",dec = ".", fill = TRUE, comment.char = "")
+      
+      if(str_contains(WLData[1,3],"Abs Pres, psi")){
+        WLData <- WLData[-1,]
+        colnames(WLData)=c("row","DateTime","WLPres_kpa","WLTemp_c")
+        WLData <- WLData[2:4]
+        WLData$WLPres_kpa <- as.numeric(as.character(WLData$WLPres_kpa), digits=6)
+        WLData$WLTemp_c <- as.numeric(as.character(WLData$WLTemp_c), digits=5)
+        WLData$WLPres_kpa <- WLData$WLPres_kpa*6.89476
+        WLData$WLTemp_c <- (WLData$WLTemp_c - 32)/1.8000
+
+      } else { 
+        WLData <- WLData[-1,]
+        colnames(WLData)=c("row","DateTime","WLPres_kpa","WLTemp_c")
+        WLData <- WLData[2:4]
+        WLData$WLPres_kpa <- as.numeric(as.character(WLData$WLPres_kpa), digits=6)
+        WLData$WLTemp_c <- as.numeric(as.character(WLData$WLTemp_c), digits=5)
+        }
+      
+#      WLData$DateTime <- as.POSIXct(WLData$DateTime, format="%m/%d/%y %I:%M:%S %p", tz="UTC")
+    WLData$DateTime <- as.POSIXct(WLData$DateTime, tz="UTC",
+           tryFormats = c("%m/%d/%y %I:%M:%S %p",
+                          "%m/%d/%Y %H:%M"))
+    }
+    if (exists("WLData")){
+      Temp_WLData <- read.csv(file, skip=1, header = FALSE, sep = ",",
+                              quote = "\"",dec = ".", fill = TRUE, comment.char = "")  
+#      
+      
+      if(str_contains(Temp_WLData[1,3],"Abs Pres, psi")){
+        Temp_WLData <- Temp_WLData[-1,]
+        colnames(Temp_WLData)=c("row","DateTime","WLPres_kpa","WLTemp_c")
+        Temp_WLData <- Temp_WLData[2:4]
+        Temp_WLData$WLPres_kpa <- as.numeric(as.character(Temp_WLData$WLPres_kpa), digits=6)
+        Temp_WLData$WLTemp_c <- as.numeric(as.character(Temp_WLData$WLTemp_c), digits=5)
+        Temp_WLData$WLPres_kpa <- Temp_WLData$WLPres_kpa*6.89476
+        Temp_WLData$WLTemp_c <- (Temp_WLData$WLTemp_c - 32)/1.8000
+        
+        
+      } else { 
+        Temp_WLData <- Temp_WLData[-1,]
+        colnames(Temp_WLData)=c("row","DateTime","WLPres_kpa","WLTemp_c")
+        Temp_WLData <- Temp_WLData[2:4]
+        Temp_WLData$WLPres_kpa <- as.numeric(as.character(Temp_WLData$WLPres_kpa), digits=6)
+        Temp_WLData$WLTemp_c <- as.numeric(as.character(Temp_WLData$WLTemp_c), digits=5)
+        }
+      
+#      Temp_WLData$DateTime <- as.POSIXct(Temp_WLData$DateTime, format="%m/%d/%y %I:%M:%S %p", tz="UTC")
+          Temp_WLData$DateTime <- as.POSIXct(Temp_WLData$DateTime, tz="UTC",
+           tryFormats = c("%m/%d/%y %I:%M:%S %p",
+                          "%m/%d/%Y %H:%M"))
+      
+      
+      WLData <- rbind(WLData, Temp_WLData)
+      rm(Temp_WLData)
+    }
+    
+  }
+  WLData$DateTime <- round_date(WLData$DateTime, "15 mins")
+  WLData$Station <- "Stn04"
+  WLData=unique(WLData)
+  assign((paste(site,sep="_")),WLData) #creates object with new appended data
+  rm(WLData) #removes WLdata so that multiple sites aren't appended together
+}
+
+write.csv(WL_04,here::here("merged_data_raw/WL_04_merged_raw.csv"),row.names = FALSE)
+
+```
+
+
+
+##station 5
+
+```{r Hobo WL}
+#First the Hobos
+
+setwd(here::here("WL"))
+all_files=list.files(pattern=".csv") #pulls out the csv files from CO2 folder
+sites_rp = sub('_[^_]+$', '', all_files)
+site_names=unique(sites_rp) #creates list of site names for following loop
+
+site_names = "WL_05"
+#site_names = site_names[c(2,3,5,6)]
+
+#rm old files, if they exist
+rm(WLData)
+rm(Temp_WLData)
+
+for (site in site_names){
+  
+  list1=list.files(pattern=site) #finds all files for the site
+  sitelist_csv=grep(".csv",list1) #creates list of all files for site
+  file_list=list1[sitelist_csv]
+  
+  #reads in files in list and appends
+  for (file in file_list){
+    if (!exists("WLData")){
+      WLData <- read.csv(file, skip=1, header = FALSE, sep = ",",
+                         quote = "\"",dec = ".", fill = TRUE, comment.char = "")
+      
+      if(str_contains(WLData[1,3],"Abs Pres, psi")){
+        WLData <- WLData[-1,]
+        colnames(WLData)=c("row","DateTime","WLPres_kpa","WLTemp_c")
+        WLData <- WLData[2:4]
+        WLData$WLPres_kpa <- as.numeric(as.character(WLData$WLPres_kpa), digits=6)
+        WLData$WLTemp_c <- as.numeric(as.character(WLData$WLTemp_c), digits=5)
+        WLData$WLPres_kpa <- WLData$WLPres_kpa*6.89476
+        WLData$WLTemp_c <- (WLData$WLTemp_c - 32)/1.8000
+
+      } else { 
+        WLData <- WLData[-1,]
+        colnames(WLData)=c("row","DateTime","WLPres_kpa","WLTemp_c")
+        WLData <- WLData[2:4]
+        WLData$WLPres_kpa <- as.numeric(as.character(WLData$WLPres_kpa), digits=6)
+        WLData$WLTemp_c <- as.numeric(as.character(WLData$WLTemp_c), digits=5)
+        }
+      
+#      WLData$DateTime <- as.POSIXct(WLData$DateTime, format="%m/%d/%y %I:%M:%S %p", tz="UTC")
+    WLData$DateTime <- as.POSIXct(WLData$DateTime, tz="UTC",
+           tryFormats = c("%m/%d/%y %I:%M:%S %p",
+                          "%m/%d/%Y %H:%M"))
+    }
+    if (exists("WLData")){
+      Temp_WLData <- read.csv(file, skip=1, header = FALSE, sep = ",",
+                              quote = "\"",dec = ".", fill = TRUE, comment.char = "")  
+#      
+      
+      if(str_contains(Temp_WLData[1,3],"Abs Pres, psi")){
+        Temp_WLData <- Temp_WLData[-1,]
+        colnames(Temp_WLData)=c("row","DateTime","WLPres_kpa","WLTemp_c")
+        Temp_WLData <- Temp_WLData[2:4]
+        Temp_WLData$WLPres_kpa <- as.numeric(as.character(Temp_WLData$WLPres_kpa), digits=6)
+        Temp_WLData$WLTemp_c <- as.numeric(as.character(Temp_WLData$WLTemp_c), digits=5)
+        Temp_WLData$WLPres_kpa <- Temp_WLData$WLPres_kpa*6.89476
+        Temp_WLData$WLTemp_c <- (Temp_WLData$WLTemp_c - 32)/1.8000
+        
+        
+      } else { 
+        Temp_WLData <- Temp_WLData[-1,]
+        colnames(Temp_WLData)=c("row","DateTime","WLPres_kpa","WLTemp_c")
+        Temp_WLData <- Temp_WLData[2:4]
+        Temp_WLData$WLPres_kpa <- as.numeric(as.character(Temp_WLData$WLPres_kpa), digits=6)
+        Temp_WLData$WLTemp_c <- as.numeric(as.character(Temp_WLData$WLTemp_c), digits=5)
+        }
+      
+#      Temp_WLData$DateTime <- as.POSIXct(Temp_WLData$DateTime, format="%m/%d/%y %I:%M:%S %p", tz="UTC")
+          Temp_WLData$DateTime <- as.POSIXct(Temp_WLData$DateTime, tz="UTC",
+           tryFormats = c("%m/%d/%y %I:%M:%S %p",
+                          "%m/%d/%Y %H:%M"))
+      
+      
+      WLData <- rbind(WLData, Temp_WLData)
+      rm(Temp_WLData)
+    }
+    
+  }
+  WLData$DateTime <- round_date(WLData$DateTime, "15 mins")
+  WLData$Station <- "Stn05"
+  WLData=unique(WLData)
+  assign((paste(site,sep="_")),WLData) #creates object with new appended data
+  rm(WLData) #removes WLdata so that multiple sites aren't appended together
+}
+
+#write.csv(WL_05,here::here("merged_data_raw/WL_05_merged_raw.csv"),row.names = FALSE)
+
+```
+
+#station 6
+
+```{r Hobo WL}
+#First the Hobos
+
+setwd(here::here("WL"))
+all_files=list.files(pattern=".csv") #pulls out the csv files from CO2 folder
+sites_rp = sub('_[^_]+$', '', all_files)
+site_names=unique(sites_rp) #creates list of site names for following loop
+
+site_names = "WL_06"
+
+#rm old files, if they exist
+rm(WLData)
+rm(Temp_WLData)
+
+for (site in site_names){
+  
+  list1=list.files(pattern=site) #finds all files for the site
+  sitelist_csv=grep(".csv",list1) #creates list of all files for site
+  file_list=list1[sitelist_csv]
+  
+  #reads in files in list and appends
+  for (file in file_list){
+    if (!exists("WLData")){
+      WLData <- read.csv(file, skip=1, header = FALSE, sep = ",",
+                         quote = "\"",dec = ".", fill = TRUE, comment.char = "")
+      
+      if(str_contains(WLData[1,3],"Abs Pres, psi")){
+        WLData <- WLData[-1,]
+        colnames(WLData)=c("row","DateTime","WLPres_kpa","WLTemp_c")
+        WLData <- WLData[2:4]
+        WLData$WLPres_kpa <- as.numeric(as.character(WLData$WLPres_kpa), digits=6)
+        WLData$WLTemp_c <- as.numeric(as.character(WLData$WLTemp_c), digits=5)
+        WLData$WLPres_kpa <- WLData$WLPres_kpa*6.89476
+        WLData$WLTemp_c <- (WLData$WLTemp_c - 32)/1.8000
+
+      } else { 
+        WLData <- WLData[-1,]
+        colnames(WLData)=c("row","DateTime","WLPres_kpa","WLTemp_c")
+        WLData <- WLData[2:4]
+        WLData$WLPres_kpa <- as.numeric(as.character(WLData$WLPres_kpa), digits=6)
+        WLData$WLTemp_c <- as.numeric(as.character(WLData$WLTemp_c), digits=5)
+        }
+      
+#      WLData$DateTime <- as.POSIXct(WLData$DateTime, format="%m/%d/%y %I:%M:%S %p", tz="UTC")
+    WLData$DateTime <- as.POSIXct(WLData$DateTime, tz="UTC",
+           tryFormats = c("%m/%d/%y %I:%M:%S %p",
+                          "%m/%d/%Y %H:%M"))
+    }
+    if (exists("WLData")){
+      Temp_WLData <- read.csv(file, skip=1, header = FALSE, sep = ",",
+                              quote = "\"",dec = ".", fill = TRUE, comment.char = "")  
+#      
+      
+      if(str_contains(Temp_WLData[1,3],"Abs Pres, psi")){
+        Temp_WLData <- Temp_WLData[-1,]
+        colnames(Temp_WLData)=c("row","DateTime","WLPres_kpa","WLTemp_c")
+        Temp_WLData <- Temp_WLData[2:4]
+        Temp_WLData$WLPres_kpa <- as.numeric(as.character(Temp_WLData$WLPres_kpa), digits=6)
+        Temp_WLData$WLTemp_c <- as.numeric(as.character(Temp_WLData$WLTemp_c), digits=5)
+        Temp_WLData$WLPres_kpa <- Temp_WLData$WLPres_kpa*6.89476
+        Temp_WLData$WLTemp_c <- (Temp_WLData$WLTemp_c - 32)/1.8000
+        
+        
+      } else { 
+        Temp_WLData <- Temp_WLData[-1,]
+        colnames(Temp_WLData)=c("row","DateTime","WLPres_kpa","WLTemp_c")
+        Temp_WLData <- Temp_WLData[2:4]
+        Temp_WLData$WLPres_kpa <- as.numeric(as.character(Temp_WLData$WLPres_kpa), digits=6)
+        Temp_WLData$WLTemp_c <- as.numeric(as.character(Temp_WLData$WLTemp_c), digits=5)
+        }
+      
+#      Temp_WLData$DateTime <- as.POSIXct(Temp_WLData$DateTime, format="%m/%d/%y %I:%M:%S %p", tz="UTC")
+          Temp_WLData$DateTime <- as.POSIXct(Temp_WLData$DateTime, tz="UTC",
+           tryFormats = c("%m/%d/%y %I:%M:%S %p",
+                          "%m/%d/%Y %H:%M"))
+      
+      
+      WLData <- rbind(WLData, Temp_WLData)
+      rm(Temp_WLData)
+    }
+    
+  }
+  WLData$DateTime <- round_date(WLData$DateTime, "15 mins")
+  WLData$Station <- "Stn06"
+  WLData=unique(WLData)
+  assign((paste(site,sep="_")),WLData) #creates object with new appended data
+  rm(WLData) #removes WLdata so that multiple sites aren't appended together
+}
+
+#write.csv(WL_06,here::here("merged_data_raw/WL_06_merged_raw.csv"),row.names = FALSE)
+
+```

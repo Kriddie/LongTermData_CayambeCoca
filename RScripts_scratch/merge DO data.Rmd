@@ -1,0 +1,216 @@
+---
+title: "merge do data"
+author: "Kriddie"
+date: "2024-06-23"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+library(tidyverse)
+library(plotly)
+library(here)
+library(dplyr)
+library(reshape2)
+library(purrr)
+library(sjmisc)
+```
+
+## About
+this r markdown is to merge DO data for all stations
+
+
+```{r loop}
+
+setwd(here::here("DO"))
+all_files=list.files(pattern=".csv") #pulls out the csv files from CO2 folder
+sites_rp = sub('_[^_]+$', '', all_files)
+site_names=unique(sites_rp) #creates list of site names for following loop
+
+#site_names = "DO_01"
+#site_names = site_names[c(2,3,5,6)]
+
+#rm old files, if they exist
+rm(DOData)
+rm(Temp_DOData)
+
+for (site in site_names){
+  
+  list1=list.files(pattern=site) #finds all files for the site
+  sitelist_csv=grep(".csv",list1) #creates list of all files for site
+  file_list=list1[sitelist_csv]
+  
+  #reads in files in list and appends
+  for (file in file_list){
+    if (!exists("DOData")){
+      DOData <- read.csv(file, skip=1, header = TRUE, sep = ",",
+                         quote = "\"",dec = ".", fill = TRUE, comment.char = "")
+      
+  
+        colnames(DOData)=c("row","DateTime","DO_mgL","DOTemp_c")
+        DOData <- DOData[2:4]
+        DOData$DO_mgL <- as.numeric(as.character(DOData$DO_mgL), digits=6)
+        DOData$DOTemp_c <- as.numeric(as.character(DOData$DOTemp_c), digits=5)
+      
+
+    DOData$DateTime <- as.POSIXct(DOData$DateTime, tz="UTC",
+           tryFormats = c("%m/%d/%y %I:%M:%S %p",
+                          "%m/%d/%Y %H:%M"))
+    }
+    if (exists("DOData")){
+      Temp_DOData <- read.csv(file, skip=1, header = TRUE, sep = ",",
+                              quote = "\"",dec = ".", fill = TRUE, comment.char = "")  
+
+        colnames(Temp_DOData)=c("row","DateTime","DO_mgL","DOTemp_c")
+        Temp_DOData <- Temp_DOData[2:4]
+        Temp_DOData$DO_mgL <- as.numeric(as.character(Temp_DOData$DO_mgL), digits=6)
+        Temp_DOData$DOTemp_c <- as.numeric(as.character(Temp_DOData$DOTemp_c), digits=5)
+        }
+      
+
+          Temp_DOData$DateTime <- as.POSIXct(Temp_DOData$DateTime, tz="UTC",
+           tryFormats = c("%m/%d/%y %I:%M:%S %p",
+                          "%m/%d/%Y %H:%M"))
+      
+      
+      DOData <- rbind(DOData, Temp_DOData)
+      rm(Temp_DOData)
+#    }
+    
+  }
+  DOData$DateTime <- round_date(DOData$DateTime, "15 mins")
+  DOData$Station <- site
+  DOData=unique(DOData)
+  assign((paste(site,sep="_")),DOData) #creates object with new appended data
+  rm(DOData) #removes DOdata so that multiple sites aren't appended together
+}
+
+DO_01$Station <- "Stn01"
+DO_02$Station <- "Stn02"
+DO_03$Station <- "Stn03"
+DO_04$Station <- "Stn04"
+DO_05$Station <- "Stn05"
+DO_06$Station <- "Stn06"
+
+```
+
+#Station 1
+
+#check do data
+
+```{r stn01, echo=FALSE}
+
+#clean
+DO_01 <- DO_01%>%filter(DO_mgL > -100)
+
+##check data
+p1 <- plot_ly(DO_01, x = ~DateTime, y = ~DO_mgL, type = 'scatter', mode = 'markers') 
+
+#write out
+write.csv(DO_01, here::here("data_cleaned/DO_01_cleaned.csv"))
+
+```
+
+# station 2
+
+```{r stn02, echo=FALSE}
+#clean 
+DO_02 <- DO_02%>%filter(DO_mgL > -100)
+
+##check data
+p2 <- plot_ly(DO_02, x = ~DateTime, y = ~DO_mgL, type = 'scatter', mode = 'markers') 
+
+
+#write out
+write.csv(DO_02, here::here("data_cleaned/DO_02_cleaned.csv"))
+
+```
+
+
+#station 3
+
+```{r stn03, echo=FALSE}
+
+#clean 
+DO_03 <- DO_03%>%filter(DO_mgL > -100)%>%
+  filter(DateTime > as.POSIXct("2021-06-10 14:45",tz="UTC"))%>%
+  filter(DateTime != as.POSIXct("2022-11-19 10:45",tz="UTC"))%>%
+  filter(DateTime != as.POSIXct("2022-12-14 23:15",tz="UTC"))%>%
+  filter(DateTime != as.POSIXct("2023-03-26 04:30",tz="UTC"))
+
+##check data
+p3 <- plot_ly(DO_03, x = ~DateTime, y = ~DO_mgL, type = 'scatter', mode = 'markers') 
+
+
+#write out
+write.csv(DO_03, here::here("data_cleaned/DO_03_cleaned.csv"))
+
+```
+
+#station 4
+
+```{r stn04, echo=FALSE}
+
+
+#clean 
+DO_04 <- DO_04%>%filter(DO_mgL > -100)%>%filter(
+  DateTime > as.POSIXct("2021-06-10 16:15:00",tz="UTC"))%>%
+  filter(DateTime != as.POSIXct("2022-07-28 11:15:00",tz="UTC"))
+
+##check data
+p4 <- plot_ly(DO_04, x = ~DateTime, y = ~DO_mgL, type = 'scatter', mode = 'markers') 
+
+
+#write out
+write.csv(DO_04, here::here("data_cleaned/DO_04_cleaned.csv"))
+
+```
+
+#station 5
+
+
+#check do data
+
+```{r check CO2 data plot, echo=FALSE}
+
+#clean 
+DO_05 <- DO_05%>%filter(DO_mgL > -100)
+
+##check data
+p5 <- plot_ly(DO_05, x = ~DateTime, y = ~DO_mgL, type = 'scatter', mode = 'markers') 
+
+
+#write out
+write.csv(DO_05, here::here("data_cleaned/DO_05_cleaned.csv"))
+
+```
+
+#station 6
+
+```{r check CO2 data plot, echo=FALSE}
+#clean 
+DO_06 <- DO_06%>%filter(DO_mgL > -100)%>%
+  filter(DateTime != as.POSIXct("2021-06-11 12:45:00", tz = "UTC"))%>%
+  filter(DateTime <= as.POSIXct("2021-07-26 14:30:00", tz = "UTC")|DateTime >= as.POSIXct("2021-07-28 15:30:00", tz = "UTC"))%>%
+  filter(DateTime <= as.POSIXct("2021-10-21 00:00:00", tz = "UTC")|DateTime >= as.POSIXct("2022-03-16 17:45:00", tz = "UTC"))%>%
+  filter(DateTime != as.POSIXct("2022-07-26 12:45:00", tz = "UTC"))%>%
+  filter(DateTime <= as.POSIXct("2022-12-02 13:00:00", tz = "UTC")|DateTime >= as.POSIXct("2022-12-02 18:30:00", tz = "UTC"))%>%
+  filter(DateTime != as.POSIXct("2023-02-18 08:45:00", tz = "UTC"))
+
+
+##check data
+p6 <- plot_ly(DO_06, x = ~DateTime, y = ~DO_mgL, type = 'scatter', mode = 'markers') 
+
+
+#write out
+write.csv(DO_06, here::here("data_cleaned/DO_06_cleaned.csv"))
+
+
+```
+
+
