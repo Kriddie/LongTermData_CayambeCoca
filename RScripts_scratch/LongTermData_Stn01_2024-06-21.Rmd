@@ -163,9 +163,7 @@ WL_01 <- WL_01%>%filter(DateTime < as.POSIXct("2019-07-23 11:45", tz="UTC")|Date
 WL_01 <- WL_01%>%filter(DateTime < as.POSIXct("2019-07-16 13:00", tz="UTC")|DateTime > as.POSIXct("2019-07-17 13:00", tz="UTC"))
 
 
-WL_01 <- WL_01%>%filter(DateTime<as.POSIXct("2019-07-25 3:15:00",tz="UTC")|DateTime>as.POSIXct("2019-07-25 4:30:00",tz="UTC"))%>%filter(
-  DateTime <= as.POSIXct("2023-04-01 09:00:00",tz="UTC")
-)
+WL_01 <- WL_01%>%filter(DateTime < as.POSIXct("2019-07-25 3:15:00",tz="UTC")|DateTime > as.POSIXct("2019-07-25 4:30:00",tz="UTC"))%>%filter(DateTime <= as.POSIXct("2023-04-01 09:00:00",tz="UTC"))
 
 ```
 
@@ -223,7 +221,7 @@ use equation to fill in data
 
 WL_01_fill <- WL_03
 WL_01_fill$WLPres_kpa <-   485.6142 - 13.92432 *WL_01_fill$WLPres_kpa + 0.1144849 *(WL_01_fill$WLPres_kpa)^2
-WL_01_fill <- WL_01_fill%>%filter(DateTime > as.POSIXct("2019-07-23 11:30:00", tz = "UTC")&
+WL_01_fill <- WL_01_fill%>%filter(DateTime > as.POSIXct("2019-07-23 11:45:00", tz = "UTC")&
                           DateTime < as.POSIXct("2019-07-25 21:45:00", tz = "UTC"))
 WL_01_fill$Station <- "WL_01"
 
