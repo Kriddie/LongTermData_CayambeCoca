@@ -1,0 +1,64 @@
+---
+title: "Installation"
+author: "Alison Appling"
+date: "`r Sys.Date()`"
+output:
+  # rmarkdown::github_document
+  rmarkdown::html_vignette:
+      keep_md: true
+vignette: >
+  %\VignetteIndexEntry{Installation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r knitr_init, echo=FALSE, cache=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(width=100)
+```
+
+# Installing streamMetabolizer
+
+To install the `streamMetabolizer` package, use the `remotes` package (running `install.packages('remotes')` first if needed). To use `remotes::install_github()` it is convenient to set a [GitHub Personal Access Token (PAT)](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens). There are [several methods](https://usethis.r-lib.org/articles/git-credentials.html) for setting your PATs within R; the simplest is to call `Sys.setenv(GITHUB_PAT="yyyy"),
+replacing yyyy with the PAT you established on the GitHub website.
+
+You may first need to install the `unitted` dependency:
+```{r, eval=FALSE}
+remotes::install_github('appling/unitted')
+```
+
+You can then install the most cutting edge version of streamMetabolizer with this command:
+```{r, eval=FALSE}
+remotes::install_github(
+  "USGS-R/streamMetabolizer", # soon to be "DOI-USGS/streamMetabolizer"
+  build_vignettes = TRUE)
+
+remotes::install_github(
+  "USGS-R/streamMetabolizer", # soon to be "DOI-USGS/streamMetabolizer"
+  build_vignettes = FALSE)
+
+#install rtools
+#https://cran.r-project.org/bin/windows/Rtools/rtools44/rtools.html
+
+# run the next line if you already have rstan installed
+# remove.packages(c("StanHeaders", "rstan"))
+
+#install older version of rstan
+install.packages("rstan", repos = c("https://mc-stan.org/r-packages/", getOption("repos")), version = "2.32.5")
+
+#for when I am working on the blade, I will need to install rtools, I think. Which is outside of R studio
+#https://cran.r-project.org/bin/windows/Rtools/rtools44/rtools.html
+
+#and devtools
+install.packages("devtools")
+
+
+library(rstan)
+library(streamMetabolizer)
+
+#install.packages("rstan", repos = c('https://stan-dev.r-universe.dev', getOption("repos")))
+```
+
+## Software dependencies for Bayesian models
+
+The major dependency for Bayesian models is the `rstan` package, and installation of that package is rarely as simple as a call to `install.packages()`. Start at the [rstan wiki page](https://github.com/stan-dev/rstan/wiki) for the most up-to-date installation instructions, which differ by operating system.
