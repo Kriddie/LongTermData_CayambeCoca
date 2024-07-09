@@ -55,6 +55,8 @@ library(dplyr)
 library(here)
 library(tidyr)
 library(ggplot2)
+library(MALDIquant)
+library(zoo)
 ```
 
 # 1. Preparing the input data
@@ -66,17 +68,87 @@ We'll use the `streamMetabolizer` standard in defining our day to run from 4 am
 
 Read in data from station 2 and subset... 1 week data?
 
+#depth
+depth is one of the trickiest things with the stream metabolizer (according to Maite). We have a couple of options:
+1. convert discharge to depth using raymond equation as in calc_depth()
+    - potential issue is that the coeffeicients that raymond provides were developed based on an average of a bunch of streams in the US. OUr streams, of course, are in Ecuador, they are peatland, they are very incised. That said, this is the equation that Bernhardt and Battin papers use... so diffensible
+2. we also have stage data that can be converted using data collected by kayla and amy.
+
+*we can do both and compare the 2 results*
+
+
+first let's use the calc_depth() and get some model results
+
+note: stream metabolizer can take NAs but not an empty row
+
 ```{r data}
 #dat_previous <- data_metab(num_days='3', res='15', day_start=4, day_end=28)
 dat_all <- read.csv(here::here("metabolizer_dataframe/stn02_df_preliminary.csv"))
 dat_all$solar.time <- as.POSIXct(dat_all$solar.time,format="%Y-%m-%d %H:%M:%S",tz="UTC")
-dat <- dat_all%>%drop_na(DO.obs)%>%filter(solar.time > as.POSIXct("2019-07-19 00:00:00") & solar.time < as.POSIXct("2019-07-25 00:00:00")
+dat_all$depth <- calc_depth(dat_all$discharge)
+
+dat <- dat_all%>%#drop_na(DO.obs)%>%
+  select(-discharge)%>%filter(solar.time > as.POSIXct("2019-07-19 00:00:00") & solar.time < as.POSIXct("2019-07-25 00:00:00")
 )
 
-#plot
+#sort by date time
+dat <- dat[order(dat$solar.time , decreasing = FALSE),]
 
-ggplot(dat,aes(x=solar.time,y=DO.obs)) + geom_point()
+
+#duplicates?
+dat_check <- as.data.frame(Dat2$solar.time)
+colnames(dat_check) <- c("time_1")
+dat_check$time_2 <- dat_check$time_1
+#library(janitor)
+duplicated(dat$solar.time)
+
+#stream metabolizer is unhappy with different time intervals - it is ok with NAs. So check that
+
+
+for(i in 1:nrow(dat_check)) {
+    dat_check$time_2[i] <- dat_check$time_1[i+1]
+    # do stuff with row
+}
+#calc diff
+dat_check$difftime <- difftime(dat_check$time_2,dat_check$time_1,units="mins")
+
+
+
+##Iclude rows when missing
+first<-min(dat$solar.time)
+last<-max(dat$solar.time)
+solar.timeREF<-seq(first, last, by="15 min")
+
+dat$ref<-match.closest(as.numeric(dat$solar.time), as.numeric(solar.timeREF), tolerance = 100, nomatch = NA)
+df<-data.frame(ref2=seq(1:length(solar.timeREF)), solar.timeREF=solar.timeREF)
+
+Dat2<-dat[match(df$ref2, dat$ref),]
+Dat2$solar.time<-solar.timeREF
+
+Dat2$ref <- NULL
+
+#now fill in NAs
+Dat2$DO.obs<-na.spline(Dat2$DO.obs, maxgap = 3, na.rm = FALSE)
+Dat2$DO.sat<-na.spline(Dat2$DO.sat, maxgap = 3, na.rm = FALSE)
+
+Dat2$temp.water<-na.spline(Dat2$temp.water, maxgap = 4, na.rm = FALSE)
+#temp.air<-na.spline(Dat2$temp.air, maxgap = 6, na.rm = FALSE)
+Dat2$depth<-na.spline(Dat2$depth, maxgap = 144, na.rm = FALSE)
+Dat2$light<-na.spline(Dat2$light, maxgap = 144, na.rm = FALSE)
+
+
+#plot
+ggplot(Dat2,aes(x=solar.time,y=DO.obs)) + geom_point()
+ggplot(Dat2,aes(x=solar.time,y=depth)) + geom_point()
+
 ggplot(dat,aes(x=solar.time,y=discharge)) + geom_point()
+
+ggplot(Dat2,aes(x=depth,y=level)) + geom_point()
+
+ggplot(Dat2,aes(x=depth,y=discharge)) + geom_point()
+ggplot(Dat2,aes(x=level,y=discharge)) + geom_point()
+
+
 ```
 
 See the `?metab` help document and the [Data Preparation](data_prep.html) tutorial for more on how to properly format and inspect a dataset.
@@ -99,7 +171,7 @@ that they produce more accurate and nuanced confidence intervals.
 
 I have discharge data, so I need to change something to do with pool_K600
 ```{r bayes_name}
-bayes_name <- mm_name(type='bayes', pool_K600='none', err_obs_iid=TRUE, err_proc_iid=TRUE)
+bayes_name <- mm_name(type='bayes', pool_K600='binned', err_obs_iid=TRUE, err_proc_iid=TRUE)
 bayes_name
 ```
 
@@ -137,7 +209,7 @@ Bayesian models take a while to run, so be patient. Or switch to an MLE model if
 you can afford to sacrifice some accuracy for speed. (This small example usually
 takes about 30 seconds on my computer.)
 ```{r bayes_fit}
-mm <- metab(bayes_specs, data=dat)
+mm <- metab(bayes_specs, data=Dat2)
 ```
 
 
@@ -175,6 +247,8 @@ predict_DO(mm) %>% head()
 And here are the dissolved oxygen predictions in a figure:
 ```{r bayes_pdo_fig, fig.width=5, fig.height=5}
 plot_DO_preds(mm)
+
+#dots are my date, line is model
 ```
 
 For Bayesian models only, you can dig even deeper using `get_mcmc`, which
