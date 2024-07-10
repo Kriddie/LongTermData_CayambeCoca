@@ -256,6 +256,10 @@ returns a `stanfit` object that can be inspected using the `rstan` package.
 (These traceplots are pretty bad because we used so few MCMC iterations. You
 should strive for better in your final models.)
 ```{r, fig.width=5, fig.height=5}
+
+save(mm, file = "model_save1.RData")
+
+
 mcmc <- get_mcmc(mm)
 rstan::traceplot(mcmc, pars='K600_daily', nrow=3)
 ```
