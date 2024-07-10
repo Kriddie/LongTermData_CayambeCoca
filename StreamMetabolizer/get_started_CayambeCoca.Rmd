@@ -91,19 +91,23 @@ dat <- dat_all%>%#drop_na(DO.obs)%>%
   select(-discharge)%>%filter(solar.time > as.POSIXct("2019-07-19 00:00:00") & solar.time < as.POSIXct("2019-07-25 00:00:00")
 )
 
+#this one includes discharge because I *think* I need it to do pooling
+dat <- dat_all%>%#drop_na(DO.obs)%>%
+  #select(-discharge)%>%
+  filter(solar.time > as.POSIXct("2019-07-19 00:00:00") & solar.time < as.POSIXct("2019-07-25 00:00:00")
+)
+
 #sort by date time
 dat <- dat[order(dat$solar.time , decreasing = FALSE),]
 
 
+#stream metabolizer is unhappy with different time intervals - it is ok with NAs. So check that
 #duplicates?
 dat_check <- as.data.frame(Dat2$solar.time)
 colnames(dat_check) <- c("time_1")
 dat_check$time_2 <- dat_check$time_1
 #library(janitor)
 duplicated(dat$solar.time)
-
-#stream metabolizer is unhappy with different time intervals - it is ok with NAs. So check that
-
 
 for(i in 1:nrow(dat_check)) {
     dat_check$time_2[i] <- dat_check$time_1[i+1]
@@ -135,11 +139,14 @@ Dat2$temp.water<-na.spline(Dat2$temp.water, maxgap = 4, na.rm = FALSE)
 #temp.air<-na.spline(Dat2$temp.air, maxgap = 6, na.rm = FALSE)
 Dat2$depth<-na.spline(Dat2$depth, maxgap = 144, na.rm = FALSE)
 Dat2$light<-na.spline(Dat2$light, maxgap = 144, na.rm = FALSE)
+Dat2$discharge<-na.spline(Dat2$discharge, maxgap = 144, na.rm = FALSE)
+Dat2$discharge<-na.spline(Dat2$discharge, maxgap = 144, na.rm = FALSE)
 
 
 #plot
 ggplot(Dat2,aes(x=solar.time,y=DO.obs)) + geom_point()
 ggplot(Dat2,aes(x=solar.time,y=depth)) + geom_point()
+ggplot(Dat2,aes(x=solar.time,y=discharge)) + geom_point()
 
 ggplot(dat,aes(x=solar.time,y=discharge)) + geom_point()
 
@@ -171,6 +178,14 @@ that they produce more accurate and nuanced confidence intervals.
 
 I have discharge data, so I need to change something to do with pool_K600
 ```{r bayes_name}
+
+#ok this works (no pooling of k600)
+bayes_name <- mm_name(type='bayes', pool_K600='none', err_obs_iid=TRUE, err_proc_iid=TRUE)
+bayes_name
+
+
+#i want to try to run with partial pooling
+#this is the model that maite uses: b_kb_oipi_tr_plrckm
 bayes_name <- mm_name(type='bayes', pool_K600='binned', err_obs_iid=TRUE, err_proc_iid=TRUE)
 bayes_name
 ```
@@ -206,8 +221,7 @@ details.
 
 Once a model has been configured, you can fit the model to data with `metab()`.
 Bayesian models take a while to run, so be patient. Or switch to an MLE model if
-you can afford to sacrifice some accuracy for speed. (This small example usually
-takes about 30 seconds on my computer.)
+you can afford to sacrifice some accuracy for speed. 
 ```{r bayes_fit}
 mm <- metab(bayes_specs, data=Dat2)
 ```
@@ -257,7 +271,8 @@ returns a `stanfit` object that can be inspected using the `rstan` package.
 should strive for better in your final models.)
 ```{r, fig.width=5, fig.height=5}
 
-save(mm, file = "model_save1.RData")
+#save model
+save(mm, file = "model_save2.RData")
 
 
 mcmc <- get_mcmc(mm)
