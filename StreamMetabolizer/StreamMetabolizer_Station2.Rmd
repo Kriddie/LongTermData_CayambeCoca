@@ -1,0 +1,300 @@
+---
+title: "Quickstart"
+author: "Alison Appling"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Quickstart}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+#about
+
+in this  r script I take the get_started vinnette and use my own data
+
+*notes from matt*
+> mm@mcmc 
+> Rhat, lower is better ~1
+
+#think about getting on a better computer
+> vcl - pick windows full blade, base, no apps
+>long leaf (cluster)
+
+```{r knitr_init, echo=FALSE, cache=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(width=80)
+```
+
+# Introduction
+
+This tutorial shows how to estimate stream metabolism using `streamMetabolizer`
+and some example data supplied by Bob Hall for French Creek in Laramie, WY.
+
+There are four steps to fitting a metabolism model in `streamMetabolizer`.
+
+1. Prepare and inspect the input data.
+2. Choose a model configuration appropriate to your data.
+3. Fit the model.
+4. Inspect the output.
+
+In this tutorial we will demonstrate these steps for a single model structure and a single set of specifications, but you should also consider other structures and should always tailor the specifications to your dataset and site knowledge. For more details, see:
+
+* [Bayesian Models](models_bayes.html)
+* [MLE Models](models_mle.html)
+* [Model Types](models_other.html)
+
+# Preliminaries
+
+If you haven't already installed the package, see the [Installation](installation.html) tutorial.
+
+Next load the R libraries. Only `streamMetabolizer` is required to run models, but we'll also be using `dplyr` to inspect the results.
+```{r libs, warning=FALSE, message=FALSE}
+library(streamMetabolizer)
+library(dplyr)
+library(here)
+library(tidyr)
+library(ggplot2)
+library(MALDIquant)
+library(zoo)
+```
+
+# 1. Preparing the input data
+
+Load a small example dataset from the package (data are from French
+Creek in Laramie, WY, courtesy of Bob Hall).
+We'll use the `streamMetabolizer` standard in defining our day to run from 4 am
+(`day_start=4`) to 4 am (`day_end=28`).
+
+Read in data from station 2 and subset... 1 week data?
+
+#depth
+depth is one of the trickiest things with the stream metabolizer (according to Maite). We have a couple of options:
+1. convert discharge to depth using raymond equation as in calc_depth()
+    - potential issue is that the coeffeicients that raymond provides were developed based on an average of a bunch of streams in the US. OUr streams, of course, are in Ecuador, they are peatland, they are very incised. That said, this is the equation that Bernhardt and Battin papers use... so diffensible
+2. we also have stage data that can be converted using data collected by kayla and amy.
+
+*we can do both and compare the 2 results*
+
+
+first let's use the calc_depth() and get some model results
+
+note: stream metabolizer can take NAs but not an empty row
+
+```{r data}
+
+stn02 <- read.csv(here::here("metabolizer_dataframe/stn02_df_july10.csv"))
+stn02$solar.time <- as.POSIXct(stn02$solar.time,format="%Y-%m-%d %H:%M:%S",tz="UTC")
+
+#let's see about just 2019 data
+dat <- stn02#%>%#drop_na(DO.obs)%>%
+#  filter(solar.time < as.POSIXct("2019-08-13 00:00:00"))
+
+#sort by date time
+dat <- dat[order(dat$solar.time , decreasing = FALSE),]
+
+
+#plot
+ggplot(dat,aes(x=solar.time,y=DO.obs)) + geom_point()
+```
+
+See the `?metab` help document and the [Data Preparation](data_prep.html) tutorial for more on how to properly format and inspect a dataset.
+
+
+# Configuring the model: Choose a model structure
+I want to use the same model as Maite:
+
+"b_kb_oipi_tr_plrckm"
+
+b = baysian
+kb = partial pooling of k600
+oipi = both process and observational errors: "oipi"
+tr = trapazoidal (the way that they calculate the metabolism); maite uses this way, and this is generally what others use too.
+
+```{r bayes_name}
+
+bayes_name <- mm_name(type='bayes', pool_K600='binned', err_obs_iid=TRUE, err_proc_iid=TRUE)
+bayes_name
+
+```
+
+## 2b. Set the specifications/ priors
+
+We now pass the model name to `specs()` to get a
+list of default specifications for this model.
+```{r bayes_specs}
+bayes_specs <- specs(bayes_name)
+
+bayes_specs <- specs(bayes_name, burnin_steps=500, saved_steps=1000, n_cores=1, GPP_daily_mu=3, GPP_daily_sigma=2)
+
+
+#this is a function the maite uses in here data, I 
+prior_K600_lnQ_nodes_meanlog <- function(depth, slope) {
+  4.77 + 0.55*log(slope) + (-0.52*log(depth))
+}
+
+#look at min and max discharge, 
+#for stn2 it is: 0.003237239 to 0.2829755
+#take the ln() and enter in as prior
+bayes_specs$K600_lnQ_nodes_centers<-seq(-6, -1.5, 0.5)
+
+#do below later? maybe I don't need to??
+
+###CHANGE DEPTH AND SLOPE FOR EACH SITE
+#specs$K600_lnQ_nodes_meanlog <- rep(prior_K600_lnQ_nodes_meanlog(slope=0.005, depth=0.68),length(specs$K600_lnQ_nodes_centers))
+#specs$K600_lnQ_nodes_sdlog <- rep(0.7, length(specs$K600_lnQ_nodes_centers))
+
+
+```
+
+
+
+#run model
+
+fingers crossed ova heya
+
+```{r bayes_fit}
+
+#remove discharge if not pooling k600
+mm <- metab(bayes_specs, data=dat#%>%select(!discharge)
+            )
+```
+july 10: 2019 data, partially pooled: start = 8:04 end ~= 8:20
+july 10: 2019 data, not-pooled: start = 8:30 end = 8:45 
+
+
+# 4. Inspecting the model
+
+Once you've fit a model, you can inspect the output with functions including
+`predict_metab()` and `plot_metab_preds()`, `predict_DO()` and `plot_DO_preds()`,
+`get_params()`, and `get_fit()`.
+
+Start by simply printing the model to the console.
+```{r}
+mm
+```
+
+Here are the daily metabolism predictions from the model:
+```{r bayes_pred_tbl}
+predict_metab(mm)
+```
+
+```{r bayes_pred_fig, fig.width=5, fig.height=5}
+plot_metab_preds(mm)
+```
+
+You can inspect more of the fitted daily parameters, including K600, with `get_params()`:
+```{r}
+get_params(mm)
+```
+
+Here are the first few dissolved oxygen predictions from the model (`DO.mod`).
+They are returned along with the input data for convenience.
+```{r bayes_pdo_tbl, results='asis'}
+predict_DO(mm) %>% head()
+```
+
+And here are the dissolved oxygen predictions in a figure:
+```{r bayes_pdo_fig, fig.width=5, fig.height=5}
+plot_DO_preds(mm)
+
+#dots are my date, line is model
+```
+#save model
+
+```{r save model, fig.width=5, fig.height=5}
+
+#save model
+save(mm, file = "model_stn02_not-pooled_2019-08-12.RData")
+
+
+```
+
+
+#inspect model
+
+For Bayesian models only, you can dig even deeper using `get_mcmc`, which
+returns a `stanfit` object that can be inspected using the `rstan` package.
+(These traceplots are pretty bad because we used so few MCMC iterations. You
+should strive for better in your final models.)
+
+
+```{r, fig.width=5, fig.height=5}
+
+mcmc <- get_mcmc(mm)
+rstan::traceplot(mcmc, pars='K600_daily', nrow=3)
+```
+
+The `get_fit()` function returns a list of data.frames, one per temporal
+resolution, containing all fitted values and details about their distributions
+and convergence. Here are just the overall metrics of model convergence
+(`Rhat`s, or potential scale reduction statistics; see Gelman and Rubin 1992 or
+Brooks and Gelman 1998):
+```{r}
+get_fit(mm)$overall %>%
+  select(ends_with('Rhat'))
+```
+
+And here is a list of all column names available through `get_fit()`:
+```{r}
+get_fit(mm) %>%
+  lapply(names)
+```
+#maite's model inspection:
+
+###how to evaluate?
+1. R hat associated with entire model - R hat for process error (you want lower than 1.1)
+check relationship between k600 and ER -- you don't want a strong relationship!!
+
+2. range of variability in k600 (shouldn't be too variable!)
+3. reltationship between k600 and discharge (shouldn't be too strong!)
+
+
+
+ASSESSMENT
+K600_daily_sigma_Rhat<-in KQ_overall
+err_obs_iid_sigma_Rhat<-in overall
+err_proc_iid_sigma_Rhat<-in overall
+K_range<-??
+neg_GPP<-check percentage and if looks ok just remove days with the wrong sign
+pos_ER<-idem
+
+
+"sensitivity test"
+
+mmspecs$GPP_daily_mu<-10
+specs$ER_daily_mu<--15
+mm2<-metab(specs = specs, data = s_ts)
+
+Hau idatzi du Maite Arroita (arroita.maite@gmail.com) erabiltzaileak (2024 uzt. 9(a), ar. (12:47)):
+
+```{r}
+#K600_daily_sigma_Rhat
+mm@fit$KQ_overall$K600_daily_sigma_Rhat
+
+#err_obs_iid_sigma_Rhat
+mm@fit$overall$err_obs_iid_sigma_Rhat
+
+#err_proc_iid_sigma_Rhat
+mm@fit$overall$err_proc_iid_sigma_Rhat
+
+#K_range
+
+
+###inspect data
+data_inspection <- get_params(mm)
+
+
+```
+
+```{r plot}
+ggplot(data_inspection,aes(x=date,y=GPP.daily)) + geom_point()
+ggplot(data_inspection,aes(x=date,y=ER.daily)) + geom_point()
+
+ggplot(data_inspection,aes(x=date,y=K600.daily)) + geom_point()
+
+ggplot(data_inspection,aes(x=ER.daily,y=K600.daily)) + geom_point()
+
+
+```
+
