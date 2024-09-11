@@ -139,7 +139,7 @@ p3 <- plot_ly(WL_05, x = ~DateTime, y = ~Q_m3s, type = 'scatter', mode = 'marker
 
 ```{r write out wl, echo=FALSE}
 
-write.csv(WL_05, here::here("data_cleaned/WL_05_cleaned.csv"),row.names = FALSE)
+#write.csv(WL_05, here::here("data_cleaned/WL_05_cleaned.csv"),row.names = FALSE)
 
 ```
 

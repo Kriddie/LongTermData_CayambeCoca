@@ -402,7 +402,7 @@ It seems like base flow increases starting in august 27 2022, or maybe nov 2022.
 
 ```{r write out wl, echo=FALSE}
 
-write.csv(WL_01, here::here("data_cleaned/WL_01_cleaned.csv"),row.names = FALSE)
+#write.csv(WL_01, here::here("data_cleaned/WL_01_cleaned.csv"),row.names = FALSE)
 
 
 ```
