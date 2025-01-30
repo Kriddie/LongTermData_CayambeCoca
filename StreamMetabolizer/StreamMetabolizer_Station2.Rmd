@@ -209,7 +209,7 @@ plot_DO_preds(mm)
 ```{r save model, fig.width=5, fig.height=5}
 
 #save model
-save(mm, file = "model_stn02_partially-pooled_all.RData")
+#save(mm, file = "model_stn02_partially-pooled_all.RData")
 
 
 ```
@@ -251,7 +251,7 @@ get_fit(mm) %>%
 check relationship between k600 and ER -- you don't want a strong relationship!!
 
 2. range of variability in k600 (shouldn't be too variable!)
-3. reltationship between k600 and discharge (shouldn't be too strong!)
+3. relationship between k600 and discharge (shouldn't be too strong!)
 
 
 
