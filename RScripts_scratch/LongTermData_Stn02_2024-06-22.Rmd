@@ -446,7 +446,7 @@ Stn02$adjusted_ppm <- (Stn02$ppm * 2 )* (1 + (700 - Stn02$WLPres_hPa) * 0.0015)
 
 #for field season 2022
 
-#but then I changed it to an old vaisala at the beggining of 2022, unfortunaly, it collected very little data before totally crapping out on me (my fault, in truth)
+#but then I changed it to an old vaisala at the beggining of 2022, unfortunately, it collected very little data before totally crapping out on me (my fault, in truth)
 
 # in November 2022, I changed it back to a new viasala. 
 

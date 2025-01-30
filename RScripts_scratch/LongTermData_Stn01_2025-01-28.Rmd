@@ -513,18 +513,7 @@ rm(DateTime_df,CO2_2019)
 ```
 
 
-
-#check data 
-
-```{r check CO2 data plot, echo=FALSE}
-
-
-##check data
-plot_ly(CO2_01, x = ~DateTime, y = ~ppm, type = 'scatter', mode = 'markers') 
-
-plot_ly(CO2wellV_01, x = ~DateTime, y = ~ppm, type = 'scatter', mode = 'markers') 
-
-```
+#clean co2
 
 ```{r clean, echo=FALSE}
 #CO2_01
@@ -597,11 +586,9 @@ Stn01_oldV <- right_join(WL_01,CO2_01, by=c("DateTime","Station"))
 #1 kPa = 0.101972 m
 Stn01_oldV$Total_hPa <- Stn01_oldV$Total_kpa * 10
 
+
 Stn01_newV <- right_join(WL_01,CO2wellV_01, by=c("DateTime","Station"))
 
-#convert baro to hpa
-#1 kPa = 10 hPa
-#1 kPa = 0.101972 m
 Stn01_newV$Total_hPa <- Stn01_newV$Total_kpa * 10
 
 ```
@@ -650,6 +637,25 @@ co2_2 <- ggplot(data = Stn01_newV, aes(DateTime, adjusted_ppm)) + geom_point(col
 
 ```
 
+#write out co2 data
+
+```{r write out co2 data, echo=FALSE}
+
+Stn01_oldV <- Stn01_oldV%>%select(
+  Station,DateTime,Total_hPa,WLTemp_c,ppm,adjusted_ppm
+)%>%rename(WLTemp_01_c=WLTemp_c,CO2_ppm = ppm,CO2_ppm_adjusted = adjusted_ppm)
+Stn01_oldV$max_detect_ppm <- 10000
+#write.csv(Stn01_oldV, here::here("data_cleaned/CO2_01_max1000_cleaned.csv"),row.names = FALSE)
+
+
+Stn01_newV <- Stn01_newV%>%select(
+  Station,DateTime,Total_hPa,WLTemp_c,ppm,adjusted_ppm
+)%>%rename(WLTemp_01_c=WLTemp_c,CO2_ppm = ppm,CO2_ppm_adjusted = adjusted_ppm)
+Stn01_newV$max_detect_ppm <- 30000
+#write.csv(Stn01_newV, here::here("data_cleaned/CO2_01_max3000_cleaned.csv"),row.names = FALSE)
+
+
+```
 
 #dissolved o2
 
@@ -722,16 +728,19 @@ DO_01$Station <- "Stn01"
 
 ```
 
-#check do data
+#clean and check do data
 
 ```{r check CO2 data plot, echo=FALSE}
 
-
-##check data
-plot_ly(DO_01, x = ~DateTime, y = ~DO_mgL, type = 'scatter', mode = 'markers') 
-
 #clean
 DO_01 <- DO_01%>%filter(DO_mgL > -100)
+
+##check data
+p1 <- plot_ly(DO_01, x = ~DateTime, y = ~DO_mgL, type = 'scatter', mode = 'markers') 
+
+#read out
+#write.csv(DO_01, here::here("data_cleaned/DO_01_cleaned.csv"),row.names = FALSE)
+
 ```
 
 #now for lux
@@ -804,32 +813,109 @@ LUXarriba_01_Lux_data <- LUXarriba_01_Lux_data %>%rename("Luxarriba" = "Lux")
 
 
 ##check data
-plot_ly(LUXabajo_01_Lux_data, x = ~DateTime, y = ~Luxabajo, type = 'scatter', mode = 'lines') 
+p1 <- plot_ly(LUXabajo_01_Lux_data, x = ~DateTime, y = ~Luxabajo, type = 'scatter', mode = 'lines') 
 
 
-plot_ly(LUXarriba_01_Lux_data, x = ~DateTime, y = ~Luxarriba, type = 'scatter', mode = 'lines') 
+p2 <-  plot_ly(LUXarriba_01_Lux_data, x = ~DateTime, y = ~Luxarriba, type = 'scatter', mode = 'lines') 
 
-#clean 
-#DO_06 <- DO_06%>%filter(DO_mgL > -100)
-```
-
-#merge data
-
-```{r merge data, echo=FALSE}
-
-
-Stn01 <- full_join(Stn01,DO_01, by=c('DateTime','Station'))
-Stn01 <- full_join(Stn01,LUXabajo_01_Lux_data, by=c('DateTime','Station'))
-Stn01 <- full_join(Stn01,LUXarriba_01_Lux_data, by=c('DateTime','Station'))
-
-Stn01 <- Stn01[ order(Stn01$DateTime , decreasing = TRUE ),]
 
 ```
 
-#read out data 
+
+#read out LUX data
 ```{r read out data, echo=FALSE}
 
-#write.csv(Stn01, here::here("MergedFiles/Stn01_2023-03-29.csv"),row.names = FALSE)
+#write.csv(LUXabajo_01_Lux_data, here::here("data_cleaned/LUX_underwater_01_cleaned.csv"),row.names = FALSE)
+
+#write.csv(LUXarriba_01_Lux_data, here::here("data_cleaned/LUX_abovewater_01_cleaned.csv"),row.names = FALSE)
+
+```
+
+#EC data
+
+```{r loop}
+
+setwd(here::here("EC"))
+all_files=list.files(pattern=".csv") #pulls out the csv files from CO2 folder
+sites_rp = sub('_[^_]+$', '', all_files)
+site_names=unique(sites_rp) #creates list of site names for following loop
+
+site_names = "EC_01"
+i <- 1
+#rm old files, if they exist
+rm(ECData)
+rm(Temp_ECData)
+
+
+
+for (site in site_names){
+  list1=list.files(pattern=site) #finds all files for the site
+  sitelist_csv=grep(".csv",list1) #creates list of all files for site
+  file_list=list1[sitelist_csv]
+  
+  #reads in files in list and appends
+  for (file in file_list){
+    if (!exists("ECData")){
+      ECData <- read.csv(file, skip=1, header = TRUE, sep = ",",
+                  quote = "\"",dec = ".", fill = TRUE, comment.char = "")
+      ECData <- ECData[2:5]
+      colnames(ECData)=c("DateTime","EC_uS_lowrange",
+                         "EC_uS_fullrange","ECTemp_c")
+
+    ECData$DateTime <- as.POSIXct(ECData$DateTime, tz="UTC",
+           tryFormats = c("%m/%d/%y %I:%M:%S %p",
+                          "%m/%d/%Y %H:%M"))
+    }
+    if (exists("ECData")){
+      Temp_ECData <- read.csv(file, skip=1, header = TRUE, sep = ",",
+                  quote = "\"",dec = ".", fill = TRUE, comment.char = "")
+      Temp_ECData <- Temp_ECData[2:5]
+      colnames(Temp_ECData)=c("DateTime","EC_uS_lowrange","EC_uS_fullrange","ECTemp_c")
+        }
+          Temp_ECData$DateTime <- as.POSIXct(Temp_ECData$DateTime, tz="UTC",
+           tryFormats = c("%m/%d/%y %I:%M:%S %p",
+                          "%m/%d/%Y %H:%M"))
+      
+      
+      ECData <- rbind(ECData, Temp_ECData)
+      rm(Temp_ECData)
+#    }
+    
+  }
+  ECData$DateTime <- round_date(ECData$DateTime, "15 mins")
+  ECData$Station <- site
+  ECData=unique(ECData)
+  assign((paste(site,sep="_")),ECData) #creates object with new appended data
+  rm(ECData) #removes DOdata so that multiple sites aren't appended together
+}
+
+EC_01$Station <- "Stn01"
+
+```
+
+
+#plot EC
+
+```{r clean and check EC data, echo=FALSE}
+
+#clean
+#4 points look out of range
+EC_01 <-EC_01%>%filter(EC_uS_lowrange>5.0)%>%drop_na(EC_uS_lowrange) 
+
+#
+EC_01_1 <- ggplot(data = EC_01, aes(DateTime, log(EC_uS_lowrange))) + geom_point(color = "brown") +
+  labs(y = "uS", x = "")
+
+EC_01_2 <- ggplot(data = EC_01, aes(DateTime, ECTemp_c)) + geom_point(color = "brown") +
+  labs(y = "temp c", x = "")
+
+```
+
+
+#read out EC data
+```{r read out ECdata, echo=FALSE}
+
+write.csv(EC_01, here::here("data_cleaned/EC_01_cleaned.csv"),row.names = FALSE)
 
 ```
 
