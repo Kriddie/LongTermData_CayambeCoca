@@ -453,32 +453,32 @@ LUXarriba_03_Lux_data$Station <- "Stn03"
 
 ```
 
-
-#now we merge everything together!!
-
-```{r merge dataframe, echo=FALSE}
-Stn03_df <- full_join(WL_03, DO_03, by=c("DateTime","Station"))
-Stn03_df <- full_join(Stn03_df, LUXabajo_03_Lux_data, by=c("DateTime","Station"))
-Stn03_df <- full_join(Stn03_df, LUXarriba_03_Lux_data, by=c("DateTime","Station"))
-
-```
-
-```{r write out data, echo=FALSE}
-write.csv(Stn03_df,here::here("MergedFiles/Stn03_df_2023-12-19.csv"))
-
-```
-
 #plot lux
 
 ```{r check CO2 data plot, echo=FALSE}
 
 
 ##check data
-plot_ly(LUXabajo_03_Lux_data, x = ~DateTime, y = ~Lux, type = 'scatter', mode = 'lines') 
+p1 <- plot_ly(LUXabajo_03_Lux_data, x = ~DateTime, y = ~Lux, type = 'scatter', mode = 'lines') 
 
 
-plot_ly(LUXarriba_03_Lux_data, x = ~DateTime, y = ~Lux, type = 'scatter', mode = 'lines') 
+p2 <- plot_ly(LUXarriba_03_Lux_data, x = ~DateTime, y = ~Lux, type = 'scatter', mode = 'lines') 
 
 #clean 
-#DO_06 <- DO_06%>%filter(DO_mgL > -100)
+
 ```
+
+
+#read out LUX data
+```{r read out data, echo=FALSE}
+
+LUXabajo_03_Lux_data <- LUXabajo_03_Lux_data%>%
+  select(Station,DateTime,Lux,Temp_C)
+#write.csv(LUXabajo_03_Lux_data, here::here("data_cleaned/LUX_underwater_03_cleaned.csv"),row.names = FALSE)
+
+LUXarriba_03_Lux_data <- LUXarriba_03_Lux_data%>%
+  select(Station,DateTime,Lux,Temp_C)
+#write.csv(LUXarriba_03_Lux_data, here::here("data_cleaned/LUX_abovewater_03_cleaned.csv"),row.names = FALSE)
+
+```
+
