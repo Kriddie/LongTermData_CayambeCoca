@@ -327,6 +327,7 @@ Stn04_df <- Stn04_df%>%select(
   Station,DateTime,Total_hpa,WLTemp_c,ppm,adjusted_ppm
 )%>%rename(WLTemp_01_c=WLTemp_c,CO2_ppm = ppm,CO2_ppm_adjusted = adjusted_ppm)
 Stn04_df$max_detect_ppm <- 10000
+
 #write.csv(Stn04_df, here::here("data_cleaned/CO2_04_max1000_cleaned.csv"),row.names = FALSE)
 
 
