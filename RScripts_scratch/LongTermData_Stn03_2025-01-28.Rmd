@@ -223,7 +223,7 @@ stn3 data is pretty messy. perhapes because it is out of the water sometime? but
 
 CO2_03 <- CO2_03%>%filter(DateTime < as.POSIXct("2022-07-01 00:00:00"))
 ##check data
-plot_ly(CO2_03, x = ~DateTime, y = ~ppm, type = 'scatter', mode = 'markers') 
+p1 <- plot_ly(CO2_03, x = ~DateTime, y = ~ppm, type = 'scatter', mode = 'markers') 
 
 #plot_ly(CO2_01%>%
 #  filter(DateTime < as.POSIXct("2021-07-30 07:27:00", tz = "UTC")), x = ~DateTime, y = ~ppm, type = 'scatter', mode = 'markers') 
@@ -285,6 +285,9 @@ make adjustments to ppm using water level data
 #df_new$adjusted_ppm <- df_new$ppm * (1 + (700 - df_new$Total_hPa) * 0.0015) * (1 - (6.7 - df_new$WLTemp_c) * 0.003)
 Stn03$adjusted_ppm <- NA
 Stn03$adjusted_ppm <- (Stn03$ppm * 2 )* (1 + (700 - Stn03$Total_hPa) * 0.0015) 
+
+
+#write.csv(Stn03, here::here("data_cleaned/CO2_04_max10000_cleaned.csv"),row.names = FALSE)
 
 ```
 
