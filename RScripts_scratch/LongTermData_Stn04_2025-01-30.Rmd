@@ -134,29 +134,50 @@ see excel file for station 04_update2023-12-19
 
 #WL_04 shifted on July 18th because of a storm, so I want to split up my rating curve with 2021 data and 2022 data for before and after the storm
 
-Before 7/18/21
+we also need to have a high and low rating curve it seems
+
+Before 7/18/21, high
 y = 0.8086* x2 + 0.3622* x - 0.0042
 R² = 0.986
+low
+y = 0.0014*exp(47.564*x)R² = 0.9584
+
+breakpoint: 0.0211788
 
 
-After 7/18/21
+After 7/18/21, high
 y = 3.3124* x2 - 0.4161* x + 0.0091
 R² = 0.9879
+
+low
+y = 0.0003*exp(26.029*x)
+R² = 0.9412
+
+breakpoint: 0.119757
 
 
 ```{r discharge, echo=FALSE}
 
+
 WL_04$Q_m3s <- NA
 
-WL_04[WL_04$DateTime < as.POSIXct("2021-07-18 02:45",tz="UTC"),]$Q_m3s <- 0.8086*(WL_04[WL_04$DateTime < as.POSIXct("2021-07-18 02:45",tz="UTC"),]$WL_m)^2 + 0.3622*(WL_04[WL_04$DateTime < as.POSIXct("2021-07-18 02:45",tz="UTC"),]$WL_m) - .0042
+#subset dataframes
+WL_04_BeforeHigh <- WL_04%>%filter(DateTime < as.POSIXct("2021-07-18 02:45",tz="UTC"))%>%filter(WL_m>0.0211788)
+WL_04_BeforeLow <- WL_04%>%filter(DateTime < as.POSIXct("2021-07-18 02:45",tz="UTC"))%>%filter(WL_m<=0.0211788)
+WL_04_AfterHigh <- WL_04%>%filter(DateTime > as.POSIXct("2021-07-18 06:00",tz="UTC"))%>%filter(WL_m>0.119757)
+WL_04_AfterLow <- WL_04%>%filter(DateTime > as.POSIXct("2021-07-18 06:00",tz="UTC"))%>%filter(WL_m<=0.119757)
 
-WL_04[WL_04$DateTime > as.POSIXct("2021-07-18 06:00",tz="UTC"),]$Q_m3s <- 3.3124*(WL_04[WL_04$DateTime > as.POSIXct("2021-07-18 06:00",tz="UTC"),]$WL_m)^2 - 0.4161*(WL_04[WL_04$DateTime > as.POSIXct("2021-07-18 06:00",tz="UTC"),]$WL_m) + 0.0091
+WL_04_BeforeHigh$Q_m3s <- 0.8086*WL_04_BeforeHigh$WL_m^2 + 0.3622*WL_04_BeforeHigh$WL_m - 0.0042
 
-#also, delete the data between the change in rating curves
-WL_04 <- WL_04%>%drop_na(Q_m3s)
-#may need to revisit this, but perhapes it is fair to say that at certain periods the flow is basically 0. I'm going to make anything less than 0 Q, 0)
+WL_04_BeforeLow$Q_m3s <- 0.0014*exp(47.564*WL_04_BeforeLow$WL_m)
 
-WL_04[WL_04$Q_m3s < 0,]$Q_m3s <- 0
+
+WL_04_AfterHigh$Q_m3s <- 3.3124*WL_04_AfterHigh$WL_m^2 - 0.4161* WL_04_AfterHigh$WL_m + 0.0091
+
+WL_04_AfterLow$Q_m3s <- 0.0003*exp(26.029*WL_04_AfterLow$WL_m)
+
+WL_04 <- rbind(WL_04_BeforeHigh,WL_04_BeforeLow,WL_04_AfterHigh,WL_04_AfterLow)
+
 
 ```
 
@@ -166,6 +187,11 @@ plot the Q so that each station data can be cleaned
 ```{r plot 2, echo=FALSE}
 
 p3 <- plot_ly(WL_04, x = ~DateTime, y = ~Q_m3s, type = 'scatter', mode = 'markers') 
+
+
+p3 <- plot_ly(WL_04, x = ~DateTime, y = ~Q_m3s, type = 'scatter', mode = 'markers') 
+
+WL_04 <- WL_04[order(as.POSIXct(WL_04$DateTime, format="%Y-%m-%d %H:%M:%S")),]
 
 #write.csv(WL_04, here::here("data_cleaned/WL_04_cleaned.csv"),row.names = FALSE)
 
