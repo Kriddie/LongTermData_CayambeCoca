@@ -29,20 +29,20 @@ library(ggplot2)
 #calculate A[fm] for station 4
 
 #read in WL station data
-df <- read.csv(here::here("data_cleaned/WL_04_cleaned.csv"))
-df$DateTime <- as.POSIXct(df$DateTime,format="%Y-%m-%d %H:%M:%S", tz="UTC")
+WL_04_df <- read.csv(here::here("data_cleaned/WL_04_cleaned.csv"))
+read$DateTime <- as.POSIXct(read$DateTime,format="%Y-%m-%d %H:%M:%S", tz="UTC")
 #build rating curve between area and GH
 #GH = WL_m
 #find WL for time stamp
 timestamp <- as.POSIXct("2022-07-27 12:15",tz="UTC")
-df%>%filter(DateTime==timestamp)
+read%>%filter(DateTime==timestamp)
 
 #break it up into 2: Before 7/18/21
 
 #here is the equation  Before 7/18/21
   #Area =  1.1168x + 0.0095R² = 0.6446
 #after 7/18/21
-  #y = 0.9563x - 0.0621
+  #Area = 0.9563x - 0.0621
 
 df_sub1 <- df%>%filter(DateTime < as.POSIXct("2021-07-18 02:45",tz="UTC"))
 df_sub2 <- df%>%filter(DateTime > as.POSIXct("2021-07-18 06:00",tz="UTC"))
@@ -50,10 +50,12 @@ df_sub2 <- df%>%filter(DateTime > as.POSIXct("2021-07-18 06:00",tz="UTC"))
 df_sub1$Area <- 1.1168*df_sub1$WL_m + 0.0095
 df_sub2$Area <- 0.9563*df_sub2$WL_m - 0.0621
 
-df <- rbind(df_sub1,df_sub2)
+WL_04_df <- rbind(df_sub1,df_sub2)
 
 #now calc velocity #v = Q/A[fm]
-df$v_ms <- df$Q_m3s/df$Area
+WL_04_df$v_ms <- WL_04_df$Q_m3s/WL_04_df$Area
+
+
 
 
 p3 <- plot_ly(df, x = ~DateTime, y = ~v_ms, type = 'scatter', mode = 'markers') 
