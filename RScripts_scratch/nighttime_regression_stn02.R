@@ -39,25 +39,25 @@ baro$solar.time <- calc_solar_time(baro$local.time, longitude=-78.202283)
 baro$DateTime <- NULL
 
 #read in lux
-stn01_lux_df <- read.csv(here::here("data_cleaned/LUX_abovewater_01_cleaned.csv"))
-stn01_lux_df$local.time <- as.POSIXct(stn01_lux_df$DateTime,format="%m/%d/%Y %H:%M", tz='America/Guayaquil')
-stn01_lux_df$solar.time <- calc_solar_time(stn01_lux_df$local.time, longitude=-78.202283)
-stn01_lux_df$DateTime <- NULL
+stn02_lux_df <- read.csv(here::here("data_cleaned/LUX_abovewater_02_cleaned.csv"))
+stn02_lux_df$local.time <- as.POSIXct(stn02_lux_df$DateTime,format="%Y-%m-%d %H:%M", tz='America/Guayaquil')
+stn02_lux_df$solar.time <- calc_solar_time(stn02_lux_df$local.time, longitude=-78.202283)
+stn02_lux_df$DateTime <- NULL
 
 #read in discharge
-stn01_Q_df <- read.csv(here::here("data_cleaned/WL_01_cleaned.csv"))%>%select(DateTime,Q_m3s)
-stn01_Q_df$local.time <- as.POSIXct(stn01_Q_df$DateTime,format="%Y-%m-%d %H:%M", tz='America/Guayaquil')
-stn01_Q_df$solar.time <- calc_solar_time(stn01_Q_df$local.time, longitude=-78.202283)
-stn01_Q_df$DateTime <- NULL
+stn02_Q_df <- read.csv(here::here("data_cleaned/WL_02_cleaned.csv"))%>%select(DateTime,Q_m3s)
+stn02_Q_df$local.time <- as.POSIXct(stn02_Q_df$DateTime,format="%Y-%m-%d %H:%M", tz='America/Guayaquil')
+stn02_Q_df$solar.time <- calc_solar_time(stn02_Q_df$local.time, longitude=-78.202283)
+stn02_Q_df$DateTime <- NULL
 
-stn01_O2_df <- read.csv("data_cleaned/DO_01_cleaned.csv")
-stn01_O2_df$local.time <- as.POSIXct(stn01_O2_df$DateTime,format="%Y-%m-%d %H:%M", tz='America/Guayaquil')
-stn01_O2_df$solar.time <- calc_solar_time(stn01_O2_df$local.time, longitude=-78.202283)
-stn01_O2_df$DateTime <- NULL
+stn02_O2_df <- read.csv("data_cleaned/DO_02_cleaned.csv")
+stn02_O2_df$local.time <- as.POSIXct(stn02_O2_df$DateTime,format="%Y-%m-%d %H:%M", tz='America/Guayaquil')
+stn02_O2_df$solar.time <- calc_solar_time(stn02_O2_df$local.time, longitude=-78.202283)
+stn02_O2_df$DateTime <- NULL
 
-stn01_df <- left_join(stn01_O2_df,baro,by=c("local.time","solar.time"))
-stn01_df <- left_join(stn01_df,stn01_lux_df,by=c("local.time","solar.time","Station"))
-stn01_df <- left_join(stn01_df,stn01_Q_df,by=c("local.time","solar.time"))
+stn02_df <- left_join(stn02_O2_df,baro,by=c("local.time","solar.time"))
+stn02_df <- left_join(stn02_df,stn02_lux_df,by=c("local.time","solar.time","Station"))
+stn02_df <- left_join(stn02_df,stn02_Q_df,by=c("local.time","solar.time"))
 
 #calculate % saturation column
 
@@ -68,45 +68,45 @@ stn01_df <- left_join(stn01_df,stn01_Q_df,by=c("local.time","solar.time"))
 #Ceq_standardP = exp[7.7117 - 1.31403 • ln(t + 45.93)]
 #unit: mg/L
 
-stn01_df$Ceq_standardP <- exp(7.7117 - 1.31403 * log(stn01_df$DOTemp_c + 45.93))
+stn02_df$Ceq_standardP <- exp(7.7117 - 1.31403 * log(stn02_df$DOTemp_c + 45.93))
 
 #P_atm = nonstandard pressure
 #to convert kpa to atm, divide by 101.3
 #unit: atm
-stn01_df$P_atm <- stn01_df$AirPres_kpa/101.3
+stn02_df$P_atm <- stn02_df$AirPres_kpa/101.3
 
 #convert celcius to Kelvin
-stn01_df$DOTemp_K <- stn01_df$DOTemp_c + 273.15 
+stn02_df$DOTemp_K <- stn02_df$DOTemp_c + 273.15 
 
 #P_wv = partial pressure of water vapor
 # In P_wv = 11.8571 - (3840.70/T)-(216961/T^2)
 #units: atm
-stn01_df$P_wv <- exp(11.8571 - (3840.70/stn01_df$DOTemp_K)-(216961/stn01_df$DOTemp_K^2))
+stn02_df$P_wv <- exp(11.8571 - (3840.70/stn02_df$DOTemp_K)-(216961/stn02_df$DOTemp_K^2))
 
 #omega = 0.000975-(1.426*10^-5*t) + (6.436*10^-8*t^2)
-stn01_df$omega = 0.000975-(1.426*10^-5*stn01_df$DOTemp_c) + (6.436*10^-8*stn01_df$DOTemp_c^2)
+stn02_df$omega = 0.000975-(1.426*10^-5*stn02_df$DOTemp_c) + (6.436*10^-8*stn02_df$DOTemp_c^2)
 
 #now calculate C_p
-stn01_df$C_p <- stn01_df$Ceq_standardP*stn01_df$P_atm*(
-  (1-stn01_df$P_wv/stn01_df$P_atm)*(1-stn01_df$omega*stn01_df$P_atm)/
-    (1- stn01_df$P_wv)/(1- stn01_df$omega ))
+stn02_df$C_p <- stn02_df$Ceq_standardP*stn02_df$P_atm*(
+  (1-stn02_df$P_wv/stn02_df$P_atm)*(1-stn02_df$omega*stn02_df$P_atm)/
+    (1- stn02_df$P_wv)/(1- stn02_df$omega ))
 
 #now % saturation
-stn01_df$percent_sat <- (100* stn01_df$DO_mgL)/stn01_df$C_p
+stn02_df$percent_sat <- (100* stn02_df$DO_mgL)/stn02_df$C_p
 
 
 #Select columns and rename:
 #"solar.time", "temp.water", "DO.obs" , "DO.sat"
 #is it actually local time that I need?
 #and add light
-stn01_df_subset <- stn01_df %>%select(solar.time,local.time,DOTemp_c,DO_mgL,C_p,LUX,Q_m3s)%>%rename(
-  temp.water=DOTemp_c,DO.obs=DO_mgL,DO.sat=C_p,light=LUX)
+stn02_df_subset <- stn02_df %>%select(solar.time,local.time,DOTemp_c,DO_mgL,C_p,Lux,Q_m3s)%>%rename(
+  temp.water=DOTemp_c,DO.obs=DO_mgL,DO.sat=C_p,light=Lux)
 
 #set additional parameters:
 #stn04_df_subset <- stn04_df_subset%>%
 #  filter(solar.time>"2021-06-11 00:00:00"&solar.time<"2021-08-11 00:00:00")%>%
 #  drop_na(light)
-stn01_df_subset <- stn01_df_subset%>%
+stn02_df_subset <- stn02_df_subset%>%
  # drop_na(light)%>%
   drop_na(DO.sat)#%>%filter(DO.obs > 0)
 
@@ -126,7 +126,7 @@ ggplot(stn04_O2_df,aes(x=DateTime,y=percent_sat)) + geom_point()
 ###
 
 
-site=stn01_df_subset
+site=stn02_df_subset
 reg_start= '18:00:00'
 reg_size=4
 num_reg = 5
@@ -138,8 +138,8 @@ timesteps=15
   daily = site %>% group_by(Daily = format(local.time, "%Y-%m-%d")) %>%
     summarise_all(funs(mean=mean(., na.rm=T)))
   
-  daily <- daily%>%filter(Daily<"2019-10-14" | Daily>"2019-10-16")%>%
-    filter(Daily<"2019-10-17" | Daily>"2019-10-23")%>%
+  daily <- daily%>%filter(Daily<"2019-10-08" | Daily>"2019-10-24")%>%
+    filter(Daily<"2019-11-01" | Daily>"2019-11-01")#%>%
     filter(Daily<"2019-11-05" | Daily>"2019-11-11")%>%
     filter(Daily!="2019-11-20")%>%
     filter(Daily<"2019-11-25"|Daily>"2019-11-26")%>%

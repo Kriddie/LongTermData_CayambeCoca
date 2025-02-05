@@ -35,10 +35,11 @@ long term data for station 1
 ```{r read in data, echo=FALSE}
 
 WL_01 <- read.csv(here::here("merged_data_raw/WL_01_merged_raw.csv"))
-WL_01$DateTime <- as.POSIXct(WL_01$DateTime, format="%Y-%m-%d %H:%M:%S",tz="UTC")
+#WL_01$DateTime <-  format(WL_01$DateTime,format="%Y-%m%-%d %T")
+WL_01$DateTime <- as.POSIXct(WL_01$DateTime, format="%Y-%m-%d %H:%M",tz="UTC")
 
-Baro <- read.csv(here::here("data_cleaned/Baro_data_all.csv"))
-Baro$DateTime <- as.POSIXct(Baro$DateTime, format="%Y-%m-%d %H:%M:%S",tz="UTC")
+Baro <- read.csv(here::here("data_cleaned/Baro_cleaned.csv"))
+Baro$DateTime <- as.POSIXct(Baro$DateTime,format="%Y-%m-%d %H:%M", tz='UTC')
 Baro$X <- NULL
 
 ```
@@ -728,12 +729,12 @@ DO_01$Station <- "Stn01"
 
 ```
 
-#clean and check do data
+#clean and check DO data
 
 ```{r check CO2 data plot, echo=FALSE}
 
 #clean
-DO_01 <- DO_01%>%filter(DO_mgL > -100)
+DO_01 <- DO_01%>%filter(DO_mgL > 0)
 
 ##check data
 p1 <- plot_ly(DO_01, x = ~DateTime, y = ~DO_mgL, type = 'scatter', mode = 'markers') 
