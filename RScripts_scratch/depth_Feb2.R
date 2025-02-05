@@ -29,13 +29,13 @@ library(ggplot2)
 #calculate A[fm] for station 4
 
 #read in WL station data
-WL_04_df <- read.csv(here::here("data_cleaned/WL_04_cleaned.csv"))
-read$DateTime <- as.POSIXct(read$DateTime,format="%Y-%m-%d %H:%M:%S", tz="UTC")
+df <- read.csv(here::here("data_cleaned/WL_04_cleaned.csv"))
+df$DateTime <- as.POSIXct(df$DateTime,format="%Y-%m-%d %H:%M:%S", tz="UTC")
 #build rating curve between area and GH
 #GH = WL_m
 #find WL for time stamp
 timestamp <- as.POSIXct("2022-07-27 12:15",tz="UTC")
-read%>%filter(DateTime==timestamp)
+df%>%filter(DateTime==timestamp)
 
 #break it up into 2: Before 7/18/21
 

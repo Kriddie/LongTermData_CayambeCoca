@@ -127,9 +127,9 @@ ggplot(stn04_O2_df,aes(x=DateTime,y=percent_sat)) + geom_point()
 
 
 site=stn02_df_subset
-reg_start= '18:00:00'
+reg_start= '17:00:00'
 reg_size=4
-num_reg = 5
+num_reg = 3
 timesteps=15
 
 #night_fun_noplots <- function(site, reg_start, reg_size, num_reg , timesteps){
@@ -139,23 +139,21 @@ timesteps=15
     summarise_all(funs(mean=mean(., na.rm=T)))
   
   daily <- daily%>%filter(Daily<"2019-10-08" | Daily>"2019-10-24")%>%
-    filter(Daily<"2019-11-01" | Daily>"2019-11-01")#%>%
-    filter(Daily<"2019-11-05" | Daily>"2019-11-11")%>%
-    filter(Daily!="2019-11-20")%>%
-    filter(Daily<"2019-11-25"|Daily>"2019-11-26")%>%
-    filter(Daily!="2019-12-14")%>%
-    filter(Daily<"2019-12-15"|Daily>"2019-12-20")%>%
-    filter(Daily<"2020-01-08"|Daily>"2021-07-12")%>%
+    filter(Daily<"2019-11-01" | Daily>"2019-11-01")%>%
+    filter(Daily!="2019-11-05")%>%filter(Daily!="2019-11-06")%>%
+    filter(Daily<"2019-11-08"|Daily>"2019-12-22")%>%
+    filter(Daily<"2019-12-31"|Daily>"2021-07-12")%>%
     filter(Daily!="2021-07-27")%>%
-    filter(Daily!="2021-08-31")%>%
-    filter(Daily!="2021-09-21")%>%
-    filter(Daily!="2021-09-29")%>%
-    filter(Daily<"2021-10-07"|Daily>"2022-04-13")%>%
-    filter(Daily!="2022-04-18")%>%
-    filter(Daily!="2022-04-27")%>%filter(Daily!="2022-04-29")%>%
-    filter(Daily<"2022-05-02"|Daily>"2022-05-05")%>%
-    filter(Daily<"2022-05-08"|Daily>"2022-05-14")%>%
-    filter(Daily<"2022-05-22"|Daily>"2022-05-22")
+    filter(Daily!="2021-10-24")%>%
+    filter(Daily<"2021-11-03"|Daily>"2022-03-17")%>%
+    filter(Daily!="2022-06-22")%>%
+    filter(Daily!="2022-06-30")%>%
+    filter(Daily!="2022-10-12")%>%
+    filter(Daily!="2022-12-01")%>%
+    filter(Daily!="2022-12-08")
+  
+
+  
   
   
 
@@ -166,7 +164,8 @@ timesteps=15
   daily$intercept <- NA
   daily$slope.se <- NA
   daily$k600 <- NA
-  
+  daily$Q_m3s <- NA
+
   
   
   #the main loop to go through each day/night
@@ -188,6 +187,7 @@ timesteps=15
       mutate(deltaO2= (oxyf1-lag(oxyf1))/timesteps*1440,     #calculate dC/dt and convert the values to  mgO2 L-1 day-1. 
              O2def= DO.sat - DO.obs) %>%           #calculate the oxygen deficit in mgO2/L
       na.omit() #and remove the NAs, because after smoothing the head and tail have a couple NAs
+    
     
     #a sequence to do several regressions. It can be changed, now it makes 6 regressions
     twindow <- seq(from=1, to=num_reg*3600, by=3600 )
@@ -234,6 +234,11 @@ timesteps=15
     
     #finally convert the slope to k600 with the temperature correction #from raymond et al., 2012
     daily$k600[i]<- ((600/(1800.6-(120.1*daily$temp.water_mean[i])+(3.7818*daily$temp.water_mean[i]^2)-(0.047608*daily$temp.water_mean[i]^3)))^-0.5)*varyreg2$slope[bestie]
+    
+    #also I want a summary of Q
+    test2 <- site %>%  select(local.time,Q_m3s)%>%
+      filter(local.time> Date1 & local.time < Date2)
+    daily$Q_m3s[i]    <- mean(test2$Q_m3s,na.rm=TRUE)
   }
 
         ##### THIS IS A BONUS, TO MAKE A COMPOSITE PLOT OF [O2], dO2, LIGHT AND THE REGRESSION ####
@@ -302,5 +307,32 @@ plot(r2~k600,data=daily)
   
 ggplot(daily,aes(x=r2,y=k600)) + geom_point()
 
-ggplot(daily %>%filter(r2>.8)%>%filter(slope>0)
-       ,aes(x=Q_m3s_mean,y=k600)) + geom_point()
+ggplot(daily %>%filter(r2>.6)%>%filter(slope>0)
+       ,aes(x=Q_m3s,y=k600)) + geom_point()
+
+ggplot(daily %>%
+         filter(r2>.6)%>%
+         filter(local.time_mean>"2021-07-01"&local.time_mean<"2021-08-01")%>%
+         filter(slope>0)
+       ,aes(x=Q_m3s,y=k600)) + geom_point()
+
+ggplot(daily %>%
+         filter(r2>.7)%>%filter(slope>0)%>%
+         filter(local.time_mean>"2019-07-18")%>%
+         filter(local.time_mean<"2019-09-14" | local.time_mean > "2021-07-01")%>%
+         filter(local.time_mean< "2021-09-18" | local.time_mean >"2022-03-03")
+       ,aes(x=Q_m3s,y=k600,color=local.time_mean)) + geom_point()
+
+ggplot(daily %>%
+         filter(r2>.6)%>%filter(slope>0)%>%
+         filter(local.time_mean>"2019-06-18" & local.time_mean <"2019-08-31")
+       ,aes(x=Q_m3s,y=k600,color=local.time_mean)) + geom_point()
+ggplot(daily %>%
+         filter(r2>.6)%>%filter(slope>0)%>%
+         filter(local.time_mean>"2021-06-10" & local.time_mean <"2021-08-31")
+       ,aes(x=Q_m3s,y=k600,color=local.time_mean)) + geom_point()
+
+ggplot(daily %>%
+         filter(r2>.6)%>%filter(slope>0)%>%
+         filter(local.time_mean>"2022-06-10" & local.time_mean <"2022-08-31")
+       ,aes(x=Q_m3s,y=k600,color=local.time_mean)) + geom_point()
