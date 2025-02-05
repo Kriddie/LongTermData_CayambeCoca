@@ -511,7 +511,9 @@ for (site in site_names){
   #colnames(LuxData)=c("row","DateTime","Temp_C","Lux")
   #LuxData=LuxData[,2:4]
   LuxData=unique(LuxData)
-  LuxData$DateTime <- as.POSIXct(LuxData$DateTime, format="%m/%d/%y %I:%M:%S %p", tz="UTC")
+#  LuxData$DateTime <- as.POSIXct(LuxData$DateTime, format="%m/%d/%y %I:%M:%S %p", tz="UTC")
+    LuxData$DateTime <- as.POSIXct(LuxData$DateTime, format="%m/%d/%Y %H:%M", tz="UTC")
+  
   assign((paste(site,"Lux_data",sep="_")),LuxData) #creates object with new appended data
   rm(LuxData) #removes WLdata so that multiple sites aren't appended together
 }
