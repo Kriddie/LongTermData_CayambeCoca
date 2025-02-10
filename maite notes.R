@@ -11,7 +11,7 @@
 #second refers to k600, lots of paper use "kb" or partial pooling
 #third is errors; use both process and observational errors: "oipi"
 #fourth is is the way that they calculate the metabolism, maite uses trapazoidal: "tr"
-#fith has to do with 
+#fifth has to do with 
 
 # also do you want constant respiration or to vary with temperature
       #maite has constant respiration throughout the day

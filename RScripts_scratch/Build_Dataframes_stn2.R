@@ -31,13 +31,13 @@ WL_02$DateTime <- as.POSIXct(WL_02$DateTime,format="%Y-%m-%d %H:%M:%S",tz="UTC")
 
 #DO
 DO_02 <- read.csv(here::here("data_cleaned/DO_02_cleaned.csv"))
-DO_02$DateTime <- as.POSIXct(DO_02$DateTime,format="%Y-%m-%d %H:%M:%S",tz="UTC")
+DO_02$DateTime <- as.POSIXct(DO_02$DateTime,format="%Y-%m-%d %H:%M",tz="UTC")
 
 #rbind
 Stn02 <- full_join(WL_02,DO_02, by=c("DateTime","Station"))
+
 #the first DO measurment is 2019-07-18 14:00:00, so filter for after that
 Stn02 <- Stn02%>%filter(DateTime > as.POSIXct("2019-07-18 14:00:00",tz="UTC"))
-
 #calc DO sat using stream metabolizer funtion
 Stn02$DO_sat <- calc_DO_sat(temp=u(Stn02$WLTemp_c,"degC"), press=u(Stn02$AirPres_kpa*10,"mb"), sal=u(0,"PSU")) # units are checked
 
@@ -61,12 +61,10 @@ Stn02$light <- calc_light(Stn02$solar.time,0.327992,-78.200147,max.PAR = u(1400*
 #for now let's stick to the calc_depth
 
 Stn02$Q_m3s_unitted <- unitted(Stn02$Q_m3s, units = "m^3 s^-1")
-Stn02$depth <- calc_depth(Stn02$Q_m3s_unitted, c = u(0.409, "m"), f = u(0.294, ""))
-
-
-
-
-
+#this is the  units using estimations from US streams (we used this for July 10 dataframe)
+#Stn02$depth <- calc_depth(Stn02$Q_m3s_unitted, c = u(0.409, "m"), f = u(0.294, ""))
+#this is the coefficients developed using our site specific measurments:
+Stn02$depth <- calc_depth(Stn02$Q_m3s_unitted, c = u(0.6383832, "m"), f = u(0.3108922, ""))
 
 
 #change names
@@ -123,5 +121,5 @@ dat_check$difftime <- difftime(dat_check$time_2,dat_check$time_1,units="mins")
 
 
 #Write out
-write.csv(Dat2,here::here("metabolizer_dataframe/stn02_df_july10.csv"),row.names = FALSE)
+#write.csv(Dat2,here::here("metabolizer_dataframe/stn02_df_feb09.csv"),row.names = FALSE)
 

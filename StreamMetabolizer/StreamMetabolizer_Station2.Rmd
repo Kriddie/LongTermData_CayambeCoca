@@ -83,12 +83,15 @@ note: stream metabolizer can take NAs but not an empty row
 
 ```{r data}
 
-stn02 <- read.csv(here::here("metabolizer_dataframe/stn02_df_july10.csv"))
+#stn02 <- read.csv(here::here("metabolizer_dataframe/stn02_df_july10.csv"))
+stn02 <- read.csv(here::here("metabolizer_dataframe/stn02_df_feb09.csv"))
 stn02$solar.time <- as.POSIXct(stn02$solar.time,format="%Y-%m-%d %H:%M:%S",tz="UTC")
 
 #let's see about just 2019 data
-dat <- stn02#%>%#drop_na(DO.obs)%>%
-#  filter(solar.time < as.POSIXct("2019-08-13 00:00:00"))
+dat <- stn02%>%#drop_na(DO.obs)%>%
+#  filter(solar.time < as.POSIXct("2019-08-13 00:00:00"))%>%
+  filter(solar.time > as.POSIXct("2021-06-01 00:00:00") &
+           solar.time < as.POSIXct("2022-06-01 00:00:00"))
 
 #sort by date time
 dat <- dat[order(dat$solar.time , decreasing = FALSE),]
@@ -209,7 +212,7 @@ plot_DO_preds(mm)
 ```{r save model, fig.width=5, fig.height=5}
 
 #save model
-#save(mm, file = "model_stn02_partially-pooled_all.RData")
+#save(mm, file = "model_stn02_partially-pooled_stn02_feb08.RData")
 
 
 ```
@@ -292,12 +295,25 @@ data_inspection <- get_params(mm)
 ```
 
 ```{r plot}
+dat$date <- as.Date(dat$solar.time,format="%Y-%m-%d")
+dat_summary<- dat%>%group_by(date)%>%
+  summarise(
+    discharge = mean(discharge),
+    light = mean(light)
+  )
+data_inspection <- left_join(data_inspection,dat_summary,by="date")
+
 ggplot(data_inspection,aes(x=date,y=GPP.daily)) + geom_point()
 ggplot(data_inspection,aes(x=date,y=ER.daily)) + geom_point()
 
 ggplot(data_inspection,aes(x=date,y=K600.daily)) + geom_point()
 
+ggplot(data_inspection,aes(x=date,y=K600.daily)) + geom_point()
+
+
 ggplot(data_inspection,aes(x=ER.daily,y=K600.daily)) + geom_point()
+
+ggplot(data_inspection,aes(x=discharge,y=K600.daily)) + geom_point()
 
 
 ```

@@ -305,16 +305,16 @@ timesteps=15
 
 plot(r2~k600,data=daily)
   
-ggplot(daily,aes(x=r2,y=k600)) + geom_point()
+ggplot(daily,aes(x=r2,y=slope)) + geom_point()
 
 ggplot(daily %>%filter(r2>.6)%>%filter(slope>0)
-       ,aes(x=Q_m3s,y=k600)) + geom_point()
+       ,aes(x=Q_m3s,y=slope)) + geom_point()
 
 ggplot(daily %>%
          filter(r2>.6)%>%
          filter(local.time_mean>"2021-07-01"&local.time_mean<"2021-08-01")%>%
          filter(slope>0)
-       ,aes(x=Q_m3s,y=k600)) + geom_point()
+       ,aes(x=Q_m3s*1000,y=k600)) + geom_point()
 
 ggplot(daily %>%
          filter(r2>.7)%>%filter(slope>0)%>%
