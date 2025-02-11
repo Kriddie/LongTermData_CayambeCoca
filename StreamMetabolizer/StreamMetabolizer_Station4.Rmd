@@ -83,17 +83,14 @@ note: stream metabolizer can take NAs but not an empty row
 
 ```{r data}
 
-#stn02 <- read.csv(here::here("metabolizer_dataframe/stn02_df_july10.csv"))
-stn02 <- read.csv(here::here("metabolizer_dataframe/stn02_df_feb09.csv"))
-stn02$solar.time <- as.POSIXct(stn02$solar.time,format="%Y-%m-%d %H:%M:%S",tz="UTC")
+stn04 <- read.csv(here::here("metabolizer_dataframe/stn04_df_feb11.csv"))
+stn04$solar.time <- as.POSIXct(stn04$solar.time,format="%Y-%m-%d %H:%M:%S",tz="UTC")
 
 #let's see about just 2019 data
-dat <- stn02#%>%
-#  filter(solar.time < as.POSIXct("2019-08-13 00:00:00"))%>%
- # filter(solar.time > as.POSIXct("2021-07-05 00:00:00") &
-#           solar.time < as.POSIXct("2021-08-16 00:00:00"))%>%
-  filter(solar.time > as.POSIXct("2022-03-23 00:00:00")&
-           solar.time < as.POSIXct("2023-04-02 00:00:00"))
+dat <- stn04#%>%
+
+#  filter(solar.time > as.POSIXct("2022-03-23 00:00:00")&
+ #        solar.time < as.POSIXct("2023-04-02 00:00:00"))
 
 #sort by date time
 dat <- dat[order(dat$solar.time , decreasing = FALSE),]
@@ -139,7 +136,7 @@ prior_K600_lnQ_nodes_meanlog <- function(depth, slope) {
 }
 
 #look at min and max discharge, 
-#for stn2 it is: 0.003237239 to 0.2829755
+#for stn2 it is: 0.002120185 to 0.10986061
 #take the ln() and enter in as prior
 bayes_specs$K600_lnQ_nodes_centers<-seq(-6, -1.5, 0.5)
 
@@ -168,11 +165,8 @@ crossed fingas everywh\eeer
 mm <- metab(bayes_specs, data=dat#%>%select(!discharge)
             )
 ```
-july 10: 2019 data, partially pooled: start = 8:04 end ~= 8:20
-july 10: 2019 data, not-pooled: start = 8:30 end = 8:45 
-july 10: all station 2 data: start ~= 9:00
 
-Feb 08: 2021 data, stn02, k600 binned start=12:25 end = before 2:19
+Feb 11, stn04 all data, k600 partialy poiled start=12:00 end = 1:25
 
 # 4. Inspecting the model
 
@@ -219,7 +213,7 @@ plot_DO_preds(mm)
 #save(mm, file = "model_stn02_partially-pooled_stn02_feb08_2022.RData")
 
 predictions <- predict_metab(mm)
-#write.csv(predictions,here::here("StreamMetabolizer/Predictions/MetabPredictions_stn02_2019_feb08df.csv"))
+#write.csv(predictions,here::here("StreamMetabolizer/Predictions/MetabPredictions_stn04_all_feb11df.csv"))
 
 ```
 
@@ -322,7 +316,7 @@ ggplot(data_inspection,aes(x=GPP.daily,y=ER.daily)) + geom_point()
 ggplot(data_inspection,aes(x=discharge,y=GPP.daily)) + geom_point()
 
 
-ggplot(data_inspection,aes(x=K600.daily,y=ER.daily)) + geom_point()
+ggplot(data_inspection,aes(x=K600.daily,y=GPP.daily)) + geom_point()
 
 ggplot(data_inspection,aes(x=light,y=GPP.daily)) + geom_point()
 
@@ -335,6 +329,6 @@ ggplot(data_inspection,aes(x=discharge,y=light)) + geom_point()
 
 ```{r write out}
 
-#write.csv(data_inspection,here::here("StreamMetabolizer/Predictions/data_inspection_stn02_feb08_2022.csv"))
+#write.csv(data_inspection,here::here("StreamMetabolizer/Predictions/data_inspection_stn04_feb11_all.csv"))
 
 ```
