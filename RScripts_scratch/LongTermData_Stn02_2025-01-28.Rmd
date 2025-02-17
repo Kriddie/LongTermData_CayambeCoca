@@ -517,7 +517,7 @@ Stn02 <- Stn02%>%select(
 
 Stn02$max_detect_ppm <- 10000
 
-#write.csv(Stn02, here::here("data_cleaned/CO2_02_max1000_cleaned.csv"),row.names = FALSE)
+#write.csv(Stn02, here::here("data_cleaned/CO2_02_max10000_cleaned.csv"),row.names = FALSE)
 
 ```
 

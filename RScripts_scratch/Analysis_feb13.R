@@ -6,6 +6,7 @@ library(tidyr)
 library(lubridate)
 library(zoo)
 library(plotly)
+library(EcoHydRology)
 
 #precipitation
 
@@ -70,11 +71,12 @@ ggplot(stn01%>%filter(DateTime>as.POSIXct("2021-01-01 00:00:00")),aes(x=DateTime
 
 fig <- plot_ly(data = stn01, x = ~DateTime, y = ~Q_Ls)
 fig
-####
+
+#### station 2
 
 WL_df <- read.csv(here::here("data_cleaned/WL_02_cleaned.csv"))
 WL_df$DateTime <- as.POSIXct(WL_df$DateTime, format="%Y-%m-%d %H:%M",tz="UTC")
-CO2_df <- read.csv(here::here("data_cleaned/CO2_02_max1000_cleaned.csv")) 
+CO2_df <- read.csv(here::here("data_cleaned/CO2_02_max10000_cleaned.csv")) 
 CO2_df$DateTime <- as.POSIXct(CO2_df$DateTime, format="%Y-%m-%d %H:%M:%S",tz="UTC")
 
 stn02 <- full_join(WL_df,CO2_df,by=c("DateTime","Station"))
@@ -82,14 +84,11 @@ stn02 <- full_join(WL_df,CO2_df,by=c("DateTime","Station"))
 
 ggplot(stn02#%>%filter(DateTime>as.POSIXct("2021-01-01 00:00:00"))
        ,aes(x=DateTime,Q_m3s)) + geom_point()
-
 ggplot(stn02%>%filter(DateTime>as.POSIXct("2021-01-01 00:00:00")),aes(x=DateTime,CO2_ppm_adjusted)) + geom_point()
-
-
 ggplot(stn02,aes(x=Q_m3s,CO2_ppm_adjusted,color=DateTime)) + geom_point()
 
 
-###
+### station 04
 WL_df <- read.csv(here::here("data_cleaned/WL_04_cleaned.csv"))
 WL_df$DateTime <- as.POSIXct(WL_df$DateTime, format="%Y-%m-%d %H:%M",tz="UTC")
 CO2_df <- read.csv(here::here("data_cleaned/CO2_04_max10000_cleaned.csv")) 
@@ -103,12 +102,23 @@ ggplot(stn04%>%filter(DateTime>as.POSIXct("2021-01-01 00:00:00")),aes(x=DateTime
 
 ggplot(stn04%>%filter(DateTime>as.POSIXct("2021-01-01 00:00:00")),aes(x=Q_m3s,CO2_ppm_adjusted)) + geom_point()
 
+###stn03
+###
+WL_df <- read.csv(here::here("data_cleaned/WL_03_cleaned.csv"))
+WL_df$DateTime <- as.POSIXct(WL_df$DateTime, format="%Y-%m-%d %H:%M",tz="UTC")
+CO2_df <- read.csv(here::here("data_cleaned/CO2_03_max10000_cleaned.csv")) 
+CO2_df$DateTime <- as.POSIXct(CO2_df$DateTime, format="%Y-%m-%d %H:%M:%S",tz="UTC")
+
+stn03 <- full_join(WL_df,CO2_df,by=c("DateTime","Station"))
+stn03 <- stn03%>%filter(DateTime > as.POSIXct("2021-03-15 03:30:00"))
 ###
 
 all_stn <- full_join(stn01%>%select(DateTime,Q_m3s,CO2_ppm_adjusted)%>%rename(Q_m3s_01 = Q_m3s,CO2_ppm_01=CO2_ppm_adjusted),
                      stn02%>%select(DateTime,Q_m3s,CO2_ppm_adjusted)%>%rename(Q_m3s_02 = Q_m3s,CO2_ppm_02=CO2_ppm_adjusted),
                      by="DateTime")
-
+all_stn <- full_join(all_stn,
+                     stn03%>%select(DateTime,Q_m3s,CO2_ppm_adjusted)%>%rename(Q_m3s_03 = Q_m3s,CO2_ppm_03=CO2_ppm_adjusted),
+                     by="DateTime")
 all_stn <- full_join(all_stn,
                      stn04%>%select(DateTime,Q_m3s,CO2_ppm_adjusted)%>%rename(Q_m3s_04 = Q_m3s,CO2_ppm_04=CO2_ppm_adjusted),
                      by="DateTime")
@@ -122,8 +132,15 @@ ggplot(all_stn ,aes(x=CO2_ppm_01,CO2_ppm_02,color=log(Q_m3s_01))) + geom_point()
   scale_y_continuous(transform = "log") + scale_x_continuous(transform = "log") +
   geom_abline(intercept = 0, slope = 1)
 
-ggplot(all_stn ,aes(x=CO2_ppm_01,CO2_ppm_04,color=log(Q_m3s_01))) + geom_point() +
+ggplot(all_stn ,aes(x=CO2_ppm_01,CO2_ppm_03)) + geom_point() +
+  scale_y_continuous(transform = "log") + scale_x_continuous(transform = "log") +
   geom_abline(intercept = 0, slope = 1)
+
+ggplot(all_stn ,aes(x=CO2_ppm_01,CO2_ppm_04,color=Q_m3s_04)) + geom_point() +
+  scale_y_continuous(transform = "log") + scale_x_continuous(transform = "log") 
+
+ggplot(all_stn ,aes(x=CO2_ppm_03,CO2_ppm_04)) + geom_point() +
+  scale_y_continuous(transform = "log") + scale_x_continuous(transform = "log") 
 
 
 ### bind in precip data
@@ -293,6 +310,52 @@ stn01_storm23 <- stn01%>%filter(DateTime>storm23_begin&DateTime<storm23_end)
 stn01_storm24 <- stn01%>%filter(DateTime>storm24_begin&DateTime<storm24_end)
 
 
+stn02_storm1 <- stn02%>%filter(DateTime>storm1_begin&DateTime<storm1_end)
+stn02_storm2 <- stn02%>%filter(DateTime>storm2_begin&DateTime<storm2_end)
+stn02_storm3 <- stn02%>%filter(DateTime>storm3_begin&DateTime<storm3_end)
+stn02_storm4 <- stn02%>%filter(DateTime>storm4_begin&DateTime<storm4_end)
+stn02_storm5 <- stn02%>%filter(DateTime>storm5_begin&DateTime<storm5_end)
+stn02_storm6 <- stn02%>%filter(DateTime>storm6_begin&DateTime<storm6_end)
+stn02_storm7 <- stn02%>%filter(DateTime>storm7_begin&DateTime<storm7_end)
+stn02_storm8 <- stn02%>%filter(DateTime>storm8_begin&DateTime<storm8_end)
+stn02_storm9 <- stn02%>%filter(DateTime>storm9_begin&DateTime<storm9_end)
+stn02_storm10 <- stn02%>%filter(DateTime>storm10_begin&DateTime<storm10_end)
+stn02_storm11 <- stn02%>%filter(DateTime>storm11_begin&DateTime<storm11_end)
+stn02_storm12 <- stn02%>%filter(DateTime>storm12_begin&DateTime<storm12_end)
+stn02_storm13 <- stn02%>%filter(DateTime>storm13_begin&DateTime<storm13_end)
+stn02_storm14 <- stn02%>%filter(DateTime>storm14_begin&DateTime<storm14_end)
+stn02_storm15 <- stn02%>%filter(DateTime>storm15_begin&DateTime<storm15_end)
+stn02_storm16 <- stn02%>%filter(DateTime>storm16_begin&DateTime<storm16_end)
+stn02_storm17 <- stn02%>%filter(DateTime>storm17_begin&DateTime<storm17_end)
+stn02_storm18 <- stn02%>%filter(DateTime>storm18_begin&DateTime<storm18_end)
+stn02_storm19 <- stn02%>%filter(DateTime>storm19_begin&DateTime<storm19_end)
+stn02_storm20 <- stn02%>%filter(DateTime>storm20_begin&DateTime<storm20_end)
+stn02_storm21 <- stn02%>%filter(DateTime>storm21_begin&DateTime<storm21_end)
+stn02_storm22 <- stn02%>%filter(DateTime>storm22_begin&DateTime<storm22_end)
+stn02_storm23 <- stn02%>%filter(DateTime>storm23_begin&DateTime<storm23_end)
+stn02_storm24 <- stn02%>%filter(DateTime>storm24_begin&DateTime<storm24_end)
+
+
+stn03_storm5 <- stn03%>%filter(DateTime>storm5_begin&DateTime<storm5_end)
+stn03_storm6 <- stn03%>%filter(DateTime>storm6_begin&DateTime<storm6_end)
+stn03_storm7 <- stn03%>%filter(DateTime>storm7_begin&DateTime<storm7_end)
+stn03_storm8 <- stn03%>%filter(DateTime>storm8_begin&DateTime<storm8_end)
+stn03_storm9 <- stn03%>%filter(DateTime>storm9_begin&DateTime<storm9_end)
+stn03_storm10 <- stn03%>%filter(DateTime>storm10_begin&DateTime<storm10_end)
+stn03_storm11 <- stn03%>%filter(DateTime>storm11_begin&DateTime<storm11_end)
+stn03_storm12 <- stn03%>%filter(DateTime>storm12_begin&DateTime<storm12_end)
+stn03_storm13 <- stn03%>%filter(DateTime>storm13_begin&DateTime<storm13_end)
+stn03_storm14 <- stn03%>%filter(DateTime>storm14_begin&DateTime<storm14_end)
+stn03_storm15 <- stn03%>%filter(DateTime>storm15_begin&DateTime<storm15_end)
+stn03_storm16 <- stn03%>%filter(DateTime>storm16_begin&DateTime<storm16_end)
+stn03_storm17 <- stn03%>%filter(DateTime>storm17_begin&DateTime<storm17_end)
+stn03_storm18 <- stn03%>%filter(DateTime>storm18_begin&DateTime<storm18_end)
+stn03_storm19 <- stn03%>%filter(DateTime>storm19_begin&DateTime<storm19_end)
+stn03_storm20 <- stn03%>%filter(DateTime>storm20_begin&DateTime<storm20_end)
+stn03_storm21 <- stn03%>%filter(DateTime>storm21_begin&DateTime<storm21_end)
+stn03_storm22 <- stn03%>%filter(DateTime>storm22_begin&DateTime<storm22_end)
+stn03_storm23 <- stn03%>%filter(DateTime>storm23_begin&DateTime<storm23_end)
+stn03_storm24 <- stn03%>%filter(DateTime>storm24_begin&DateTime<storm24_end)
 
 stn04_storm1 <- stn04%>%filter(DateTime>storm1_begin&DateTime<storm1_end)
 stn04_storm2 <- stn04%>%filter(DateTime>storm2_begin&DateTime<storm2_end)
@@ -322,43 +385,100 @@ stn04_storm24 <- stn04%>%filter(DateTime>storm24_begin&DateTime<storm24_end)
 
 
 ggplot(stn01_storm1,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
-ggplot(stn01_storm2,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+ggplot(stn01_storm1,aes(x=Q_m3s,y=CO2_ppm_adjusted*Q_m3s,color=DateTime)) + geom_point()
+
+#ggplot(stn01_storm2,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
 #ggplot(stn01_storm3,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
 #ggplot(stn01_storm4,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
 #ggplot(stn01_storm5,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+
 ggplot(stn01_storm6,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+ggplot(stn01_storm6,aes(x=Q_m3s,y=CO2_ppm_adjusted*Q_m3s,color=DateTime)) + geom_point()
+
 ggplot(stn01_storm7,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+ggplot(stn01_storm7,aes(x=Q_m3s,y=CO2_ppm_adjusted*Q_m3s,color=DateTime)) + geom_point()
+
 ggplot(stn01_storm8,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+ggplot(stn01_storm8,aes(x=Q_m3s,y=CO2_ppm_adjusted*Q_m3s,color=DateTime)) + geom_point()
+
 ggplot(stn01_storm9,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+ggplot(stn01_storm9,aes(x=Q_m3s,y=CO2_ppm_adjusted*Q_m3s,color=DateTime)) + geom_point()
+
 ggplot(stn01_storm10,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+ggplot(stn01_storm10,aes(x=Q_m3s,y=CO2_ppm_adjusted*Q_m3s,color=DateTime)) + geom_point()
+
 ggplot(stn01_storm11,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+ggplot(stn01_storm11,aes(x=Q_m3s,y=CO2_ppm_adjusted*Q_m3s,color=DateTime)) + geom_point()
+
 ggplot(stn01_storm12,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+ggplot(stn01_storm12,aes(x=Q_m3s,y=CO2_ppm_adjusted*Q_m3s,color=DateTime)) + geom_point()
+
 ggplot(stn01_storm13,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+ggplot(stn01_storm13,aes(x=Q_m3s,y=CO2_ppm_adjusted*Q_m3s,color=DateTime)) + geom_point()
+
 ggplot(stn01_storm14,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+ggplot(stn01_storm14,aes(x=Q_m3s,y=CO2_ppm_adjusted*Q_m3s,color=DateTime)) + geom_point()
+
 #ggplot(stn01_storm15,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
 #ggplot(stn01_storm16,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
 #ggplot(stn01_storm17,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
 #ggplot(stn01_storm18,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
 ggplot(stn01_storm19,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+ggplot(stn01_storm19,aes(x=Q_m3s,y=CO2_ppm_adjusted*Q_m3s,color=DateTime)) + geom_point()
+
 ggplot(stn01_storm20,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+ggplot(stn01_storm20,aes(x=Q_m3s,y=CO2_ppm_adjusted*Q_m3s,color=DateTime)) + geom_point()
+
 #ggplot(stn01_storm21,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
 #ggplot(stn01_storm22,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
 #ggplot(stn01_storm23,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
 #ggplot(stn01_storm24,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
 
 
+
+ggplot(stn02_storm1,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+ggplot(stn02_storm2,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+ggplot(stn02_storm5,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+ggplot(stn02_storm6,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+ggplot(stn02_storm10,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+ggplot(stn02_storm11,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+ggplot(stn02_storm14,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+
+ggplot(stn03_storm5,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+ggplot(stn03_storm6,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+ggplot(stn03_storm7,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+ggplot(stn03_storm8,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+ggplot(stn03_storm9,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+ggplot(stn03_storm10,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+ggplot(stn03_storm11,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+ggplot(stn03_storm12,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+ggplot(stn03_storm13,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+ggplot(stn03_storm14,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+
+
 ggplot(stn04_storm5,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+ggplot(stn04_storm5,aes(x=Q_m3s,y=CO2_ppm_adjusted*Q_m3s,color=DateTime)) + geom_point()
+
 ggplot(stn04_storm6,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+ggplot(stn04_storm6,aes(x=Q_m3s,y=CO2_ppm_adjusted*Q_m3s,color=DateTime)) + geom_point()
+
 ggplot(stn04_storm7,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+ggplot(stn04_storm7,aes(x=Q_m3s,y=CO2_ppm_adjusted*Q_m3s,color=DateTime)) + geom_point()
+
 ggplot(stn04_storm8,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+ggplot(stn04_storm8,aes(x=Q_m3s,y=CO2_ppm_adjusted*Q_m3s,color=DateTime)) + geom_point()
+
 ggplot(stn04_storm9,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+ggplot(stn04_storm9,aes(x=Q_m3s,y=CO2_ppm_adjusted*Q_m3s,color=DateTime)) + geom_point()
+
 ggplot(stn04_storm10,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
+ggplot(stn04_storm10,aes(x=Q_m3s,y=CO2_ppm_adjusted*Q_m3s,color=DateTime)) + geom_point()
+
 ggplot(stn04_storm11,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
 ggplot(stn04_storm12,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
 ggplot(stn04_storm13,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
 ggplot(stn04_storm14,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
 ggplot(stn04_storm15,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
-ggplot(stn04_storm19,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
 ggplot(stn04_storm20,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
 ggplot(stn04_storm21,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
 ggplot(stn04_storm22,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=DateTime)) + geom_point()
@@ -370,25 +490,50 @@ stn01_storm <- rbind(stn01_storm1,stn01_storm2,stn01_storm6,stn01_storm7,stn01_s
 stn01_storm$month <- format(as.Date(stn01_storm$Date), "%m")
 
 stn04_storm <- rbind(stn04_storm1,stn04_storm2,stn04_storm6,stn04_storm7,stn04_storm8,stn04_storm9,stn04_storm10,
-                     stn04_storm11,stn04_storm12,stn04_storm13,stn04_storm14,stn04_storm19,stn04_storm20)
+                     stn04_storm11,stn04_storm12,stn04_storm13,stn04_storm14,stn04_storm19,stn04_storm20,
+                     stn04_storm21,stn04_storm22,stn04_storm23,stn04_storm24)
 stn04_storm$month <- format(as.Date(stn04_storm$Date), "%m")
+
+stn02_storm <- rbind(stn02_storm1,stn02_storm2,stn02_storm5,stn02_storm6,stn02_storm10,
+                     stn02_storm11,stn02_storm14)
+stn02_storm$month <- format(as.Date(stn04_storm$Date), "%m")
+stn02_storm$year_month <- format(as.Date(stn02_storm$DateTime), "%Y-%m")
+
+
+stn03_storm <- rbind(stn03_storm5,stn03_storm6,stn03_storm7,stn03_storm8,stn03_storm9,stn03_storm10,
+                     stn03_storm11,stn03_storm12,stn03_storm13,stn03_storm14)
+stn03_storm$month <- format(as.Date(stn03_storm$Date), "%m")
+stn03_storm$year_month <- format(as.Date(stn03_storm$DateTime), "%Y-%m")
 
 
 ggplot(stn01_storm,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=month_year)) + geom_point()
+ggplot(stn01_storm,aes(x=Q_m3s,y=CO2_ppm_adjusted*Q_m3s,color=month_year)) + geom_point()
+
+ggplot(stn02_storm,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=year_month)) + geom_point()
+ggplot(stn02_storm,aes(x=Q_m3s,y=CO2_ppm_adjusted*Q_m3s,color=year_month)) + geom_point()
+
+ggplot(stn03_storm,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=year_month)) + geom_point()
+
 ggplot(stn04_storm,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=month_year)) + geom_point()
+ggplot(stn04_storm,aes(x=Q_m3s,y=CO2_ppm_adjusted*Q_m3s,color=month_year)) + geom_point()
+
 
 ggplot(stn01_storm,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=month)) + geom_point() +
   scale_x_continuous(transform = "log") +scale_y_continuous(transform = "log")
-ggplot(stn04_storm,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=month)) + geom_point() +
+ggplot(stn04_storm,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=month_year)) + geom_point() +
   scale_x_continuous(transform = "log") +scale_y_continuous(transform = "log")
+
 
 
 ######what about not storm?
 summary(stn04$Q_m3s)
+summary(stn01$Q_m3s)
 
 stn01$month <- format(as.Date(stn01$Date), "%m")
 stn04$month <- format(as.Date(stn04$Date), "%m")
 stn04_belowmedian <- stn04%>%filter(Q_m3s<.0064) 
+stn01_belowmedian <- stn04%>%filter(Q_m3s<.019) 
+
 
 ggplot(stn01_belowmedian,aes(x=Q_m3s,y=CO2_ppm_adjusted,color=month_year)) + geom_point()+
   scale_x_continuous(transform = "log") +scale_y_continuous(transform = "log")
@@ -409,4 +554,25 @@ ggplot(all_stn,aes(x=CO2_ppm_01,y=CO2_ppm_04,color=year_month)) + geom_point() +
 
 #all_stn_test$ <- all_stn%>%filter(CO2_ppm_04 < )
 
+fig <- plot_ly(data = stn01, x = ~DateTime, y = ~CO2_ppm_adjusted)
+fig <- plot_ly(data = stn01, x = ~DateTime, y = ~CO2_ppm_adjusted*Q_m3s)
+
+fig <- plot_ly(data = stn04, x = ~DateTime, y = ~CO2_ppm_adjusted)
+fig <- plot_ly(data = stn04, x = ~DateTime, y = ~CO2_ppm_adjusted*Q_m3s)
+
+fig <- plot_ly(data = stn02, x = ~DateTime, y = ~CO2_ppm_adjusted)
+fig <- plot_ly(data = stn02, x = ~DateTime, y = ~CO2_ppm_adjusted*Q_m3s)
+
+fig <- plot_ly(data = stn02, x = ~DateTime, y = ~Q_m3s)
+fig <- plot_ly(data = stn01, x = ~DateTime, y = ~Q_m3s)
+
+fig <- plot_ly(stn04, x = ~DateTime)
+fig <- fig %>% add_trace(y = ~CO2_ppm_adjusted, name = 'trace 0',mode = 'lines')
+fig <- fig %>% add_trace(y = ~WL_m*10000, name = 'trace 1', mode = 'lines+markers')
+
+all_stn <- all_stn[ order(all_stn$DateTime , decreasing = TRUE ),]
+
+fig <- plot_ly(all_stn, x = ~DateTime)
+fig <- fig %>% add_trace(y = ~CO2_ppm_02, name = 'trace 0',mode = 'lines')
+fig <- fig %>% add_trace(y = ~CO2_ppm_03, name = 'trace 1', mode = 'lines+markers')
 
