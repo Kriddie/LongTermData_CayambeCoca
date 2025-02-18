@@ -213,31 +213,32 @@ allstn_storm23 <- all_stn%>%filter(DateTime>storm23_begin&DateTime<storm23_end)
 allstn_storm24 <- all_stn%>%filter(DateTime>storm24_begin&DateTime<storm24_end)
 
 #label storms
-allstn_storm1$storm_name <- "storm_01"
-allstn_storm2$storm_name <- "storm_02"
-allstn_storm2.1$storm_name <- "storm_02.1"
-allstn_storm3$storm_name <- "storm_03"
-allstn_storm4$storm_name <- "storm_04"
-allstn_storm5$storm_name <- "storm_05"
-allstn_storm6$storm_name <- "storm_06"
-allstn_storm7$storm_name <- "storm_07"
-allstn_storm8$storm_name <- "storm_08"
-allstn_storm9$storm_name <- "storm_09"
-allstn_storm10$storm_name <- "storm_10"
-allstn_storm11$storm_name <- "storm_11"
-allstn_storm12$storm_name <- "storm_12"
-allstn_storm13$storm_name <- "storm_13"
-allstn_storm14$storm_name <- "storm_14"
-allstn_storm15$storm_name <- "storm_15"
-allstn_storm16$storm_name <- "storm_16"
-allstn_storm17$storm_name <- "storm_17"
-allstn_storm18$storm_name <- "storm_18"
-allstn_storm19$storm_name <- "storm_19"
-allstn_storm20$storm_name <- "storm_20"
-allstn_storm21$storm_name <- "storm_21"
-allstn_storm22$storm_name <- "storm_22"
-allstn_storm23$storm_name <- "storm_23"
-allstn_storm24$storm_name <- "storm_24"
+allstn_storm1$storm_name <- "July 2019"
+allstn_storm2$storm_name <- "Aug. 2019 incomplete"
+allstn_storm2.1$storm_name <- "Aug. 2019"
+allstn_storm3$storm_name <- "Sept. 2019"
+allstn_storm4$storm_name <- "Oct. 2019"
+allstn_storm5$storm_name <- "June 2021"
+allstn_storm6$storm_name <- "July 2021"
+allstn_storm7$storm_name <- "Aug. 2021"
+allstn_storm8$storm_name <- "Sept. 2021"
+allstn_storm9$storm_name <- "Oct. 2021"
+allstn_storm10$storm_name <- "Nov. 2021"
+allstn_storm11$storm_name <- "Dec. 2021"
+# no large storms Jan and feb
+allstn_storm12$storm_name <- "March 2022"
+allstn_storm13$storm_name <- "April 2022"
+allstn_storm14$storm_name <- "May 2022"
+allstn_storm15$storm_name <- "June 2022"
+allstn_storm16$storm_name <- "July 2022"
+allstn_storm17$storm_name <- "Aug. 2022"
+allstn_storm18$storm_name <- "Sept. 2022"
+allstn_storm19$storm_name <- "Oct. 2022"
+allstn_storm20$storm_name <- "Nov. 2022"
+allstn_storm21$storm_name <- "Dec. 2022"
+allstn_storm22$storm_name <- "Jan. 2023"
+allstn_storm23$storm_name <- "Feb. 2023"
+allstn_storm24$storm_name <- "March 2023"
 
 #now calc time elapsed since storm start
 allstn_storm1$time_elapsed <- allstn_storm1$DateTime - storm1_begin
@@ -280,59 +281,91 @@ ggplot(allstn_storm,aes(x=Q_m3s_01,y=CO2_ppm_01,color=time_elapsed/60)) + geom_p
 ```
 
 ```{r storm sterf, echo=FALSE}
-#july 2019
-ggplot(allstn_storm1,aes(x=Q_m3s_02,y=CO2_ppm_01,color=DateTime)) + geom_point()
-#ggplot(allstn_storm2,aes(x=Q_m3s_02,y=CO2_ppm_01,color=DateTime)) + geom_point()
-ggplot(allstn_storm2.1,aes(x=Q_m3s_02,y=CO2_ppm_01,color=DateTime)) + geom_point()
 
-#july 2021
-ggplot(allstn_storm6,aes(x=Q_m3s_02,y=CO2_ppm_01,color=DateTime)) + geom_point()
-#aug 2021 
-ggplot(allstn_storm7,aes(x=Q_m3s_02,y=CO2_ppm_01,color=DateTime)) + geom_point()
-#sep 2021
-ggplot(allstn_storm8,aes(x=Q_m3s_02,y=CO2_ppm_01,color=DateTime)) + geom_point()
-#oct 2021
-ggplot(allstn_storm9,aes(x=Q_m3s_02,y=CO2_ppm_01,color=DateTime)) + geom_point()
-#nov 2021
-ggplot(allstn_storm10,aes(x=Q_m3s_02,y=CO2_ppm_01,color=DateTime)) + geom_point()
-#dec 2021
-ggplot(allstn_storm11,aes(x=Q_m3s_02,y=CO2_ppm_01,color=DateTime)) + geom_point()
-#march 2022
-ggplot(allstn_storm12,aes(x=Q_m3s_01,y=CO2_ppm_01,color=DateTime)) + geom_point()
-#april 2022
-ggplot(allstn_storm13,aes(x=Q_m3s_02,y=CO2_ppm_01,color=DateTime)) + geom_point()
-#may 2022
-ggplot(allstn_storm14,aes(x=Q_m3s_02,y=CO2_ppm_01,color=DateTime)) + geom_point()
-#june 2022
-#ggplot(allstn_storm15,aes(x=Q_m3s_01,y=CO2_ppm_01,color=DateTime)) + geom_point()
-#ggplot(allstn_storm15,aes(x=Q_m3s_02,y=CO2_ppm_02,color=DateTime)) + geom_point()
+storm_subset <- allstn_storm %>%filter(storm_name!="Aug. 2019 incomplete"& storm_name!="Aug. 2022"& storm_name!="Aug. 2022"& storm_name!="Dec. 2022"& storm_name!="Feb. 2023"& storm_name!="Jan. 2023"& storm_name!="June 2022"& storm_name!="July 2022"& storm_name!="Jan. 2022"& storm_name!="March 2022" & storm_name!="March 2023"& storm_name!="Oct. 2019"& storm_name!="Sept. 2019"& storm_name!="Sept. 2022")
+storm_subset$pCO2_ppm <- NA
+#use CO2_ppm_02 for June 2021 storm
+storm_subset$pCO2_ppm <- ifelse(storm_subset$storm_name == "June 2021", storm_subset$CO2_ppm_02, storm_subset$CO2_ppm_01)
 
-#july 2022
-#ggplot(allstn_storm16,aes(x=Q_m3s_01,y=CO2_ppm_01,color=DateTime)) + geom_point()
-#ggplot(allstn_storm16,aes(x=Q_m3s_02,y=CO2_ppm_02,color=DateTime)) + geom_point()
+storm_subset <- storm_subset%>%rename(Q = Q_m3s_02)
 
-#aug 2022
-#ggplot(allstn_storm17,aes(x=Q_m3s_01,y=CO2_ppm_01,color=DateTime)) + geom_point()
-#ggplot(allstn_storm17,aes(x=Q_m3s_02,y=CO2_ppm_02,color=DateTime)) + geom_point()
+storm_subset$storm_name_1= factor(storm_subset$storm_name, levels=c("July 2019","Aug. 2019","June 2021","July 2021","Aug. 2021","Sept. 2021","Oct. 2021","Nov. 2021","Dec. 2021","April 2022","May 2022","Oct. 2022","Nov. 2022")) 
 
-#sept 2022
-#ggplot(allstn_storm18,aes(x=Q_m3s_01,y=CO2_ppm_01,color=DateTime)) + geom_point()
-#ggplot(allstn_storm18,aes(x=Q_m3s_02,y=CO2_ppm_02,color=DateTime)) + geom_point()
+storm_subset$time_elapsed_day <- as.numeric(storm_subset$time_elapsed)/60/24
 
-#oct 2022
-ggplot(allstn_storm19,aes(x=Q_m3s_01,y=CO2_ppm_01,color=DateTime)) + geom_point()
-#nov 2022
-ggplot(allstn_storm20,aes(x=Q_m3s_01,y=CO2_ppm_01,color=DateTime)) + geom_point()
-#dec 2022
-#ggplot(allstn_storm21,aes(x=Q_m3s_01,y=CO2_ppm_01,color=DateTime)) + geom_point()
+#facet wrap
+p1 <- ggplot(storm_subset, aes(x=Q*1000,y=pCO2_ppm,color=as.numeric(time_elapsed)/60/24))+ 
+  facet_wrap( ~ storm_name_1#, scales = "free"
+              )  + geom_point() + 
+  scale_y_continuous(transform = "log", breaks = c(1000,3000,10000,30000))+ scale_x_continuous(transform = "log", breaks = c(3,10,30,100,300))+
+    scale_color_viridis_c() +
+  theme_bw(base_size = 18)
 
-#jan 2023
-#ggplot(allstn_storm21,aes(x=Q_m3s_01,y=CO2_ppm_01,color=DateTime)) + geom_point()
-#feb 2023
-#ggplot(allstn_storm21,aes(x=Q_m3s_01,y=CO2_ppm_01,color=DateTime)) + geom_point()
-#march 2023
-#ggplot(allstn_storm21,aes(x=Q_m3s_01,y=CO2_ppm_01,color=DateTime)) + geom_point()
+p2 <- ggplot(storm_subset%>%filter(storm_name!="July 2019"&storm_name!="Aug. 2019"&storm_name!="Nov. 2022"&storm_name!="Oct. 2022"), aes(x=Q*1000,y=pCO2_ppm,color=time_elapsed_day))+ 
+  facet_wrap( ~ storm_name_1#, scales = "free"
+              )  + geom_point() + 
+  scale_y_continuous(transform = "log", breaks = c(1000,3000,10000,30000))+ scale_x_continuous(transform = "log", breaks = c(3,10,30,100,300))+
+    scale_color_viridis_c(name= "days since\nstart of storm",guide=guide_colourbar(reverse = TRUE)) +
+  ylab(expression(italic(p)~CO[2] ~'(ppm)')) +     xlab(expression(paste('Discharge (L ' , s^-1,")"))) +
+  theme_bw(base_size = 18)
+
+#now for all storms
+allstn_storm$month_number <- format(as.Date(allstn_storm$Date), "%m")
+allstn_storm$month_number  <- as.numeric(allstn_storm$month_number )
+allstn_storm$month <- format(as.Date(allstn_storm$Date), "%B")
+
+allstn_storm$month <- reorder(allstn_storm$month, allstn_storm$month_number)
+
+p3 <- ggplot(allstn_storm,aes(x=Q_m3s_02*1000,y=CO2_ppm_01,color=month)) + geom_point() +
+    scale_y_continuous(transform = "log", breaks = c(1000,3000,10000,30000))+ scale_x_continuous(transform = "log", breaks = c(3,10,30,100,300))+ ylab(expression(italic(p)~CO[2] ~'(ppm)')) +     xlab(expression(paste('Discharge (L ' , s^-1,")"))) +
+  theme_bw(base_size = 18) 
 
 
 ```
 
+```{r base flow stn01, echo=FALSE}
+
+all_stn$month_number <- format(as.Date(all_stn$Date), "%m")
+all_stn$month_number  <- as.numeric(all_stn$month_number )
+all_stn$month <- format(as.Date(all_stn$Date), "%B")
+
+all_stn$month <- reorder(all_stn$month, all_stn$month_number)
+
+p1<-ggplot(all_stn,aes(x=Q_m3s_02*1000,y=CO2_ppm_01,color=month)) + geom_point() +
+    scale_y_continuous(transform = "log", breaks = c(1000,3000,10000,30000))+ scale_x_continuous(transform = "log", breaks = c(3,10,30,100,300))+ ylab(expression(italic(p)~CO[2] ~'(ppm)')) +     xlab(expression(paste('Discharge (L ' , s^-1,")"))) +
+  theme_bw(base_size = 18) 
+
+p2<-ggplot() + geom_point(data=all_stn,aes(x=Q_m3s_02*1000,y=CO2_ppm_01),color="black") +
+  geom_point(data=allstn_storm,aes(x=Q_m3s_02*1000,y=CO2_ppm_01,color=month)) +
+    scale_y_continuous(transform = "log", breaks = c(1000,3000,10000,30000))+ scale_x_continuous(transform = "log", breaks = c(3,10,30,100,300))+ ylab(expression(italic(p)~CO[2] ~'(ppm)')) +     xlab(expression(paste('Discharge (L ' , s^-1,")"))) +
+  theme_bw(base_size = 18) 
+
+
+```
+
+```{r  stn04, echo=FALSE}
+
+
+p1 <-ggplot() + geom_point(data=allstn_storm,aes(x=Q_m3s_04*1000,y=CO2_ppm_04,color=month)) +
+    scale_y_continuous(transform = "log", breaks = c(1000,3000,10000,30000))+ scale_x_continuous(transform = "log", breaks = c(3,10,30,100,300))+ ylab(expression(italic(p)~CO[2] ~'(ppm)')) +     xlab(expression(paste('Discharge (L ' , s^-1,")"))) +
+  theme_bw(base_size = 18) 
+
+p2 <-ggplot() + geom_point(data=all_stn,aes(x=Q_m3s_04*1000,y=CO2_ppm_04,color=month)) +
+    scale_y_continuous(transform = "log", breaks = c(1000,3000,10000,30000))+ scale_x_continuous(transform = "log", breaks = c(3,10,30,100,300))+ ylab(expression(italic(p)~CO[2] ~'(ppm)')) +     xlab(expression(paste('Discharge (L ' , s^-1,")"))) +
+  theme_bw(base_size = 18) 
+
+
+p3 <- ggplot() + 
+  geom_point(data=all_stn,aes(x=CO2_ppm_01,y=CO2_ppm_04,color=log(Q_m3s_04))) +
+    scale_y_continuous(transform = "log", breaks = c(300,1000,3000,10000,30000))+
+  scale_x_continuous(transform = "log", breaks = c(300,1000,3000,10000,30000))+
+  ylab(expression(italic(p)~CO[2] ~'(ppm)')) +    xlab(expression(italic(p)~CO[2] ~'(ppm)')) +   
+  theme_bw(base_size = 18) 
+
+p4 <- ggplot() + 
+  geom_point(data=all_stn,aes(x=CO2_ppm_01,y=CO2_ppm_04,color=DateTime)) +
+    scale_y_continuous(transform = "log", breaks = c(300,1000,3000,10000,30000))+
+  scale_x_continuous(transform = "log", breaks = c(300,1000,3000,10000,30000))+
+  ylab(expression(italic(p)~CO[2] ~'downstream (ppm)')) +    xlab(expression(italic(p)~CO[2] ~'upstream (ppm)')) +  theme_bw(base_size = 18) 
+
+```
