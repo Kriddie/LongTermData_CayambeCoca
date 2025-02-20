@@ -18,7 +18,7 @@ library(tidyr)
 
 #look at how depth relates to average depth
 
-WidthDepth <- read.csv(here::here("WidthDepth/WidthDepth_summary.csv"))
+WidthDepth <- read.csv(here::here("WidthDepth/WidthDepth_summary_2.csv"))
 WidthDepth$DateTime <- as.POSIXct(paste(WidthDepth$Date,WidthDepth$Time,sep=" "),format="%m/%d/%Y %H:%M", tz="UTC")
 WidthDepth$DateTime <- round_date(WidthDepth$DateTime, unit="15 mins")
 
@@ -46,6 +46,11 @@ lm_1 <- lm(Average.depth ~ Thalwag.depth,data=WidthDepth)
 summary(lm_1)
 #Average.depth = Thalwag.depth*0.69473 +  2.40099
 #r2 = 0.7736
+
+#with 2022 data added
+#Average.depth = Thalwag.depth*0.74636 +  2.13520    
+#r2 = 0.8153
+
 
 #we also have some data from 2021
 
