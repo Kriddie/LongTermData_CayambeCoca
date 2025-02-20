@@ -1,0 +1,180 @@
+"","date","GPP.daily","GPP.daily.sd","ER.daily","ER.daily.sd","K600.daily","K600.daily.sd","warnings","errors","discharge","light"
+"1",2019-07-12,NA,NA,NA,NA,NA,NA,"overall warnings","data don't start when expected",0.0177777533793103,76.1448236572208
+"2",2019-07-13,1.39183973404321,0.113895914811281,-4.36856931797626,0.391413024202799,8.9079657451363,0.819830321670473,"overall warnings","",0.0203942527604167,861.983691288827
+"3",2019-07-14,1.8311702238973,0.118447134761731,-5.93736700965493,0.429330183002715,13.3726342702138,1.00263500668934,"overall warnings","",0.0586411851041667,862.791709968536
+"4",2019-07-15,1.41392090702876,0.104398201062265,-4.23280697567878,0.323318368527201,9.70958196020659,0.795194251482889,"overall warnings","",0.06551803346875,863.63186871171
+"5",2019-07-16,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.sat; NAs in temp.water",0.030622105928626,864.503352438479
+"6",2019-07-17,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.sat; NAs in temp.water",0.0189278322074415,865.405302376324
+"7",2019-07-18,1.29054225352576,0.108185492105368,-4.06209257402124,0.368780511440392,8.75228555354981,0.880964931387963,"overall warnings","",0.0215115138854167,866.33681559508
+"8",2019-07-19,1.01507264543907,0.102969345217363,-3.57553658791951,0.386174098504105,8.40589566246302,0.926682628921362,"overall warnings","",0.020226547080319,867.296944581846
+"9",2019-07-20,1.19057181312884,0.10668692771465,-3.51067342261993,0.322928193920111,8.88975432083749,0.864938915970159,"overall warnings","",0.0295648859479167,868.284696890311
+"10",2019-07-21,1.34955786919903,0.117620929746508,-3.88843087693848,0.345783394851099,8.77151983649134,0.842842844520544,"overall warnings","",0.0313621435520833,869.299034879713
+"11",2019-07-22,1.36868378625796,0.108148634783773,-4.13530215255085,0.346923053328336,9.0405585309419,0.821424955488561,"overall warnings","",0.02890413034375,870.338875519191
+"12",2019-07-23,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.sat; NAs in temp.water",0.0291145783561079,871.403090293128
+"13",2019-07-24,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.sat; NAs in temp.water",0.0278035687373022,872.490505212876
+"14",2019-07-25,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.sat; NAs in temp.water",0.0300995997227178,873.599900928093
+"15",2019-07-26,1.29732491340939,0.109518961384246,-3.92842865808344,0.340074524509053,8.70716140362691,0.814381787958778,"overall warnings","",0.03081760509375,874.73001296247
+"16",2019-07-27,1.16838350334417,0.0990770213034529,-3.3611772368357,0.310464656387319,7.33855643476641,0.743899364865245,"overall warnings","",0.02545460296875,875.879532054589
+"17",2019-07-28,1.30319452214919,0.105741146976915,-3.92539106689949,0.342685367366815,8.03825556790388,0.797186104933279,"overall warnings","",0.0237275192083333,877.047104649199
+"18",2019-07-29,1.57617250525146,0.139172596491738,-5.40487160546207,0.486858878460955,9.89378954573941,0.949603426723094,"overall warnings","",0.01960558034375,878.231333510391
+"19",2019-07-30,1.15189705406324,0.102179223663978,-4.35252521301346,0.42003687271162,8.44790407403799,0.866272538614743,"overall warnings","",0.0166907724270833,879.430778491587
+"20",2019-07-31,0.90252498554871,0.0846990870895674,-2.69570469144786,0.288881566206164,6.14773073518745,0.740971703638875,"overall warnings","",0.01931533440625,880.643957432032
+"21",2019-08-01,1.04825987804322,0.105613399720679,-3.40389491656172,0.378900644727574,6.58347685359803,0.87438904249452,"overall warnings","",0.0175541505520833,881.86934722002
+"22",2019-08-02,0.801797376261792,0.0824342367495997,-3.00124287391562,0.380820972125058,5.89364730463277,0.821531701832925,"overall warnings","",0.0163570104892845,883.105385024295
+"23",2019-08-03,1.17897305002752,0.0969947221824312,-3.45952063706312,0.286962675656469,8.46733412190678,0.745369804615384,"overall warnings","",0.0267498626354167,884.350469665705
+"24",2019-08-04,1.3779945264179,0.108520861541244,-4.54861779207158,0.37321366050378,10.6486157870098,0.928760221372,"overall warnings","",0.0318188863541667,885.602963169863
+"25",2019-08-05,1.23207966982955,0.108016646689178,-3.84157106276561,0.351511036945477,8.18368585278733,0.830539939175196,"overall warnings","",0.02493649125,886.861192479648
+"26",2019-08-06,1.12952698371961,0.106998926047576,-3.77587646817563,0.402516340015673,7.7114981599635,0.918067784450762,"overall warnings","",0.0191515383020833,888.123451351199
+"27",2019-08-07,0.965462592869779,0.097995480636164,-3.63297240987645,0.435980462638723,7.49474149084349,0.992936426649957,"overall warnings","",0.0172817294791667,889.388002406385
+"28",2019-08-08,0.911912080816855,0.0951354187456997,-3.63199547407257,0.392538356031523,8.16273693827557,0.957756944369873,"overall warnings","",0.0162406555833333,890.653079359485
+"29",2019-08-09,0.789373133656017,0.0949752805922933,-3.18950707457973,0.399844732543328,7.43171684152223,1.01310449863866,"overall warnings","",0.0146892011923817,891.916889436902
+"30",2019-08-10,0.925057645224711,0.0982956787068008,-3.20116743312715,0.388412918982899,7.06252442526185,0.972032773244645,"overall warnings","",0.0149388089583333,893.177615935173
+"31",2019-08-11,0.935482977038749,0.099734685278645,-3.26659116983243,0.380203211459164,7.12058171376164,0.924997655579198,"overall warnings","",0.0157803615625,894.433420973636
+"32",2019-08-12,0.925807181065305,0.0984606283191665,-3.67169589932628,0.431962662544236,7.14803119542269,0.958810859232171,"overall warnings","",0.0149230501875,895.682448400598
+"33",2019-08-13,0.320034967514432,0.0798479687459983,-1.5149905384635,0.353930652138924,4.8742865389243,0.991499395025967,"overall warnings","",0.0165531196041667,896.922826858077
+"34",2019-08-14,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in temp.water; NAs in light",0.0472133096666705,NA
+"35",2019-08-15,0.58483002507006,0.0817996630429252,-1.70360450670089,0.298879151627923,4.84224798420518,1.09603937243815,"overall warnings","",0.0239163853229167,899.370094922738
+"36",2019-08-16,0.781792128812214,0.103786463179081,-2.23072031135698,0.267678324815775,5.10909920927171,0.825428659336147,"overall warnings","",0.022491666375,900.573195571462
+"37",2019-08-17,1.13771549294037,0.0997507185523014,-3.17341089657153,0.304648812172477,5.8086017249829,0.691786111342431,"overall warnings","",0.0188091500416667,901.760076497813
+"38",2019-08-18,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"39",2019-08-19,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"40",2019-08-20,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"41",2019-08-21,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"42",2019-08-22,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"43",2019-08-23,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"44",2019-08-24,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"45",2019-08-25,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"46",2019-08-26,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"47",2019-08-27,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"48",2019-08-28,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"49",2019-08-29,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"50",2019-08-30,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"51",2019-08-31,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"52",2019-09-01,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"53",2019-09-02,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"54",2019-09-03,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"55",2019-09-04,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"56",2019-09-05,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"57",2019-09-06,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"58",2019-09-07,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"59",2019-09-08,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"60",2019-09-09,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"61",2019-09-10,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"62",2019-09-11,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"63",2019-09-12,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"64",2019-09-13,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"65",2019-09-14,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"66",2019-09-15,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"67",2019-09-16,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"68",2019-09-17,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"69",2019-09-18,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"70",2019-09-19,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"71",2019-09-20,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"72",2019-09-21,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"73",2019-09-22,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"74",2019-09-23,0.303092007756934,0.0844534045889795,-4.30751023654129,0.963223869156331,5.16867024511607,1.22882231829291,"overall warnings","",NA,NA
+"75",2019-09-24,0.376363205681608,0.0821893493109211,-4.47884654464589,1.0871292479039,4.95228528458392,1.3255063138936,"overall warnings","",0.0136708181979167,926.136268747801
+"76",2019-09-25,0.138231499240104,0.0784811130087287,-3.31880719270047,1.11780599114655,3.81977371806454,1.36760551683817,"overall warnings","",0.0127806973333333,926.013891820956
+"77",2019-09-26,0.38600102806083,0.0805477342345951,-5.48669619075372,1.16191467554251,5.80910791764141,1.30982521149157,"overall warnings","",0.0125543200729167,925.837308735551
+"78",2019-09-27,0.578880334263656,0.0889754716637054,-5.24009118391789,1.01948337526415,5.30755111982005,1.11627542099315,"overall warnings","",0.0125877828333333,925.606991967603
+"79",2019-09-28,0.0118602058728864,0.0781109096602385,-5.48225275145164,1.44598737960183,5.88773177116461,1.55061364310806,"overall warnings","",0.012829943,925.323507647207
+"80",2019-09-29,0.224020018867849,0.0779959984772567,-5.49483653827707,1.3477610172021,5.74530313725701,1.44600056094445,"overall warnings","",0.01299673534375,924.987513364938
+"81",2019-09-30,-0.132562428553658,0.0852443319907397,-4.50093925946758,1.06928878174897,5.25565209817274,1.20371744196728,"overall warnings","",0.0147249460833333,924.599755742698
+"82",2019-10-01,-0.0859976266114265,0.0848775199900443,-4.17212677689682,1.16167005453018,5.00526668912767,1.35149213224185,"overall warnings","",0.0173460478020833,924.161067706101
+"83",2019-10-02,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"84",2019-10-03,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"85",2019-10-04,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"86",2019-10-05,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"87",2019-10-06,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"88",2019-10-07,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"89",2019-10-08,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"90",2019-10-09,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"91",2019-10-10,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"92",2019-10-11,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"93",2019-10-12,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"94",2019-10-13,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"95",2019-10-14,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"96",2019-10-15,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"97",2019-10-16,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"98",2019-10-17,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"99",2019-10-18,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"100",2019-10-19,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"101",2019-10-20,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"102",2019-10-21,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"103",2019-10-22,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"104",2019-10-23,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"105",2019-10-24,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"106",2019-10-25,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"107",2019-10-26,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"108",2019-10-27,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"109",2019-10-28,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"110",2019-10-29,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"111",2019-10-30,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"112",2019-10-31,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"113",2019-11-01,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"114",2019-11-02,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"115",2019-11-03,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"116",2019-11-04,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"117",2019-11-05,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"118",2019-11-06,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"119",2019-11-07,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"120",2019-11-08,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"121",2019-11-09,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"122",2019-11-10,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"123",2019-11-11,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"124",2019-11-12,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"125",2019-11-13,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"126",2019-11-14,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"127",2019-11-15,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"128",2019-11-16,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"129",2019-11-17,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"130",2019-11-18,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"131",2019-11-19,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"132",2019-11-20,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"133",2019-11-21,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"134",2019-11-22,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"135",2019-11-23,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"136",2019-11-24,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"137",2019-11-25,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"138",2019-11-26,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"139",2019-11-27,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"140",2019-11-28,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"141",2019-11-29,0.365535389643074,0.0788004368754791,-3.1543736591101,0.803094214465464,4.03409811931453,1.19503711361309,"overall warnings","",0.0134069239895833,859.560821988305
+"142",2019-11-30,0.509597820311869,0.0943881431247496,-4.97154176678885,0.835841931062254,6.03994116718169,1.05303460709072,"overall warnings","",0.0122187328229167,858.641837170602
+"143",2019-12-01,0.800408741184347,0.0879392747357198,-4.48484654260854,0.649815476353412,5.66009473230907,0.915537792308447,"overall warnings","",0.0140121826875,857.747253905524
+"144",2019-12-02,0.618281332495315,0.0800556425812068,-1.67563816665633,0.449396295338436,1.9702922811922,0.739396288097728,"overall warnings","",0.01529158978125,856.877473238277
+"145",2019-12-03,0.788488345634431,0.0832438847476875,-2.83180556900576,0.531639980911682,2.85498733356379,0.767026877051053,"overall warnings","",0.0140813134583333,856.032876389706
+"146",2019-12-04,0.725884037774913,0.08775995663112,-5.670211110582,0.905317558832828,6.10994059374646,1.08688915395409,"overall warnings","",0.0129902352708333,855.213826363053
+"147",2019-12-05,0.273192995166875,0.0840427396515586,-0.600691765422199,0.465132720235039,1.13922201733755,0.669513279549784,"overall warnings","",0.0160900427083333,854.420669515583
+"148",2019-12-06,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",0.0162763417291667,853.653737078503
+"149",2019-12-07,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"150",2019-12-08,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"151",2019-12-09,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"152",2019-12-10,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"153",2019-12-11,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"154",2019-12-12,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"155",2019-12-13,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"156",2019-12-14,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"157",2019-12-15,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"158",2019-12-16,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"159",2019-12-17,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"160",2019-12-18,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"161",2019-12-19,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"162",2019-12-20,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"163",2019-12-21,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"164",2019-12-22,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"165",2019-12-23,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"166",2019-12-24,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"167",2019-12-25,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"168",2019-12-26,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"169",2019-12-27,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"170",2019-12-28,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"171",2019-12-29,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"172",2019-12-30,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"173",2019-12-31,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"174",2020-01-01,NA,NA,NA,NA,NA,NA,"overall warnings","NAs in DO.obs; NAs in DO.sat; NAs in depth; NAs in temp.water; NAs in light; NAs in discharge",NA,NA
+"175",2020-01-02,0.509143640597141,0.0817954476046389,-1.10421956510351,0.453903306349701,1.06286385645947,0.621864145936502,"overall warnings","",0.0156709137395833,849.830455786019
+"176",2020-01-03,0.85597952206799,0.0813234443458645,-3.46283342419516,0.392129144112798,4.91879670457856,0.655374252433194,"overall warnings","",0.0173235546145833,850.337300154134
+"177",2020-01-04,0.412435868847062,0.0945275140882278,-3.94821893390468,0.828877517403363,4.4481195967735,1.05200964124784,"overall warnings","",0.01462733359375,850.873283046073
+"178",2020-01-05,0.122980184441342,0.0876803105926525,-5.25250126186662,1.36713363603316,5.82492274149728,1.53713990401211,"overall warnings","",0.013378274375,851.438232796714
+"179",2020-01-06,NA,NA,NA,NA,NA,NA,"overall warnings","data don't end when expected",0.0129814828645833,852.031968032542
