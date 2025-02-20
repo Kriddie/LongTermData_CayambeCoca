@@ -83,14 +83,15 @@ note: stream metabolizer can take NAs but not an empty row
 
 ```{r data}
 
-stn04 <- read.csv(here::here("metabolizer_dataframe/stn04_df_feb11.csv"))
-stn04$solar.time <- as.POSIXct(stn04$solar.time,format="%Y-%m-%d %H:%M:%S",tz="UTC")
+
+stn05 <- read.csv(here::here("metabolizer_dataframe/stn05_df_feb19.csv"))
+stn05$solar.time <- as.POSIXct(stn05$solar.time,format="%Y-%m-%d %H:%M:%S",tz="UTC")
 
 #let's see about just 2019 data
-dat <- stn04#%>%
-
-#  filter(solar.time > as.POSIXct("2022-03-23 00:00:00")&
- #        solar.time < as.POSIXct("2023-04-02 00:00:00"))
+dat <- stn05#%>%
+#  filter(solar.time < as.POSIXct("2021-06-27 01:02:13"))#&
+#  filter(solar.time > as.POSIXct("2021-06-27 01:02:13")))#&
+#        solar.time < as.POSIXct("2023-04-02 00:00:00"))
 
 #sort by date time
 dat <- dat[order(dat$solar.time , decreasing = FALSE),]
@@ -127,7 +128,10 @@ list of default specifications for this model.
 ```{r bayes_specs}
 bayes_specs <- specs(bayes_name)
 
-bayes_specs <- specs(bayes_name, burnin_steps=500, saved_steps=1000, n_cores=1, GPP_daily_mu=3, GPP_daily_sigma=2)
+#bayes_specs <- specs(bayes_name, burnin_steps=500, saved_steps=1000, n_cores=1, GPP_daily_mu=3, GPP_daily_sigma=2)
+
+#since we don't much about GPP in this stream, remove GPP prior
+bayes_specs <- specs(bayes_name, burnin_steps=500, saved_steps=1000, n_cores=1)
 
 
 #this is a function the maite uses in here data, I 
@@ -136,9 +140,9 @@ prior_K600_lnQ_nodes_meanlog <- function(depth, slope) {
 }
 
 #look at min and max discharge, 
-#for stn2 it is: 0.002120185 to 0.10986061
+#for stn6 it is: 0.06357686 to 0.7613477
 #take the ln() and enter in as prior
-bayes_specs$K600_lnQ_nodes_centers<-seq(-6, -1.5, 0.5)
+bayes_specs$K600_lnQ_nodes_centers<-seq(-3, -.3, 0.5)
 
 #do below later? maybe I don't need to??
 
@@ -166,7 +170,6 @@ mm <- metab(bayes_specs, data=dat#%>%select(!discharge)
             )
 ```
 
-Feb 11, stn04 all data, k600 partialy poiled start=12:00 end = 1:25
 
 # 4. Inspecting the model
 
@@ -210,7 +213,7 @@ plot_DO_preds(mm)
 ```{r save model, fig.width=5, fig.height=5}
 
 #save model
-save(mm, file = "model_stn04_partially-pooled_stn04_feb11_all.RData")
+#save(mm, file = "model_stn06_partially-pooled_stn06_feb18_June2021.RData")
 
 predictions <- predict_metab(mm)
 #write.csv(predictions,here::here("StreamMetabolizer/Predictions/MetabPredictions_stn04_all_feb11df.csv"))
@@ -269,8 +272,8 @@ pos_ER<-idem
 
 "sensitivity test"
 
-mmspecs$GPP_daily_mu<-10
-specs$ER_daily_mu<--15
+mmspecs$GPP_daily_mu<- 10
+specs$ER_daily_mu<- -15
 mm2<-metab(specs = specs, data = s_ts)
 
 Hau idatzi du Maite Arroita (arroita.maite@gmail.com) erabiltzaileak (2024 uzt. 9(a), ar. (12:47)):
@@ -304,24 +307,9 @@ dat_summary<- dat%>%group_by(date)%>%
   )
 data_inspection <- left_join(data_inspection,dat_summary,by="date")
 
-ggplot(data_inspection,aes(x=date,y=GPP.daily)) + geom_point()
-ggplot(data_inspection,aes(x=date,y=ER.daily)) + geom_point()
-
-ggplot(data_inspection,aes(x=date,y=K600.daily)) + geom_point()
-
-ggplot(data_inspection,aes(x=discharge,y=GPP.daily)) + geom_point()
 ggplot(data_inspection,aes(x=discharge,y=ER.daily)) + geom_point()
-ggplot(data_inspection,aes(x=GPP.daily,y=ER.daily)) + geom_point()
 
-ggplot(data_inspection,aes(x=discharge,y=GPP.daily)) + geom_point()
-
-
-ggplot(data_inspection,aes(x=K600.daily,y=GPP.daily)) + geom_point()
-
-ggplot(data_inspection,aes(x=light,y=GPP.daily)) + geom_point()
-
-
-ggplot(data_inspection,aes(x=discharge,y=light)) + geom_point()
+ggplot(data_inspection,aes(x=discharge,y=K600.daily)) + geom_point()
 
 ```
 
@@ -329,6 +317,6 @@ ggplot(data_inspection,aes(x=discharge,y=light)) + geom_point()
 
 ```{r write out}
 
-#write.csv(data_inspection,here::here("StreamMetabolizer/Predictions/data_inspection_stn04_feb11_all.csv"))
+#write.csv(data_inspection,here::here("StreamMetabolizer/Predictions/data_inspection_stn05_feb19_all.csv"))
 
 ```

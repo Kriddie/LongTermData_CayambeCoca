@@ -83,14 +83,15 @@ note: stream metabolizer can take NAs but not an empty row
 
 ```{r data}
 
-stn04 <- read.csv(here::here("metabolizer_dataframe/stn04_df_feb11.csv"))
-stn04$solar.time <- as.POSIXct(stn04$solar.time,format="%Y-%m-%d %H:%M:%S",tz="UTC")
 
-#let's see about just 2019 data
-dat <- stn04#%>%
+stn03 <- read.csv(here::here("metabolizer_dataframe/stn03_df_feb11_2.csv"))
+stn03$solar.time <- as.POSIXct(stn03$solar.time,format="%Y-%m-%d %H:%M:%S",tz="UTC")
 
-#  filter(solar.time > as.POSIXct("2022-03-23 00:00:00")&
- #        solar.time < as.POSIXct("2023-04-02 00:00:00"))
+#so bad news, DO is mostly at saturation all the time. 
+#but looks like after 2022 field season it is below 100%, so lets see if we can get some bettwe number from this
+dat <-  stn03%>%filter(
+  solar.time > as.POSIXct("2022-09-15 14:00:00",tz="UTC")&
+    solar.time < as.POSIXct("2023-06-01 14:00:00",tz="UTC"))
 
 #sort by date time
 dat <- dat[order(dat$solar.time , decreasing = FALSE),]
@@ -166,7 +167,9 @@ mm <- metab(bayes_specs, data=dat#%>%select(!discharge)
             )
 ```
 
-Feb 11, stn04 all data, k600 partialy poiled start=12:00 end = 1:25
+Feb 11, stn03 all data, k600 partialy poiled start=1:49 end = before 2:18
+Feb 11, stn03 summer 2021, k600 partialy poiled start=3:06 end = before 3:46
+Feb 11, stn03 fall 2021 - 6136 obs, k600 partialy poiled start=3:56 end = before 3:46
 
 # 4. Inspecting the model
 
@@ -210,10 +213,10 @@ plot_DO_preds(mm)
 ```{r save model, fig.width=5, fig.height=5}
 
 #save model
-save(mm, file = "model_stn04_partially-pooled_stn04_feb11_all.RData")
+#save(mm, file = "model_stn03_partially-pooled_stn04_feb11_all.RData")
 
 predictions <- predict_metab(mm)
-#write.csv(predictions,here::here("StreamMetabolizer/Predictions/MetabPredictions_stn04_all_feb11df.csv"))
+#write.csv(predictions,here::here("StreamMetabolizer/Predictions/MetabPredictions_stn03_all_feb11df.csv"))
 
 ```
 
@@ -313,8 +316,6 @@ ggplot(data_inspection,aes(x=discharge,y=GPP.daily)) + geom_point()
 ggplot(data_inspection,aes(x=discharge,y=ER.daily)) + geom_point()
 ggplot(data_inspection,aes(x=GPP.daily,y=ER.daily)) + geom_point()
 
-ggplot(data_inspection,aes(x=discharge,y=GPP.daily)) + geom_point()
-
 
 ggplot(data_inspection,aes(x=K600.daily,y=GPP.daily)) + geom_point()
 
@@ -329,6 +330,12 @@ ggplot(data_inspection,aes(x=discharge,y=light)) + geom_point()
 
 ```{r write out}
 
-#write.csv(data_inspection,here::here("StreamMetabolizer/Predictions/data_inspection_stn04_feb11_all.csv"))
+#write.csv(data_inspection,here::here("StreamMetabolizer/Predictions/data_inspection_stn03_feb11_2021summer.csv"))
+
+#save model
+#save(mm, file = "model_stn03_partially-pooled_stn04_feb11_all.RData")
+
+
+#write.csv(predictions,here::here("StreamMetabolizer/Predictions/MetabPredictions_stn03_2021summer_feb11df.csv"))
 
 ```
