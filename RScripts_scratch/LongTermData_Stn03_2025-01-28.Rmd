@@ -286,10 +286,30 @@ make adjustments to ppm using water level data
 Stn03$adjusted_ppm <- NA
 Stn03$adjusted_ppm <- (Stn03$ppm * 2 )* (1 + (700 - Stn03$Total_hPa) * 0.0015) 
 
+```
+
+#plot co2 and write out
+```{r plot, echo=FALSE}
+
+
+ggplot(data = Stn03, aes(DateTime, adjusted_ppm)) +
+  geom_point(color = "steelblue") +
+  labs(#title = "CO2  stations",
+       y = "CO2 ppm", x = "") 
+
+
+
+Stn03 <- Stn03 %>%select(
+  Station,DateTime,Total_hPa,WLTemp_c,ppm,adjusted_ppm
+)%>%rename(WLTemp_03_c=WLTemp_c,CO2_ppm = ppm,CO2_ppm_adjusted = adjusted_ppm,Total_hpa=Total_hPa)
+
+Stn03$max_detect_ppm <- 10000
 
 #write.csv(Stn03, here::here("data_cleaned/CO2_03_max10000_cleaned.csv"),row.names = FALSE)
 
 ```
+
+
 
 #plot
 

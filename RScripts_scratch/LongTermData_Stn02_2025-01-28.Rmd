@@ -411,7 +411,7 @@ CO2_02_2021 <- CO2_02_2021 %>%
 
 #The measurments below 5ppm are probably maxing out the sensor, but there is no way to tell for sure, so I'm going to delete them... sigh
 
-CO2_02 <- CO2_02_2021%>%filter(ppm>100)
+CO2_02 <- CO2_02_2021%>%filter(ppm>120)
 
 
 #don't even bother with 2022!!
@@ -448,7 +448,7 @@ DateTime <- seq(ISOdate(2019,07,12), ISOdate(2019,08,14), by = "15 min")
 DateTime_df <- data.frame(DateTime)
 DateTime_df$DateTime <- as.POSIXct(DateTime_df$DateTime, format="%y-%m-%d %H:%M:%S", tz="UTC")  
 CO2_2019 <- left_join(DateTime_df, CO2_2019, by = "DateTime")
-CO2_2019$Station  <- "Stn01"
+CO2_2019$Station  <- "Stn02"
 CO2_2019 <- CO2_2019%>%drop_na(adjusted_ppm)
 
 ```
@@ -501,6 +501,7 @@ Stn02$Total_kpa <- NULL
 rm(DateTime_df,CO2_2019)
 ```
 
+#plot co2 and write out
 ```{r plot, echo=FALSE}
 
 
@@ -513,8 +514,10 @@ ggplot(data = Stn02, aes(DateTime, adjusted_ppm)) +
 Stn02 <- Stn02%>%select(
   Station,DateTime,Total_hpa,WLTemp_c,ppm,adjusted_ppm
 )%>%rename(WLTemp_01_c=WLTemp_c,CO2_ppm = ppm,CO2_ppm_adjusted = adjusted_ppm)
+
 Stn02$max_detect_ppm <- 10000
-#write.csv(Stn02, here::here("data_cleaned/CO2_02_max1000_cleaned.csv"),row.names = FALSE)
+
+#write.csv(Stn02, here::here("data_cleaned/CO2_02_max10000_cleaned.csv"),row.names = FALSE)
 
 ```
 

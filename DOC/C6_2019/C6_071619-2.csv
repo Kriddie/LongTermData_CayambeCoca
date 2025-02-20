@@ -1,0 +1,14 @@
+Serial Number:,'220234,,,,,,,,,,,
+Calibration:,,,,,,,,,,,,
+Location,Parameter,Serial #,Blank Reading Offset 1x,Blank Reading Offset 10x,Blank Reading Offset 100x,Time of Blank,Standard Reading,Time of Standard,Standard Value,Units,Temp Coeff.,Calibr Temp
+1,Turbidity,2103302,376,193.2,71.52,6/10/2019 13:14,2246,6/10/2019 13:16,100,NTU,None,24.4
+2,Chlorophyll a,2103473,400,42.8,11.4,6/10/2019 13:38,3465.2,6/10/2019 13:39,40,ug/L,None,24.8
+3,Phycocyanin,2103474,364,37.2,5.84,6/10/2019 13:31,751.2,6/10/2019 13:32,260,ppb,None,24.4
+5,CDOM,2103476,224,55.2,37.12,6/10/2019 15:51,11996,6/10/2019 15:52,300,ppb,None,22.7
+,Depth,,10,,,7/10/2019 10:55,,,,meters,,
+Channel Name,Turbidity,Chlorophyll a,Phycocyanin,CDOM,Depth,Temp,,,,,,
+Units,NTU,ug/L,ppb,ppb,meters,°C,,,,,,
+7/15/2019 13:00,279.2,3.27,288.1,42.2,0.76,6.24,,,,,,
+7/15/2019 13:15,0,3.44,1.52,42.97,0.82,6.37,,,,,,
+7/15/2019 13:30,25.91,3.21,1.91,43.01,0.89,6.48,,,,,,
+7/15/2019 13:45,0,3.21,0.9,43.24,0.89,6.75,,,,,,
