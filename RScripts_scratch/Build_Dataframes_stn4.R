@@ -33,8 +33,14 @@ WL_04 <- WL_04%>%filter(AirTemp_c!=21.862)
 DO_04 <- read.csv(here::here("data_cleaned/DO_04_cleaned.csv"))
 DO_04$DateTime <- as.POSIXct(DO_04$DateTime,format="%Y-%m-%d %H:%M",tz="UTC")
 DO_04 <- DO_04[-c(37344), ]
+
+#read in light data
+LUX_04 <- read.csv(here::here("data_cleaned/LUX_abovewater_04_cleaned.csv"))
+LUX_04$DateTime <- as.POSIXct(LUX_04$DateTime,format="%Y-%m-%d %H:%M",tz="UTC")
+
 #rbind
 Stn04 <- full_join(WL_04,DO_04, by=c("DateTime","Station"))
+Stn04 <- full_join(Stn04,LUX_04, by=c("DateTime","Station"))
 
 #the first WL measurment is 2021-06-11 10:45:00, so filter for after that
 Stn04 <- Stn04%>%filter(DateTime > as.POSIXct("2021-06-11 10:45:00",tz="UTC"))
@@ -42,7 +48,7 @@ Stn04 <- Stn04%>%filter(DateTime > as.POSIXct("2021-06-11 10:45:00",tz="UTC"))
 Stn04 <- Stn04%>%filter(DateTime < as.POSIXct("2023-04-01 11:00:00",tz="UTC"))
 
 #calc DO sat using stream metabolizer funtion
-Stn04$DO_sat <- calc_DO_sat(temp=u(Stn04$WLTemp_c,"degC"), press=u(Stn04$AirPres_kpa*10,"mb"), sal=u(0,"PSU")) # units are checked
+Stn04$DO_sat <- calc_DO_sat(temp=u(Stn04$DOTemp_c,"degC"), press=u(Stn04$AirPres_kpa*10,"mb"), sal=u(0,"PSU")) # units are checked
 
 # convert to solar.time
 # locat time is GMT-5
@@ -55,7 +61,9 @@ Stn04$solar.time <- convert_UTC_to_solartime(Stn04$DateTime_UTC,-78.200147, time
 Stn04$light <- calc_light(Stn04$solar.time,0.327992,-78.200147,max.PAR = u(1400*4.57*0.455, "umol m^-2 s^-1"),
                           #  attach.units = deprecated()
 )
-
+#alternative is to use field collected data
+Stn04$light <- Stn04$Lux
+Stn04 <- Stn04%>%drop_na(light)
 #depth  
 #There are a few ways to do this. 
 #There is a stream metabolizer function that calculated depth from discharge based on an equation in Raymod yyyy
@@ -93,6 +101,7 @@ Dat2$ref <- NULL
 
 ############### now plot it, babe
 ggplot(Dat2,aes(x=solar.time,y=DO.obs)) + geom_point()
+ggplot(Dat2,aes(x=solar.time,y=DO.obs/as.numeric(DO.sat))) + geom_point()
 ggplot(Dat2,aes(x=solar.time,y=as.numeric(depth))) + geom_point()
 ggplot(Dat2,aes(x=solar.time,y=as.numeric(discharge))) + geom_point()
 
@@ -124,5 +133,5 @@ dat_check$difftime <- difftime(dat_check$time_2,dat_check$time_1,units="mins")
 
 
 #Write out
-#write.csv(Dat2,here::here("metabolizer_dataframe/stn04_df_feb11.csv"),row.names = FALSE)
+#write.csv(Dat2,here::here("metabolizer_dataframe/stn04_df_LightDirectlyMeasured_feb19.csv"),row.names = FALSE)
 

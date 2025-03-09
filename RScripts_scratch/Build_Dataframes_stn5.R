@@ -71,7 +71,7 @@ Stn05$depth <- calc_depth(Stn05$Q_m3s_unitted, c = u(0.6383832, "m"), f = u(0.31
 
 
 #change names
-Stn05 <- Stn05%>%select(solar.time,DO_mgL,DO_sat,depth,WLTemp_c,light,Q_m3s)
+Stn05 <- Stn05%>%select(solar.time,DO_mgL,DO_sat,depth,DOTemp_c,light,Q_m3s)
 colnames(Stn05) <- c("solar.time","DO.obs","DO.sat","depth","temp.water","light","discharge")
 
 #now clean for metabolizer. 
@@ -125,5 +125,5 @@ dat_check$difftime <- difftime(dat_check$time_2,dat_check$time_1,units="mins")
 
 
 #Write out
-#write.csv(Dat2,here::here("metabolizer_dataframe/stn05_df_feb19.csv"),row.names = FALSE)
+#write.csv(Dat2,here::here("metabolizer_dataframe/stn05_df_march09.csv"),row.names = FALSE)
 

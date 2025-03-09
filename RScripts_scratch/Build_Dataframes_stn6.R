@@ -42,7 +42,7 @@ Stn06 <- Stn06%>%filter(DateTime > as.POSIXct("2021-06-11 13:00:00",tz="UTC"))
 Stn06 <- Stn06%>%filter(DateTime < as.POSIXct("2023-04-01 12:00:00",tz="UTC"))
 
 #calc DO sat using stream metabolizer funtion
-Stn06$DO_sat <- calc_DO_sat(temp=u(Stn06$WLTemp_c,"degC"), press=u(Stn06$AirPres_kpa*10,"mb"), sal=u(0,"PSU")) # units are checked
+Stn06$DO_sat <- calc_DO_sat(temp=u(Stn06$DOTemp_c,"degC"), press=u(Stn06$AirPres_kpa*10,"mb"), sal=u(0,"PSU")) # units are checked
 
 # convert to solar.time
 # locat time is GMT-5
@@ -71,7 +71,7 @@ Stn06$depth <- calc_depth(Stn06$Q_m3s_unitted, c = u(0.6383832, "m"), f = u(0.31
 
 
 #change names
-Stn06 <- Stn06%>%select(solar.time,DO_mgL,DO_sat,depth,WLTemp_c,light,Q_m3s)
+Stn06 <- Stn06%>%select(solar.time,DO_mgL,DO_sat,depth,DOTemp_c,light,Q_m3s)
 colnames(Stn06) <- c("solar.time","DO.obs","DO.sat","depth","temp.water","light","discharge")
 
 #now clean for metabolizer. 
