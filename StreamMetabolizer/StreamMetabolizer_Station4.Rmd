@@ -83,7 +83,7 @@ note: stream metabolizer can take NAs but not an empty row
 
 ```{r data}
 
-stn04 <- read.csv(here::here("metabolizer_dataframe/stn04_df_feb11.csv"))
+stn04 <- read.csv(here::here("metabolizer_dataframe/stn04_df_LightDirectlyMeasured_feb19.csv"))
 stn04$solar.time <- as.POSIXct(stn04$solar.time,format="%Y-%m-%d %H:%M:%S",tz="UTC")
 
 #let's see about just 2019 data
@@ -128,6 +128,9 @@ list of default specifications for this model.
 bayes_specs <- specs(bayes_name)
 
 bayes_specs <- specs(bayes_name, burnin_steps=500, saved_steps=1000, n_cores=1, GPP_daily_mu=3, GPP_daily_sigma=2)
+
+#removing GPP priors because I know nothing about this site
+bayes_specs <- specs(bayes_name, burnin_steps=500, saved_steps=1000, n_cores=1)
 
 
 #this is a function the maite uses in here data, I 

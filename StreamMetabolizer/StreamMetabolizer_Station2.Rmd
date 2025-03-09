@@ -83,8 +83,9 @@ note: stream metabolizer can take NAs but not an empty row
 
 ```{r data}
 
-#stn02 <- read.csv(here::here("metabolizer_dataframe/stn02_df_july10.csv"))
-stn02 <- read.csv(here::here("metabolizer_dataframe/stn02_df_feb09.csv"))
+
+#stn02 <- read.csv(here::here("metabolizer_dataframe/stn02_df_feb09.csv"))
+stn02 <- read.csv(here::here("metabolizer_dataframe/stn02_df_fieldLUX_march9.csv"))
 stn02$solar.time <- as.POSIXct(stn02$solar.time,format="%Y-%m-%d %H:%M:%S",tz="UTC")
 
 #let's see about just 2019 data
@@ -92,8 +93,8 @@ dat <- stn02#%>%
 #  filter(solar.time < as.POSIXct("2019-08-13 00:00:00"))%>%
  # filter(solar.time > as.POSIXct("2021-07-05 00:00:00") &
 #           solar.time < as.POSIXct("2021-08-16 00:00:00"))%>%
-  filter(solar.time > as.POSIXct("2022-03-23 00:00:00")&
-           solar.time < as.POSIXct("2023-04-02 00:00:00"))
+#  filter(solar.time > as.POSIXct("2022-03-23 00:00:00")&
+#           solar.time < as.POSIXct("2023-04-02 00:00:00"))
 
 #sort by date time
 dat <- dat[order(dat$solar.time , decreasing = FALSE),]
@@ -130,7 +131,8 @@ list of default specifications for this model.
 ```{r bayes_specs}
 bayes_specs <- specs(bayes_name)
 
-bayes_specs <- specs(bayes_name, burnin_steps=500, saved_steps=1000, n_cores=1, GPP_daily_mu=3, GPP_daily_sigma=2)
+bayes_specs <- specs(bayes_name, burnin_steps=500, saved_steps=1000, n_cores=1#, GPP_daily_mu=3, GPP_daily_sigma=2
+                     )
 
 
 #this is a function the maite uses in here data, I 
@@ -219,7 +221,7 @@ plot_DO_preds(mm)
 #save(mm, file = "model_stn02_partially-pooled_stn02_feb08_2022.RData")
 
 predictions <- predict_metab(mm)
-#write.csv(predictions,here::here("StreamMetabolizer/Predictions/MetabPredictions_stn02_2019_feb08df.csv"))
+#write.csv(predictions,here::here("StreamMetabolizer/Predictions/MetabPredictions_stn02_fieldLUX_march09df.csv"))
 
 ```
 
