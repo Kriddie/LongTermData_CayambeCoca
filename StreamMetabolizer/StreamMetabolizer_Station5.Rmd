@@ -253,6 +253,9 @@ get_fit(mm) %>%
   lapply(names)
 
 daily_fit <- get_fit(mm)$daily
+
+write.csv(daily_fit,here::here("StreamMetabolizer/Predictions_bestones/station5_calclight_march9.csv"))
+
 ```
 #maite's model inspection:
 
