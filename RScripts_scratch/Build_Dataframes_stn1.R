@@ -25,14 +25,14 @@ library(ggplot2)
 
 #so let's do both and run both, right? That's a good idea right?
 
-#Read in cleaned data for station 2
+#Read in cleaned data for station 1
 
 #water level
 WL_01 <- read.csv(here::here("data_cleaned/WL_01_cleaned.csv"))
 WL_01$DateTime <- as.POSIXct(WL_01$DateTime,format="%Y-%m-%d %H:%M",tz="UTC")
 #DO
 DO_01 <- read.csv(here::here("data_cleaned/DO_01_cleaned.csv"))
-DO_01$DateTime <- as.POSIXct(DO_01$DateTime,format="%Y-%m-%d %H:%M",tz="UTC")
+DO_01$DateTime <- as.POSIXct(DO_01$DateTime,format="%m/%d/%Y %H:%M",tz="UTC")
 #rbind
 Stn01 <- full_join(WL_01,DO_01, by=c("DateTime","Station"))
 
@@ -42,7 +42,7 @@ Stn01 <- Stn01%>%filter(DateTime > as.POSIXct("2019-07-12 17:00:00",tz="UTC"))
 Stn01 <- Stn01%>%filter(DateTime < as.POSIXct("2022-05-31 00:00:00",tz="UTC"))
 
 #calc DO sat using stream metabolizer funtion
-Stn01$DO_sat <- calc_DO_sat(temp=u(Stn01$WLTemp_c,"degC"), press=u(Stn01$AirPres_kpa*10,"mb"), sal=u(0,"PSU")) # units are checked
+Stn01$DO_sat <- calc_DO_sat(temp=u(Stn01$DOTemp_c,"degC"), press=u(Stn01$AirPres_kpa*10,"mb"), sal=u(0,"PSU")) # units are checked
 
 # convert to solar.time
 # locat time is GMT-5
@@ -71,7 +71,7 @@ Stn01$depth <- calc_depth(Stn01$Q_m3s_unitted, c = u(0.6383832, "m"), f = u(0.31
 
 
 #change names
-Stn01 <- Stn01%>%select(solar.time,DO_mgL,DO_sat,depth,WLTemp_c,light,Q_m3s)
+Stn01 <- Stn01%>%select(solar.time,DO_mgL,DO_sat,depth,DOTemp_c,light,Q_m3s)
 colnames(Stn01) <- c("solar.time","DO.obs","DO.sat","depth","temp.water","light","discharge")
 
 #now clean for metabolizer. 
@@ -124,5 +124,5 @@ dat_check$difftime <- difftime(dat_check$time_2,dat_check$time_1,units="mins")
 
 
 #Write out
-#write.csv(Dat2,here::here("metabolizer_dataframe/stn01_df_feb12.csv"),row.names = FALSE)
+#write.csv(Dat2,here::here("metabolizer_dataframe/stn01_df_march9.csv"),row.names = FALSE)
 

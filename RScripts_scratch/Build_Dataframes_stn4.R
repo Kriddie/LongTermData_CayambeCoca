@@ -62,8 +62,9 @@ Stn04$light <- calc_light(Stn04$solar.time,0.327992,-78.200147,max.PAR = u(1400*
                           #  attach.units = deprecated()
 )
 #alternative is to use field collected data
-Stn04$light <- Stn04$Lux
-Stn04 <- Stn04%>%drop_na(light)
+#Stn04$light <- Stn04$Lux
+#Stn04 <- Stn04%>%drop_na(light)
+
 #depth  
 #There are a few ways to do this. 
 #There is a stream metabolizer function that calculated depth from discharge based on an equation in Raymod yyyy
@@ -102,8 +103,10 @@ Dat2$ref <- NULL
 ############### now plot it, babe
 ggplot(Dat2,aes(x=solar.time,y=DO.obs)) + geom_point()
 ggplot(Dat2,aes(x=solar.time,y=DO.obs/as.numeric(DO.sat))) + geom_point()
+ggplot(Dat2,aes(x=solar.time,y=temp.water)) + geom_point()
 ggplot(Dat2,aes(x=solar.time,y=as.numeric(depth))) + geom_point()
 ggplot(Dat2,aes(x=solar.time,y=as.numeric(discharge))) + geom_point()
+ggplot(Dat2,aes(x=solar.time,y=light)) + geom_point()
 
 ##################3
 
@@ -133,5 +136,5 @@ dat_check$difftime <- difftime(dat_check$time_2,dat_check$time_1,units="mins")
 
 
 #Write out
-#write.csv(Dat2,here::here("metabolizer_dataframe/stn04_df_LightDirectlyMeasured_feb19.csv"),row.names = FALSE)
+#write.csv(Dat2,here::here("metabolizer_dataframe/stn04_df_CalcLight_march10.csv"),row.names = FALSE)
 

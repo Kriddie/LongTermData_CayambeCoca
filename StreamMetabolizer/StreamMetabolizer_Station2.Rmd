@@ -129,10 +129,13 @@ bayes_name
 We now pass the model name to `specs()` to get a
 list of default specifications for this model.
 ```{r bayes_specs}
+
 bayes_specs <- specs(bayes_name)
 
-bayes_specs <- specs(bayes_name, burnin_steps=500, saved_steps=1000, n_cores=1#, GPP_daily_mu=3, GPP_daily_sigma=2
-                     )
+#bayes_specs <- specs(bayes_name, burnin_steps=500, saved_steps=1000, n_cores=1, GPP_daily_mu=3, GPP_daily_sigma=2)
+
+#since we don't much about GPP in this stream, remove GPP prior
+bayes_specs <- specs(bayes_name, burnin_steps=1000, saved_steps=1000, n_cores=1)
 
 
 #this is a function the maite uses in here data, I 
@@ -141,18 +144,21 @@ prior_K600_lnQ_nodes_meanlog <- function(depth, slope) {
 }
 
 #look at min and max discharge, 
-#for stn2 it is: 0.003237239 to 0.2829755
+#for stn6 it is: 0.06357686 to 0.7613477
 #take the ln() and enter in as prior
-bayes_specs$K600_lnQ_nodes_centers<-seq(-6, -1.5, 0.5)
+
+#bayes_specs$K600_lnQ_nodes_centers<-seq(-3, -.3, 0.5)
 
 #do below later? maybe I don't need to??
 
 ###CHANGE DEPTH AND SLOPE FOR EACH SITE
-#specs$K600_lnQ_nodes_meanlog <- rep(prior_K600_lnQ_nodes_meanlog(slope=0.005, depth=0.68),length(specs$K600_lnQ_nodes_centers))
-#specs$K600_lnQ_nodes_sdlog <- rep(0.7, length(specs$K600_lnQ_nodes_centers))
+bayes_specs$K600_lnQ_nodes_meanlog <- rep(prior_K600_lnQ_nodes_meanlog(slope=0.01, depth=0.1846732),length(bayes_specs$K600_lnQ_nodes_centers))
+
+bayes_specs$K600_lnQ_nodes_sdlog <- rep(0.7, length(bayes_specs$K600_lnQ_nodes_centers))
 
 
 ```
+
 
 
 
@@ -252,8 +258,13 @@ get_fit(mm)$overall %>%
 
 And here is a list of all column names available through `get_fit()`:
 ```{r}
-get_fit(mm) %>%
-  lapply(names)
+#get_fit(mm) %>%
+#  lapply(names)
+
+
+daily_fit <- get_fit(mm)$daily
+
+#write.csv(daily_fit,here::here("StreamMetabolizer/Predictions_bestones/station2_fieldlight_march9.csv"))
 ```
 #maite's model inspection:
 

@@ -83,7 +83,7 @@ note: stream metabolizer can take NAs but not an empty row
 
 ```{r data}
 
-stn04 <- read.csv(here::here("metabolizer_dataframe/stn04_df_LightDirectlyMeasured_feb19.csv"))
+stn04 <- read.csv(here::here("metabolizer_dataframe/stn04_df_CalcLight_march10.csv"))
 stn04$solar.time <- as.POSIXct(stn04$solar.time,format="%Y-%m-%d %H:%M:%S",tz="UTC")
 
 #let's see about just 2019 data
@@ -127,10 +127,10 @@ list of default specifications for this model.
 ```{r bayes_specs}
 bayes_specs <- specs(bayes_name)
 
-bayes_specs <- specs(bayes_name, burnin_steps=500, saved_steps=1000, n_cores=1, GPP_daily_mu=3, GPP_daily_sigma=2)
+#bayes_specs <- specs(bayes_name, burnin_steps=500, saved_steps=1000, n_cores=1, GPP_daily_mu=3, GPP_daily_sigma=2)
 
-#removing GPP priors because I know nothing about this site
-bayes_specs <- specs(bayes_name, burnin_steps=500, saved_steps=1000, n_cores=1)
+#since we don't much about GPP in this stream, remove GPP prior
+bayes_specs <- specs(bayes_name, burnin_steps=1000, saved_steps=1000, n_cores=1)
 
 
 #this is a function the maite uses in here data, I 
@@ -139,19 +139,20 @@ prior_K600_lnQ_nodes_meanlog <- function(depth, slope) {
 }
 
 #look at min and max discharge, 
-#for stn2 it is: 0.002120185 to 0.10986061
+#for stn6 it is: 0.06357686 to 0.7613477
 #take the ln() and enter in as prior
-bayes_specs$K600_lnQ_nodes_centers<-seq(-6, -1.5, 0.5)
+
+#bayes_specs$K600_lnQ_nodes_centers<-seq(-3, -.3, 0.5)
 
 #do below later? maybe I don't need to??
 
 ###CHANGE DEPTH AND SLOPE FOR EACH SITE
-#specs$K600_lnQ_nodes_meanlog <- rep(prior_K600_lnQ_nodes_meanlog(slope=0.005, depth=0.68),length(specs$K600_lnQ_nodes_centers))
-#specs$K600_lnQ_nodes_sdlog <- rep(0.7, length(specs$K600_lnQ_nodes_centers))
+bayes_specs$K600_lnQ_nodes_meanlog <- rep(prior_K600_lnQ_nodes_meanlog(slope=0.01, depth=0.1846732),length(bayes_specs$K600_lnQ_nodes_centers))
+
+bayes_specs$K600_lnQ_nodes_sdlog <- rep(0.7, length(bayes_specs$K600_lnQ_nodes_centers))
 
 
 ```
-
 
 
 #run model
