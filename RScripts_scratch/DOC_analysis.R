@@ -87,14 +87,13 @@ p3 <- ggplot(mergeDOC_df%>%
                filter(DateTime > "2020-01-01 00:00:00"))+
   geom_point(aes(x=Q_m3s, y=DOC, fill=Station), shape=21,size=3) + 
   ylab("DOC [mg/]") + xlab("Q [m^3/s]") 
-#+
-#  facet_wrap(~WS, scales = "free_x")
 p3+ theme_bw()+theme(text=element_text(size=18))
 
 p3.01 <- ggplot(mergeDOC_df%>%
-                 filter(Station=="Stn01")%>%
-                 filter(DateTime < "2020-01-01 00:00:00"))+
-  geom_point(aes(x=Q_m3s, y=DOC, fill=Station), shape=21,size=3) + 
+                 filter(Station=="Stn01"|Station=="Stn02")#%>%
+                 #filter(DateTime > "2020-01-01 00:00:00")
+                  )+
+  geom_point(aes(x=Q_m3s, y=DOC, fill=DateTime), shape=21,size=3) + 
   ylab("DOC [mg/]") + xlab("Q [m^3/s]")
 p3.02 <- ggplot(mergeDOC_df%>%
                  filter(Station=="Stn02")%>%
@@ -133,13 +132,15 @@ fig2 <- plot_ly(data = C6_Q_df, x = ~DateTime, y = ~CDOM_ppb)
 fig2
 
 fig3 <- ggplot(C6_Q_df) + geom_point(aes(x=DateTime,y=Q_m3s)) + theme(text=element_text(size=18))
+
+fig3 <- ggplot(C6_Q_df) + geom_point(aes(x=Q_m3s,y=CDOM_ppb)) + theme(text=element_text(size=18))
+fig3
 ###########################
 #hysteresis of storm event
 ############################
 #start 
 start <- as.POSIXct("2019-07-14 00:15",tz="UTC")
 end <- as.POSIXct("2019-07-16 09:00",tz="UTC")
-
 
 C6_p1 <- ggplot(C6_Q_df%>%filter(DateTime>start&DateTime<end) ) + geom_point(aes(x=DateTime,y=CDOM_ppb,color=DateTime))+
   scale_color_gradient(low="blue", high="red")+ theme_bw() + theme(legend.position = "none") + theme(text=element_text(size=18))
