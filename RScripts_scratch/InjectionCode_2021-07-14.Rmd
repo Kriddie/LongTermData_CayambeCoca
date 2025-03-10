@@ -1,0 +1,215 @@
+---
+
+title: "CO2_EC"
+author: "Kayla Emerson"
+date: "6/15/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(Bolstad2)
+library(ggplot2)
+library(lubridate)
+library(tidyverse)
+library(plotly)
+library(here)
+```
+
+## About
+
+date: 2021-07-14
+Injection in tributary of Gavilan
+
+### We start by reading in an then cleaning data, file 
+
+## read in CO2 data
+
+Select data collected during injection period
+```{r co2, echo=FALSE}
+
+inj_df <- read.csv(here::here("MergedFiles/Inj_df_2019July14.csv"))
+inj_df$DateTime <- as.POSIXct(inj_df$DateTime,format="%Y-%m-%d %H:%M:%S", tz="UTC")
+```
+
+
+## Plot CO2 for Viasala @ 80m
+
+```{r check CO2 data plot, echo=FALSE}
+
+##check data
+plot_ly(inj_df,
+    x = ~DateTime, y = ~pCO2_120m, type = 'scatter', mode = 'markers') 
+
+```
+
+
+## Plot CO2 for 100m Viasala
+```{r check CO2 data plot, echo=FALSE}
+##check data
+p <- plot_ly(inj_df,
+    x = ~DateTime, y = ~log(pCO2_120m_adj), type = 'scatter', mode = 'markers') 
+
+p2 <- add_trace(p, x = inj_df$DateTime, y = log(inj_df$pCO2_80m_adj), 
+                       type = "scatter")
+
+p2
+```
+
+
+## Finding the mean for before, during, and after the plateau
+
+EXPORT to excel somehow to make a nice table or something 
+
+```{r plot, echo=FALSE}
+
+# find average for each station before plateau
+
+preplat_80m <- filter(inj_df, DateTime >= as.POSIXct("2021-07-14 10:05:00", tz = "UTC") & DateTime < as.POSIXct("2021-07-14 10:20:00", tz = "UTC"))
+preplat_120m <- filter(inj_df, DateTime >= as.POSIXct("2021-07-14 10:05:00", tz = "UTC") & DateTime < as.POSIXct("2021-07-14 10:20:00", tz = "UTC"))
+
+
+#calculate mean
+preplatmean80m = mean(preplat_80m$pCO2_80m_adj)
+preplatmean120m = mean(preplat_120m$pCO2_120m)
+
+
+### Change data frame, date and wanted time frame as needed 
+plat_80m <- filter(inj_df, DateTime >= as.POSIXct("2021-07-14 11:50:00", tz = "UTC") & DateTime < as.POSIXct("2021-07-14 11:55:00", tz = "UTC"))
+plat_120m <- filter(inj_df, DateTime >= as.POSIXct("2021-07-14 11:50:00", tz = "UTC") & DateTime < as.POSIXct("2021-07-14 11:55:00", tz = "UTC"))
+
+#now find the mean of this filtered subset
+platmean80m = mean(plat_80m$pCO2_80m_adj)
+platmean120m = mean(plat_120m$pCO2_120m_adj)
+
+
+```
+
+
+## Calculating CO2 in the air (look at data before or after vaisalas went into the water)
+```{r plot, echo=FALSE}
+# use manoa for this
+```
+
+
+##calc kc02 for river stretch using kriddie's own brain 
+I'm going off road, baby
+
+#First comes the flux
+
+We are pulling from methods in stream ecology now 
+eq) 31.1  describes decay rate of leaves over time
+  -k = loge(Wf/Wi)/t
+  k: decay rate
+  wf: final weight
+  wi: initial weight
+  t: time
+  
+adjusted for decay rate of CO2 over meters
+  -k = loge(Wf/Wi)/t
+  k: decay rate
+  wf: co2 mass at 50 m (concentration * discharge)
+  wi: co2 mass at 10m  (concentration * discharge)
+  t: meters
+
+```{r kdub rules the roost}
+#convert ppm to mg/l is the easiest thing in the world becaust it is 1:1
+
+#difference between plateu and baseline for upstream and downstream
+C_mgperL_80m <- (platmean80m - preplatmean80m)
+
+C_mgperL_120m <- (platmean120m - mean(preplatmean120m))
+
+#We don't have discharge (as far as I can tell), but let's assume Q is the same
+
+
+#stream reach length
+dist = 120-80
+
+km <- -log(C_mgperL_120m/(C_mgperL_80m))/dist
+#km units: 1/m
+```
+#convert k in meters to time
+kgas,t = kgas,m * v
+
+kgas,t: decay rate over time
+kgas,m: decay rate over meters (calculates in chunk above)
+v: mean velocity of stream
+
+```{r meters to time }
+
+
+#mean velocity of stream reach from salt injection
+
+#we will use the EC data collected at 120m
+EC_Data <- read.csv(here::here("Inj_2021July14/SaltInjectionData_120m_2021-07-14.csv"))
+#colnames(EC_Data) <- c("DateTime","LowRange","HighRange","Temp_c")
+EC_Data$DateTime <- as.POSIXct(paste("07/14/2021",EC_Data$Time,sep=" "),format="%m/%d/%Y %H:%M:%S", tz = "UTC")
+
+plot_ly(EC_Data, x = ~DateTime, y = ~conductivity_uS, type = 'scatter', mode = 'markers') 
+
+#manually found plateau time
+plateau <- as.POSIXct("2021-07-14 11:54",tz="UTC")
+
+#isolate time between salt injection and plateu, subtract out background
+
+df <- EC_Data%>%filter(DateTime<plateau)
+df$conductivity_uS <- df$conductivity_uS - 8.7 #background is 8.7
+df$Time <- format(as.POSIXct(df$DateTime), format = "%H:%M:%S")
+df$seconds <- period_to_seconds(hms(df$Time)) - min(period_to_seconds(hms(df$Time)))
+df <- df%>%drop_na(conductivity_uS)
+
+#find Mean Travel Time (MTT)
+x <- sintegral(df$seconds, df$conductivity_uS, n.pts = nrow(df))
+df_int <- data.frame(matrix(ncol = 2, nrow = nrow(as.data.frame(x$x))))
+colnames(df_int) <- c("sec","sum")
+df_int$sec <- x$x
+df_int$sum <- x$y
+AUC <- x$int
+
+MTT <- df_int[which.min(abs(AUC/2-df_int$sum)),]$sec
+
+dist = 120-0
+
+
+v = dist/MTT #units (m/s)
+kt = km * v #units (1/s)
+kCO2_mperd <- kt*86400
+
+
+#wat if we used the co2 injection wich we actually have at both 80m and 120m? 
+#80 comes to platue at 10:32:25, 120m comes to platue at 10:35:20
+
+x80m_time <- as.POSIXct("2021-07-14 10:32:25", format="%Y-%m-%d %H:%M:%S",tz="UTC")
+x120m_time <- as.POSIXct("2021-07-14 10:35:20", format="%Y-%m-%d %H:%M:%S",tz="UTC")
+
+MTT <- as.numeric(difftime(x120m_time,x80m_time,units="secs"))
+
+dist = 120-80
+
+v = dist/MTT #units (m/s)
+kt = km * v #units (1/s)
+kCO2_mperd <- kt*86400
+  
+```
+
+#k600
+convert to k to k600
+```{r convert to k6000}
+
+# Find average water temp for injection
+wdv_df <- read.csv(here::here("Inj_2021July14/SaltInjectionNotes_2021-07-14.csv"))
+
+WaterTempC_ave <- mean(wdv_df$finaltemp_C,na.rm=TRUE)
+
+#calc sc
+Sc <- 1911.1 - 118.11*WaterTempC_ave + 3.4527*(WaterTempC_ave)^2 - 0.04132*(WaterTempC_ave)^3
+
+K600 <- kCO2_mperd * (600/Sc)^(-0.5)
+
+print(K600)
+```
+
+
+
