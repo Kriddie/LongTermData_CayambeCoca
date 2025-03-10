@@ -21,6 +21,7 @@ library(tidyr)
 library(lubridate)
 library(zoo)
 library(plotly)
+library(cowplot)
 ```
 
 ## Read in data
@@ -76,11 +77,10 @@ all_stn <- all_stn%>%filter(DateTime < as.POSIXct("2023-04-01 11:15:00",tz="UTC"
 ```
 
 ## Research Question 1:
-How do carbon concentration respond to storm events
 
+How do carbon concentration respond to storm events at station 1
 
-You can also embed plots, for example:
-
+## extract highest peaks from each month
 
 ```{r storm hysterises, echo=FALSE}
 
@@ -280,6 +280,8 @@ ggplot(allstn_storm,aes(x=Q_m3s_01,y=CO2_ppm_01,color=time_elapsed/60)) + geom_p
 
 ```
 
+## storm plots
+
 ```{r storm sterf, echo=FALSE}
 
 storm_subset <- allstn_storm %>%filter(storm_name!="Aug. 2019 incomplete"& storm_name!="Aug. 2022"& storm_name!="Aug. 2022"& storm_name!="Dec. 2022"& storm_name!="Feb. 2023"& storm_name!="Jan. 2023"& storm_name!="June 2022"& storm_name!="July 2022"& storm_name!="Jan. 2022"& storm_name!="March 2022" & storm_name!="March 2023"& storm_name!="Oct. 2019"& storm_name!="Sept. 2019"& storm_name!="Sept. 2022")
@@ -305,8 +307,8 @@ p2 <- ggplot(storm_subset%>%filter(storm_name!="July 2019"&storm_name!="Aug. 201
   facet_wrap( ~ storm_name_1#, scales = "free"
               )  + geom_point() + 
   scale_y_continuous(transform = "log", breaks = c(1000,3000,10000,30000))+ scale_x_continuous(transform = "log", breaks = c(3,10,30,100,300))+
-    scale_color_viridis_c(name= "days since\nstart of storm",guide=guide_colourbar(reverse = TRUE)) +
-  ylab(expression(italic(p)~CO[2] ~'(ppm)')) +     xlab(expression(paste('Discharge (L ' , s^-1,")"))) +
+    scale_color_viridis(option = "H",name= "days since\nstart of storm",guide=guide_colourbar(reverse = TRUE)) +
+  ylab(expression(italic(p)*CO[2] ~'(ppm)')) +     xlab(expression(paste('Discharge (L ' , s^-1,")"))) +
   theme_bw(base_size = 18)
 
 #now for all storms
@@ -322,6 +324,8 @@ p3 <- ggplot(allstn_storm,aes(x=Q_m3s_02*1000,y=CO2_ppm_01,color=month)) + geom_
 
 
 ```
+
+# Base flow
 
 ```{r base flow stn01, echo=FALSE}
 
@@ -343,15 +347,54 @@ p2<-ggplot() + geom_point(data=all_stn,aes(x=Q_m3s_02*1000,y=CO2_ppm_01),color="
 
 ```
 
+# Station 2
+
+```{r  stn02, echo=FALSE}
+all_stn$dif <- all_stn$CO2_ppm_01 - all_stn$CO2_ppm_02
+
+test1 <- all_stn%>%filter(dif>0) 
+test2 <- all_stn%>%filter(dif<0) 
+
+p1 <- ggplot(all_stn%>%filter(dif>40)%>%
+               filter(DateTime>"2020-01-01") , aes(x=Q_m3s_02,y=dif)) + geom_point() +  #scale_y_continuous(transform="log10", 
+  theme_bw(base_size = 18)
+
+p2 <- ggplot(all_stn %>%filter(dif< -40)%>%
+               filter(DateTime>"2020-01-01"),
+            aes(x=Q_m3s_02,y=abs(dif),color=CO2_ppm_02)) + geom_point() + scale_y_reverse()+ 
+ # scale_x_log10() + 
+  theme_bw(base_size = 18)
+
+p3 <- ggplot(all_stn# %>%filter(dif < -40 |dif > 40 )
+             %>%
+               filter(DateTime>"2020-01-01"),
+            aes(x=Q_m3s_02,y=dif,color=CO2_ppm_02)) + geom_point() + #scale_y_reverse()+ 
+ # scale_x_log10() + 
+  theme_bw(base_size = 18)
+
+p_full <- plot_grid(p1,p2,ncol=1, align = "hv")
+
+```
+
+
+# Station 4
+
 ```{r  stn04, echo=FALSE}
 
+plot_ly(data=all_stn%>%filter(DateTime > as.POSIXct("2021-06-05 00:00:00")), x=~DateTime,y= ~CO2_ppm_04)
+
+all_stn_remove <- all_stn%>%filter(DateTime!=as.POSIXct("2021-07-05 11:15:00",tz="UTC"))%>%
+  filter(DateTime<as.POSIXct("2021-10-20 12:30:00",tz="UTC") | DateTime>as.POSIXct("2021-12-30 16:30:00",tz="UTC"))%>%
+  filter(DateTime<as.POSIXct("2022-03-17 12:30:00",tz="UTC") | DateTime>as.POSIXct("2022-06-16 00:00:00",tz="UTC"))
 
 p1 <-ggplot() + geom_point(data=allstn_storm,aes(x=Q_m3s_04*1000,y=CO2_ppm_04,color=month)) +
-    scale_y_continuous(transform = "log", breaks = c(1000,3000,10000,30000))+ scale_x_continuous(transform = "log", breaks = c(3,10,30,100,300))+ ylab(expression(italic(p)~CO[2] ~'(ppm)')) +     xlab(expression(paste('Discharge (L ' , s^-1,")"))) +
+    scale_y_continuous(transform = "log", breaks = c(1000,3000,10000,30000))+ scale_x_continuous(transform = "log", breaks = c(3,10,30,100,300))+ ylab(expression(italic(p)*CO[2] ~'(ppm)')) +     xlab(expression(paste('Discharge (L ' , s^-1,")"))) +
   theme_bw(base_size = 18) 
 
-p2 <-ggplot() + geom_point(data=all_stn,aes(x=Q_m3s_04*1000,y=CO2_ppm_04,color=month)) +
-    scale_y_continuous(transform = "log", breaks = c(1000,3000,10000,30000))+ scale_x_continuous(transform = "log", breaks = c(3,10,30,100,300))+ ylab(expression(italic(p)~CO[2] ~'(ppm)')) +     xlab(expression(paste('Discharge (L ' , s^-1,")"))) +
+p2 <-ggplot() + geom_point(data=all_stn,aes(x=Q_m3s_04*1000,y=CO2_ppm_04)) +
+    scale_y_continuous(transform = "log", breaks = c(1000,3000,10000,30000))+ 
+  scale_x_continuous(transform = "log", breaks = c(3,10,30,100,300))+
+  ylab(expression(italic(p)*CO[2] ~'(ppm)')) +     xlab(expression(paste('Discharge (L ' , s^-1,")"))) +
   theme_bw(base_size = 18) 
 
 
@@ -359,13 +402,345 @@ p3 <- ggplot() +
   geom_point(data=all_stn,aes(x=CO2_ppm_01,y=CO2_ppm_04,color=log(Q_m3s_04))) +
     scale_y_continuous(transform = "log", breaks = c(300,1000,3000,10000,30000))+
   scale_x_continuous(transform = "log", breaks = c(300,1000,3000,10000,30000))+
-  ylab(expression(italic(p)~CO[2] ~'(ppm)')) +    xlab(expression(italic(p)~CO[2] ~'(ppm)')) +   
+  ylab(expression(italic(p)*CO[2] ~'upstream (ppm)')) +    xlab(expression(italic(p)*CO[2] ~'downstream (ppm)')) +   
   theme_bw(base_size = 18) 
 
+
+#now for all storms
+all_stn_remove$month_number <- format(as.Date(all_stn_remove$Date), "%m")
+all_stn_remove$month_number  <- as.numeric(all_stn_remove$month_number )
+all_stn_remove$month <- format(as.Date(all_stn_remove$Date), "%B")
+
+all_stn_remove$month <- reorder(all_stn_remove$month, all_stn_remove$month_number)
+
 p4 <- ggplot() + 
-  geom_point(data=all_stn,aes(x=CO2_ppm_01,y=CO2_ppm_04,color=DateTime)) +
+  geom_point(data=all_stn_remove%>%filter(DateTime>"2021-06-06 00:00:00"),aes(x=CO2_ppm_01,y=CO2_ppm_04,color=month)) +
     scale_y_continuous(transform = "log", breaks = c(300,1000,3000,10000,30000))+
   scale_x_continuous(transform = "log", breaks = c(300,1000,3000,10000,30000))+
-  ylab(expression(italic(p)~CO[2] ~'downstream (ppm)')) +    xlab(expression(italic(p)~CO[2] ~'upstream (ppm)')) +  theme_bw(base_size = 18) 
+  ylab(expression(italic(p)*CO[2] ~'downstream (ppm)')) +    xlab(expression(italic(p)*CO[2] ~'upstream (ppm)')) +  theme_bw(base_size = 18) 
+
+lm_1 <- lm(log(CO2_ppm_01) ~ log(CO2_ppm_04), data=all_stn_remove)
+anova(lm_1)
+summary(lm_1)
+
+#this one for paper
+p4
+
 
 ```
+
+## DOC
+
+```{r  DOC read in data, echo=FALSE}
+DOC_2022 <- read.csv(here::here("DOC/DOC_KW_08-25-2022.csv"))%>%select(Date,time,site,DOC..mg.L.,TDN..mg.L.)%>%rename(Time=time,DOC=DOC..mg.L.,TDN=TDN..mg.L.,Station=site)%>%filter(Station=="Stn02"|Station=="Stn05")
+DOC_2022$SampleType <- "Station"
+DOC_2021 <- read.csv(here::here("DOC/DOC_9-1-2021_UNC_EDIT3.csv"))%>%select(Date,Time,Station,SampleType,DOC,TDN)
+DOC_synop <-  read.csv(here::here("DOC/WaterChem_synoptic_2022-01-28.csv")) 
+DOC_2019 <- read.csv(here::here("DOC/WaterChem_2019_EDIT.csv"))%>%select(Date,Time,Station,DOC..mg.L.,TDN..mg.L.)%>%rename(
+  DOC=DOC..mg.L.,TDN=TDN..mg.L.)%>%drop_na(DOC)
+DOC_2019$SampleType <- "Station"
+
+DOC_df <- rbind(DOC_2022,DOC_2021,DOC_2019)
+
+DOC_df$DateTime <- as.POSIXct(paste(DOC_df$Date, DOC_df$Time), format="%m/%d/%y %H:%M", tz = "UTC")
+DOC_df$DateTime <- round_date(DOC_df$DateTime,unit="15 minutes")
+
+#formating 2021 DOC data
+DOC_2021$Distance_from_peatland <- 
+  ifelse(DOC_2021$Station=="Stn01",5,
+         ifelse(DOC_2021$Station=="Stn02",56,
+                ifelse(DOC_2021$Station=="Stn03",288,
+                       ifelse(DOC_2021$Station=="Stn04",454,
+                              ifelse(DOC_2021$Station=="Stn05",0+1,52+1)))))
+DOC_2021$WS <- ifelse(DOC_2021$Station=="Stn05"|DOC_2021$Station=="Stn06","Colmillo","Gavilan")
+
+
+
+#c6 data
+C6_df <-read.csv(here::here("DOC/C6_df.csv"))
+C6_df$DateTime <- as.POSIXct(C6_df$DateTime, format="%Y-%m-%d %H:%M:%S", tz = "UTC")
+C6_df$DateTime <- round_date(C6_df$DateTime, unit="15 minute")
+C6_df <- C6_df%>%drop_na(DateTime)
+C6_df <- unique(C6_df)
+
+
+#### station 2
+WL_df <- read.csv(here::here("data_cleaned/WL_02_cleaned.csv"))
+WL_df$DateTime <- as.POSIXct(WL_df$DateTime, format="%Y-%m-%d %H:%M",tz="UTC")
+
+##merge with doc
+mergeDOC_df <- left_join(DOC_df,WL_df%>%select(!Station), by=(c("DateTime")))
+
+#DOC data from stn02 just seems a bit better than stn01
+mergeDOC_df_subset1 <- mergeDOC_df%>%filter(DateTime < "2021-01-01")%>%filter(Station=="Stn01")
+mergeDOC_df_subset2 <- mergeDOC_df%>%filter(DateTime > "2021-01-01")%>%filter(Station=="Stn02")
+
+DOC_PeatlandOutlet <- rbind(mergeDOC_df_subset1,mergeDOC_df_subset2)
+
+#merge C with station01 Q
+C6_Q_df <- left_join(C6_df,WL_df%>%select(!Station),by="DateTime")
+C6_Q_df <- C6_Q_df%>%filter(DateTime != as.POSIXct("2019-07-15 14:45",tz="UTC"))%>%
+  filter(DateTime != as.POSIXct("2019-07-15 15:15",tz="UTC"))%>%
+  filter(DateTime != as.POSIXct("2019-07-15 15:45",tz="UTC"))%>%
+  filter(DateTime != as.POSIXct("2019-07-15 21:00",tz="UTC"))%>%
+  filter(DateTime != as.POSIXct("2019-07-15 22:00",tz="UTC"))%>%
+  filter(DateTime != as.POSIXct("2019-07-15 22:15",tz="UTC"))%>%
+  filter(DateTime != as.POSIXct("2019-07-15 23:00",tz="UTC"))
+C6_Q_df <- C6_Q_df[order(as.Date(C6_Q_df$DateTime, format="%Y-%m-%d %H:%M:%S")),]
+#merge c6 (I think I will do this manually because otherwise it is too complicated)
+C6_Q_df$DOC <- NA
+C6_Q_df$TDN <- NA
+
+#this sample was collected 2019-07-11 14:00
+C6_Q_df[C6_Q_df$DateTime==as.POSIXct("2019-07-11 15:30:00",tz="UTC"), "DOC"] <- 3.7630
+C6_Q_df[C6_Q_df$DateTime==as.POSIXct("2019-07-11 15:30:00",tz="UTC"), "TDN"] <- 0.11140
+
+#This sample was collected at 2019-07-16 14:30:00
+C6_Q_df[C6_Q_df$DateTime==as.POSIXct("2019-07-16 08:45:00",tz="UTC"), "DOC"] <- 4.6100
+C6_Q_df[C6_Q_df$DateTime==as.POSIXct("2019-07-16 08:45:00",tz="UTC"), "TDN"] <- 0.16920
+
+#This sample was collected at 2019-07-19 13:15:00
+C6_Q_df[C6_Q_df$DateTime==as.POSIXct("2019-07-19 13:00:00",tz="UTC"), "DOC"] <- 3.7400
+C6_Q_df[C6_Q_df$DateTime==as.POSIXct("2019-07-19 13:00:00",tz="UTC"), "TDN"] <- 0.10280
+
+
+start <- as.POSIXct("2019-07-14 00:15",tz="UTC")
+end <- as.POSIXct("2019-07-16 09:00",tz="UTC")
+C6_Q_df_storm <- C6_Q_df%>%filter(DateTime>start&DateTime<end)
+C6_Q_df_storm$time_elapsed <- C6_Q_df_storm$DateTime - start
+
+
+#merge with co3 data
+C6_Q_df <- left_join(C6_Q_df,all_stn,by="DateTime")
+```
+
+#plot DOC
+
+```{r  plot DOC, echo=FALSE}
+
+p1 <- ggplot(DOC_PeatlandOutlet)+
+  geom_point(aes(x=Q_m3s*1000, y=DOC, fill=DateTime), shape=21,size=3) + 
+  ylab(expression(paste('DOC (mg ' , l^-1,")"))) +
+  xlab(expression(paste('Discharge (L ' , s^-1,")"))) +
+  scale_x_continuous(transform = "log",breaks=c(10,30,100,300,1000)) + scale_y_continuous(transform = "log",breaks=c(3,4,5)) +
+   theme_bw(base_size = 18)
+
+#spatial variance upstream to down
+DOC_2021_plot <- DOC_2021%>%drop_na(WS)
+DOC_2021_plot$Date_plot <- as.character(format(DOC_2021_plot$Date_format,format="%d %B"))
+DOC_2021_plot$Date_plot <- reorder(DOC_2021_plot$Date_plot, DOC_2021_plot$Date_format)
+
+#with colmillo data
+p2.1 <- ggplot(DOC_2021_plot %>%filter(SampleType=="Station"))+
+  geom_point(aes(x=Distance_from_peatland, y=DOC, fill=Date_plot), shape=21,size=3) + 
+  facet_grid(.~fct_rev(WS), scales = "free_x", space='free') +
+  ylab(expression(paste('DOC (mg ' , l^-1,")"))) +
+   theme_bw(base_size = 18)
+
+#without colmillo data
+p2.2 <- ggplot(DOC_2021_plot %>%filter(SampleType=="Station")%>%filter(WS=="Gavilan"))+
+  geom_point(aes(x=Distance_from_peatland, y=DOC, fill=Date_plot), shape=21,size=3) + 
+    xlab("Distance from peatland outlet") +
+  ylab(expression(paste('DOC (mg ' , l^-1,")"))) +
+  labs(fill="Date") +
+   theme_bw(base_size = 18)
+
+#stn01 vs stno4 data
+DOC_2021_melt <- DOC_2021
+DOC_2021_melt$Station <- ifelse(DOC_2021_melt$SampleType=="synoptic"&DOC_2021_melt$Station=="Stn01","Stn02",DOC_2021_melt$Station)
+DOC_2021_melt <- DOC_2021_melt%>%filter(Station=="Stn02"|Station=="Stn04")%>%select(Date_format,Station,DOC)%>%spread(Station, DOC)
+DOC_2021_melt$Date_plot <- as.character(format(DOC_2021_melt$Date_format,format="%d %B"))
+DOC_2021_melt$Date_plot <- reorder(DOC_2021_melt$Date_plot, DOC_2021_melt$Date_format)
+
+p.2 <- ggplot(DOC_2021_melt)+
+  geom_point(aes(x=Stn02, y=Stn04, fill=Date_plot), shape=21,size=4)+
+  geom_abline(intercept = 0, slope = 1) +
+  annotate(geom = "text", x = 3.9, y = 4.2, label = "1:1",size=10, color = "black",
+             angle = 45) +
+  xlab(expression(paste('Upstream DOC (mg ' , l^-1,")"))) +
+    ylab(expression(paste('Downstream (mg ' , l^-1,")"))) +
+  labs(fill="Date") +
+   theme_bw(base_size = 18)
+
+#hysteresis
+C6_p3 <- ggplot(C6_Q_df_storm) + 
+  geom_point(aes(x=Q_m3s*1000,y=CDOM_ppb,color=time_elapsed/60/24),size=4)+
+    scale_color_viridis_c(name= "days since\nstart of storm",guide=guide_colourbar(reverse = TRUE)) +
+ ylab('CDOM (ppb)') + 
+  xlab(expression(paste('Discharge (L ' , s^-1,")"))) +
+  theme_bw(base_size = 18)
+
+#DOC v CDOM
+p2 <- ggplot(C6_Q_df%>%drop_na(DOC))+
+  geom_point(aes(x=CDOM_ppb,y=DOC),size=3) +
+    xlab(expression(paste('DOC (mg ' , l^-1,")"))) +
+ ylab('CDOM (ppb)') + 
+    scale_y_continuous(transform = "log") +
+  scale_x_continuous(transform = "log") +
+  theme_bw()+theme(text=element_text(size=21))
+
+#CDOM v CO2
+p3 <- ggplot(C6_Q_df)+
+  geom_point(aes(x=CO2_ppm_01, y=CDOM_ppb, fill=DateTime), shape=21,size=3) + 
+ ylab('CDOM (ppb)') + 
+ xlab(expression(italic(p)~CO[2] ~'upstream (ppm)')) + 
+   theme_bw(base_size = 18)
+
+```
+
+# methane
+
+```{r  plot CH4, echo=FALSE}
+CH4_df <- read.csv(here::here("WaterChem/methane_df_merged.csv"))
+CH4_df$DateTime <- as.POSIXct(CH4_df$DateTime,format="%Y-%m-%d %H:%M:%S",tz="UTC")
+
+CH4_df_summary <- CH4_df%>%group_by(Site,Site2,DateTime)%>%
+  summarise(
+    Watertemp_c = mean(Watertemp_c),
+    DO_mgL = mean(DO_mgL,na.rm=TRUE),
+    Q_m3s = mean(Q_m3s),
+    pCH4_ppm = mean(pCH4_ppm),
+    CH4_umol.L = mean(CH4_umol.L)
+  )
+
+#DO a good predictor
+site_names <- list(
+  'Gavilan Outlet'="Wetland outlet",
+  'Gavilan Center'="Wetland center")
+
+site_labeller <- function(variable,value){
+  return(site_names[value])
+}
+
+p1 <- ggplot(CH4_df_summary%>%filter(Site!="Gavilan Edges")%>%filter(Site2!="50m")%>%filter(Site2!="100m")%>%filter(DateTime<"2022-09-01")) +
+  geom_smooth(method='lm',aes(x=DO_mgL,y=pCH4_ppm,color=Site),color="grey50",linewidth=.5 ,se = FALSE) +
+      facet_wrap(.~Site, labeller=site_labeller,ncol=1,scales="free_y") +
+    geom_point(aes(x=DO_mgL,y=pCH4_ppm,fill=as.factor(as.Date(DateTime,format="%m-%d"))),size=3,shape=21) +
+     ylab(expression(italic(p)*CH[4] ~'(ppm)')) + xlab("DO at outlet (mg/l)")  + labs(fill="Date collected") +
+    scale_fill_manual(labels = c("June-06","July-01","July-06","July-22","July-27"),values=c("#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00")) +
+  scale_y_log10() + scale_x_log10() +
+  theme_bw(base_size = 18) 
+
+##longitudinal
+p2 <- ggplot(CH4_df_summary%>%filter(Site=="Gavilan Outlet")#%>%filter(DateTime<"2022-09-01")
+            ) +
+    geom_point(aes(x=as.numeric(gsub('m','',Site2)),y=pCH4_ppm,
+                #   fill=as.factor(signif(Q_m3s,2))
+                   fill=as.factor(as.Date(DateTime,format="%m-%d"))
+                   ),
+               size=3,shape=21) + scale_y_continuous(transform = "log",breaks=c(2000,1000,500,200)) +
+  scale_fill_manual(labels = c("June-06","July-01","July-06"),values=c("#e41a1c","#377eb8","#4daf4a")) +
+     ylab(expression(italic(p)*CH[4] ~'(ppm)')) + xlab("Distance from outlet (m)")  + labs(fill="Date collected") +
+  theme_bw(base_size = 18)
+
+
+#get legend
+# Extract the legend. Returns a gtable
+leg <- get_legend(p1)
+
+# Convert to a ggplot and print
+p_leg <- as_ggplot(leg)
+
+
+##all
+
+p_full_1 <- plot_grid(p_leg,p2+rremove("legend"),ncol=1,labels=c("","b."),label_fontface = "bold",label_size = 18) 
+p_full_2 <- plot_grid(p1+rremove("legend"),p_full_1,ncol=2,labels=c("a.",""),label_fontface = "bold",label_size = 18)
+
+
+#discharge not as good a relationship
+
+p3 <- ggplot(CH4_df_summary%>%filter(Site!="Gavilan Edges")%>%filter(Site2!="50m")%>%filter(Site2!="100m"),
+       aes(x=Q_m3s,y=pCH4_ppm,fill=as.factor(as.Date(DateTime)))) + geom_point(size=3,shape=21) +
+  facet_wrap(Site~., labeller=site_labeller) +
+     ylab(expression(italic(p)*CH[4] ~'(ppm)')) + xlab("Q (m3/s)")  + labs(fill="Date Collected") +
+  scale_y_log10() + scale_x_log10() +
+  theme_bw(base_size = 18)
+```
+
+# waterfall
+
+```{r  waterfall, echo=FALSE}
+inj_df <- read.csv(here::here("MergedFiles/all_2019_Data.csv"))%>%filter(Inj.x=="Yes")
+inj_df$DateTime <- as.POSIXct(inj_df$DateTime,format="%Y-%m-%d %H:%M:%S",tz="UTC")
+
+inj_df_2021 <- read.csv(here::here("MergedFiles/Inj_df_2019July14.csv"))%>%select(DateTime,pCO2_80m_adj,pCO2_120m_adj)
+inj_df_2021$DateTime <- as.POSIXct(inj_df_2021$DateTime,format="%Y-%m-%d %H:%M:%S",tz="UTC")
+inj_df_2021 <- inj_df_2021%>%melt(id.vars = "DateTime")
+
+#discharge
+WL_df <- read.csv(here::here("data_cleaned/WL_02_cleaned.csv"))
+WL_df$DateTime <- as.POSIXct(WL_df$DateTime, format="%Y-%m-%d %H:%M",tz="UTC")
+WL_df <- WL_df%>%filter(DateTime<"2019-08-31")%>%select(DateTime,Q_m3s)
+
+inj_df <- left_join(inj_df,WL_df,by="DateTime")
+inj_df_summary <- inj_df%>%group_by(as.Date(DateTime))%>%
+  summarise(Q_mean = mean(Q_m3s,na.rm=TRUE))
+
+#injection 1
+inj_df_1 <- inj_df%>%filter(DateTime < "2019-07-22")%>%select(
+  DateTime,V1_adjusted,V2_adjusted,V3_adjusted,V4_adjusted)%>% melt(id.vars = "DateTime")
+inj_df_1$inj_number <- "inj_1"
+
+inj_df_2 <- inj_df%>%
+  filter(DateTime > "2019-07-22"&
+            DateTime < "2019-07-24")%>%select(
+  DateTime,V1_adjusted,V2_adjusted,V3_adjusted,V4_adjusted)%>% melt(id.vars = "DateTime")
+inj_df_2$inj_number <- "inj_2"
+
+inj_df_3 <- inj_df%>%
+  filter(DateTime > "2019-07-24"&DateTime < "2019-07-29")%>%
+  select(DateTime,V1_adjusted,V2_adjusted,V3_adjusted,V4_adjusted)%>% melt(id.vars = "DateTime")
+inj_df_3$inj_number <- "inj_3"
+
+inj_df_4 <- inj_df%>%filter(DateTime > "2019-07-29"&
+                              DateTime < "2019-08-05")%>%select(
+  DateTime,V1_adjusted,V2_adjusted,V3_adjusted,V4_adjusted)%>% melt(id.vars = "DateTime")
+inj_df_4$inj_number <- "inj_4"
+
+inj_df_5 <- inj_df%>%
+  filter(DateTime > "2019-08-05"& DateTime < "2019-08-08")%>%
+  select(DateTime,V1_adjusted,V2_adjusted,V3_adjusted,V4_adjusted)%>% 
+  melt(id.vars = "DateTime")
+inj_df_5$inj_number <- "inj_5"
+
+inj_df_6 <- inj_df%>%
+  filter(DateTime > "2019-08-08")%>%
+  select(DateTime,V1_adjusted,V2_adjusted,V3_adjusted,V4_adjusted)%>%
+  melt(id.vars = "DateTime")
+inj_df_6$inj_number <- "inj_6"
+
+inj_all <- rbind(inj_df_1,inj_df_2,inj_df_3,inj_df_4,inj_df_5,inj_df_6)
+
+
+p_2 <- ggplot(inj_df_2,aes(x=DateTime,y=value,color=variable)) + geom_point()
+
+p_3 <- ggplot(inj_df_3,aes(x=DateTime,y=value,color=variable)) + geom_point()
+
+
+p_5 <- ggplot(inj_df_5,aes(x=DateTime,y=value,color=variable)) + geom_point()
+
+p_6 <- ggplot(inj_df_6,aes(x=DateTime,y=value,color=variable)) + geom_point()
+
+
+
+p_45 <- ggplot(inj_df_2021%>%filter(variable!="pCO2_45m")%>%filter(DateTime < as.POSIXct("2021-07-14 12:00:00",tz="UTC")),aes(x=DateTime,y=value,color=variable)) + geom_point()
+
+
+```
+
+# metabolism
+
+```{r  metabolism, echo=FALSE}
+
+
+```
+
+
+# Departure
+
+```{r  departure, echo=FALSE}
+
+
+```
+
