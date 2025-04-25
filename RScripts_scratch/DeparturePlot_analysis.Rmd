@@ -1,0 +1,190 @@
+---
+title: "DeparturePlot_metrics"
+author: "K. M. Whitmore"
+date: "2025-04-17"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+#load library
+library(dplyr)
+library(tidyr)
+library(here)
+#Load library to plot ellipse and to calcuate type II regressions
+library(ellipse)
+library(lmodel2)
+library(streamMetabolizer)
+library(ggplot2)
+```
+
+## About
+In this R markdown I will use pCO2 and DO data collected at the Gavilán wetland outlet to calculate metrics in Vachon et al 2024
+
+https://aslopubs.onlinelibrary.wiley.com/doi/10.1002/lol2.10135
+
+
+#read in data
+```{r cars}
+WL_02 <- read.csv(here::here("data_cleaned/WL_02_cleaned.csv"))
+WL_02$DateTime <- as.POSIXct(WL_02$DateTime,format="%Y-%m-%d %H:%M",tz="UTC")
+WL_02 <- unique(WL_02)
+WL_02_select1 <- WL_02%>%filter(DateTime==as.POSIXct("2021-06-18 11:00:00",tz="UTC"))%>%filter(AirTemp_c<21)
+WL_02_select2 <- WL_02%>%filter(DateTime>=as.POSIXct("2022-06-30 12:45:00",tz="UTC")&DateTime <= as.POSIXct("2022-06-30 13:15:00",tz="UTC"))%>%filter(WLTemp_c<11)
+WL_02_select3 <- WL_02%>%filter(DateTime==as.POSIXct("2022-07-12 10:15:00",tz="UTC"))%>%filter(AirTemp_c<17)
+WL_02_select4 <- WL_02%>%filter(DateTime==as.POSIXct("2023-02-18 12:30:00",tz="UTC"))%>%filter(AirTemp_c<17)
+
+WL_02 <- WL_02%>%filter(DateTime!=as.POSIXct("2021-06-18 11:00:00",tz="UTC"))%>%filter(DateTime<as.POSIXct("2022-06-30 12:45:00",tz="UTC")|DateTime > as.POSIXct("2022-06-30 13:15:00",tz="UTC"))%>%filter(DateTime!=as.POSIXct("2022-07-12 10:15:00",tz="UTC"))%>%filter(DateTime!=as.POSIXct("2023-02-18 12:30:00",tz="UTC"))
+
+WL_02 <- rbind(WL_02,WL_02_select1,WL_02_select2,WL_02_select3,WL_02_select4)
+
+
+DO_df <- read.csv(here::here("data_cleaned/DO_01_cleaned.csv"))%>%select(!X)
+DO_df$DateTime_1 <- as.POSIXct(DO_df$DateTime,format="%Y-%m-%d %H:%M",tz="UTC")
+
+DO_df$DateTime <- ifelse(is.na(DO_df$DateTime_1)==TRUE,paste(DO_df$DateTime,"00:00:00",sep=" "),DO_df$DateTime )
+
+DO_df$DateTime <- as.POSIXct(DO_df$DateTime,format="%Y-%m-%d %H:%M",tz="UTC")
+
+DO_df$DateTime_1 <- NULL
+
+DO_df <- unique(DO_df)
+
+ggplot(DO_df,aes(x=DateTime,y=DO_mgL)) + geom_point()
+
+
+CO2_df <- read.csv(here::here("data_cleaned/CO2_01_max10000_cleaned.csv")) 
+CO2_df$DateTime <- as.POSIXct(CO2_df$DateTime, format="%Y-%m-%d %H:%M:%S",tz="UTC")
+CO2_df <- unique(CO2_df)
+
+test <- CO2_df$DateTime[duplicated(CO2_df$DateTime)]
+test2 <- as.data.frame(test)
+
+#convert to umol per l
+kH_STP_mol.l.atm = .035*1/0.986923
+D_K = 2400 
+T_STP_K = 298.15
+CO2_df$pCO2_air_ppm <- 418.53 # 2022 average manoa
+CO2_df$air_pressure_atm <- CO2_df$Total_hPa / 1013.25 - 0.000967841
+CO2_df$pCO2_air_atm <-  CO2_df$pCO2_air_ppm / 10^6  * CO2_df$air_pressure_atm
+CO2_df$pCO2_w_atm <- CO2_df$CO2_ppm_adjusted / 10^6 
+#henry's constant adjust for temp
+CO2_df$KH_mol.l.atm <- kH_STP_mol.l.atm * exp(D_K*(1/(CO2_df$WLTemp_01_c+273.15) - 1/T_STP_K))
+CO2_df$KH_mol.m3.atm <- CO2_df$KH_mol.l.atm * 1000
+CO2_df$CO2_sat_mol.L <- CO2_df$KH_mol.l.atm*CO2_df$pCO2_air_atm
+CO2_df$CO2_sat_umol.L <- CO2_df$CO2_sat_mol.L*10^6
+CO2_df$CO2_mol.L <- CO2_df$KH_mol.l.atm*CO2_df$pCO2_w_atm
+CO2_df$CO2_umol.L <- CO2_df$CO2_mol.L*10^6
+
+CO2_df <- CO2_df%>%select(DateTime,CO2_ppm_adjusted,pCO2_air_ppm,air_pressure_atm,CO2_umol.L,CO2_sat_umol.L)
+
+Stn01 <- left_join(WL_02,DO_df, by=c("DateTime"))
+Stn01 <- full_join(Stn01,CO2_df, by=c("DateTime"))
+
+
+
+Stn01$DO_sat <- calc_DO_sat(temp=u(Stn01$WLTemp_c,"degC"), press=u(Stn01$AirPres_kpa*10,"mb"), sal=u(0,"PSU")) # units are checked
+
+#convert to umol
+Stn01$DO_sat_umolperL <- as.numeric(Stn01$DO_sat)/1000 / 32 * 10^6
+Stn01$DO_umolperL <- Stn01$DO_mgL/1000 / 32 * 10^6
+Stn01$DO_departure <- Stn01$DO_sat_umolperL - Stn01$DO_umolperL
+
+#convert to umol
+Stn01$DO_sat_umolperL <- as.numeric(Stn01$DO_sat)/1000 / 32 * 10^6
+Stn01$DO_umolperL <- Stn01$DO_mgL/1000 / 32 * 10^6
+Stn01$DO_departure <- Stn01$DO_umolperL - Stn01$DO_sat_umolperL 
+
+Stn01$CO2_departure <-  Stn01$CO2_umol.L - Stn01$CO2_sat_umol.L 
+
+#date
+Stn01$Date <- as.Date(Stn01$DateTime)
+
+Stn01 <- unique(Stn01)
+```
+
+## visualize data 
+
+
+```{r plots, echo=FALSE}
+p <- ggplot(Stn01 %>%filter(Date>as.Date("2021-05-05")&Date<as.Date("2022-07-01"))) +
+  geom_point(aes(x=DateTime,y=as.numeric(DO_umolperL)),color="green") +
+  geom_point(aes(x=DateTime,y=Q_m3s*1000),color="blue")
+  
+```
+
+## summarise daily data
+```{r daily ave, echo=FALSE}
+new_df_bind <- Stn01 %>%group_by(Date)%>%
+  summarise(Q_ave = mean(Q_m3s,na.rm = T),
+            DO_ave = mean(DO_mgL,na.rm = T),
+            WLTemp_ave = mean(WLTemp_c,na.rm=T))
+  
+new_df_bind <- unique(new_df_bind)
+
+```
+
+##calc centroid & offset
+
+Centroid:	Time averages of O2 and CO2 departure values
+> The quadrant in which a cloud is located provides information about the average net effect of different environmental processes influencing O2 and CO2 dynamics
+
+Offset: Sum of CO2 and O2 departures averages
+> Characterizes extent or relative role of external inputs, anaerobic respiration, carbonate precipitation and/or increase in water temperature
+
+#1/[slope] 
+Inverse of the absolute slope of type II linear regression 
+> The inverse of the cloud absolute slope (i.e., 1/[slope]) is the EQ, reflecting the integrated stoichiometry of the ecosystem.
+
+##Stretch
+Major axis length of 95% covariance error ellipse 
+> Characterizes the strength of the dominant process (usually metabolism) driving O2 and CO2 departures
+
+#Width 
+Minor axis length of 95% covariance error ellipse 
+> Characterizes the variability around the dominant process (major axis)
+
+
+```{r stretch and Width, echo=FALSE}
+
+
+new_df <- Stn01%>%drop_na(CO2_departure)%>%drop_na(DO_departure)%>%select(Date)
+new_df <- unique(new_df)
+
+metrics <- data.frame(date=NA, meanCO2dep=NA,meanO2dep=NA,offset=NA,EQ=NA,width=NA,stretch=NA,n.obs=NA)
+
+for(i in 1:nrow(new_df)){
+  Date_select <- new_df$Date[i]
+  Stn01_Date_select <- Stn01%>%
+    filter(Date==Date_select)%>%drop_na(CO2_departure)%>%drop_na(DO_departure)
+  if(nrow(Stn01_Date_select)> 88){ #only process days that are 
+  n.obs <- nrow(Stn01_Date_select)
+  
+  x <- Stn01_Date_select$CO2_departure
+  y <- Stn01_Date_select$DO_departure
+  
+  #calculating means
+  mu <- c(mean(x,na.rm=TRUE),mean(y,na.rm=TRUE))
+  
+  #ellipe axis length calculation
+  corMat = cor(cbind(x,y))
+  covMat <- var(cbind(x,y))
+  evals <- eigen(covMat)$values
+  ell.len <- 2*sqrt(5.991*evals)
+  
+  #Type II regression for slope calculation
+  reg <- lmodel2(y~x,nperm=99)
+  inter <- reg$regression.results[2,2]
+  slope <- reg$regression.results[2,3]
+  corr <- reg$r
+  #reg
+  
+  #gathering all metrics in a data frame
+  metrics_add <- data.frame(date=Date_select, meanCO2dep=mu[1],meanO2dep=mu[2],offset=mu[1]+mu[2],EQ=1/abs(slope),width=ell.len[2],stretch=ell.len[1],n.obs=n.obs)
+  
+  metrics <- rbind(metrics_add,metrics)
+  }
+}
+
+```
