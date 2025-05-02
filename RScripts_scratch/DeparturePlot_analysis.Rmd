@@ -54,9 +54,13 @@ DO_df <- unique(DO_df)
 ggplot(DO_df,aes(x=DateTime,y=DO_mgL)) + geom_point()
 
 
-CO2_df <- read.csv(here::here("data_cleaned/CO2_01_max10000_cleaned.csv")) 
+CO2_df <- read.csv(here::here("data_cleaned/CO2_01_max10000_cleaned.csv"))
 CO2_df$DateTime <- as.POSIXct(CO2_df$DateTime, format="%Y-%m-%d %H:%M:%S",tz="UTC")
 CO2_df <- unique(CO2_df)
+CO2_df <-CO2_df%>%filter(DateTime>as.POSIXct("2020-01-01 00:00:00",tz="UTC"))
+CO2_df <- CO2_df%>%drop_na(CO2_ppm_adjusted)
+
+filter<-CO2_df%>%filter(DateTime > as.POSIXct("2021-07-29 00:30:00",tz="UTC"))
 
 test <- CO2_df$DateTime[duplicated(CO2_df$DateTime)]
 test2 <- as.data.frame(test)

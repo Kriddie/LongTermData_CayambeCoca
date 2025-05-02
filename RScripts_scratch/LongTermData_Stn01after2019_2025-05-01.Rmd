@@ -48,45 +48,13 @@ Baro <- Baro%>%filter(DateTime!=as.POSIXct("2021-06-18 11:00:00", tz="UTC"))%>%f
 ",tz="UTC"))
 
 #test for dubplicates
-test <- WL_01$DateTime[duplicated(WL_01$DateTime)]
+test <- Baro$DateTime[duplicated(Baro$DateTime)]
 test2 <- as.data.frame(test)
 
 
 
 ```
-##read in wl 02 and wl 03
-we also need to read in wl02 data because we will use it to fill in a gap in station 01 data
 
-and we will try to also fil in data from 2019 with station 3 data from 2019 (note that station 3 moved to a different location between 2019 and 2021)
-```{r Hobo WL}
-
-### stn 03
-#WLData <- read.csv(here::here("WL/WL_2019stn3_2019-08-19NOTcompensated.csv"), skip=11, header = TRUE, sep = ",",quote = "\"",dec = ".", fill = TRUE, comment.char = "")
-WLData <- read.csv(here::here("WL/lvlgr_2020421_2019-08-14.csv"), skip=11, header = TRUE, sep = ",",quote = "\"",dec = ".", fill = TRUE, comment.char = "")
-
-colnames(WLData)=c("Date","Time","ms","WLPres_kpa","WLTemp_c")
-WLData$DateTime <- paste(WLData$Date, WLData$Time)
-WLData$DateTime <- as.POSIXct(WLData$DateTime, format="%m/%d/%Y %I:%M:%S %p", tz="UTC")
-WLData$DateTime <- round_date(WLData$DateTime, "5 mins")
-WLData <- WLData[,c("DateTime","WLPres_kpa","WLTemp_c")]
-WLData$Station <- "Stn03"
-
-WL_03 <- WLData
-
-rm(WLData)
-
-#REMOVE DUPLICATES
-
-WL_03 <- unique(WL_03)
-WL_03 <- WL_03%>%drop_na(WLPres_kpa)
-
-
-#test for duplicates
-test <- WL_03$DateTime[duplicated(WL_03$DateTime)]
-test2 <- as.data.frame(test)
-
-
-```
 
 #clean up some messy data from 2019
 
@@ -104,7 +72,9 @@ WL_01 <- WL_01%>%filter(DateTime < as.POSIXct("2019-07-16 13:00", tz="UTC")|Date
 
 WL_01 <- WL_01%>%filter(DateTime < as.POSIXct("2019-07-25 3:15:00",tz="UTC")|DateTime > as.POSIXct("2019-07-25 4:30:00",tz="UTC"))%>%filter(DateTime <= as.POSIXct("2023-04-01 09:00:00",tz="UTC"))
 
-
+#test for duplicates
+test <- WL_01$DateTime[duplicated(WL_01$DateTime)]
+test2 <- as.data.frame(test)
 ```
 
 ##More issues
@@ -114,71 +84,6 @@ there i a discontinuity on February 12 2022. My best guess is that a damn built 
 
 let's see if it becomes more obvious what to do once baro pressure is subtracted
  
- 
-#fill in data from 2019 with data from stn03
-
-as wih previous chunk,  I'm hoping there is a strong enough relationship between WL_01 and WL_03 to fill in missing data
-
-July 13th 10:15 to July 28 14:15
-
-I'll fill this one just cause I've down it before and it looks good...
-
-
-```{r fill in wl_01 2, echo=FALSE}
-WL_01_03 <- right_join(WL_01,WL_03, by= "DateTime")
-WL_01_03 <- WL_01_03[,c("DateTime","WLPres_kpa.x","WLPres_kpa.y")]
-colnames(WL_01_03) <- c("DateTime","WL_01","WL_03")
-
-
-#mdl1_1 <- lm(WL_01_03$WL_01 ~ WL_01_03$WL_03)
-mdl2_1 <- lm(WL_01_03$WL_01 ~ WL_01_03$WL_03 + I(WL_01_03$WL_03^2))
-#mdl3_1 <- lm(WL_01_03$WL_01 ~ WL_01_03$WL_03 + I(WL_01_03$WL_03^2) + I(WL_01_03$WL_03^3))
-#mdl4_1 <- lm(WL_01_03$WL_01 ~ I(WL_01_03$WL_03^2))
-
-set.seed(20)
-q <- seq(from=0, to=66, by=0.5)
-#y_mdl1 <- mdl1_1$coefficients[1] + mdl1_1$coefficients[2]*q
-y_mdl2 <- mdl2_1$coefficients[1] + mdl2_1$coefficients[2]*q + mdl2_1$coefficients[3]*q^2
-#y_mdl3 <- mdl3_1$coefficients[1] + mdl3_1$coefficients[2]*q + mdl3_1$coefficients[3]*q^2 + mdl3_1$coefficients[4]*q^3
-#y_mdl4 <- mdl4_1$coefficients[1] + mdl4_1$coefficients[2]*q^2
-
-
-plot(WL_01 ~ WL_03, data = WL_01_03 )
-#lines(q,y_mdl1,col='firebrick1',lwd=2)
-lines(q,y_mdl2,col='blue',lwd=2)
-#lines(q,y_mdl3,col='yellow',lwd=2)
-#lines(q,y_mdl4,col='green',lwd=2)
-mtext("y= 2830.62451  - 86.93018 *x + 0.68280 *x^2", side=3)
-
-rm(mdl1_1,mdl2_1,mdl3_1,mdl4_1)
-rm(WL_01_03)
-```
-
-##that looks pretty good
-use equation to fill in data
-
-```{r wl_01 gap, echo=FALSE}
-
-WL_01_fill <- WL_03
-WL_01_fill$WLPres_kpa <-   2830.62451 - 86.93018 *WL_01_fill$WLPres_kpa + 0.68280 *(WL_01_fill$WLPres_kpa)^2
-#WL_01_fill$WLPres_kpa <-   485.6142 - 13.92432 *WL_01_fill$WLPres_kpa + 0.1144849 *(WL_01_fill$WLPres_kpa)^2
-WL_01_fill <- WL_01_fill%>%filter(DateTime > as.POSIXct("2019-07-23 11:45:00", tz = "UTC")& DateTime < as.POSIXct("2019-07-25 21:45:00", tz = "UTC"))
-WL_01_fill$Station <- "WL_01"
-WL_01 <- WL_01%>%filter(DateTime <= as.POSIXct("2019-07-23 11:45:00", tz = "UTC")| DateTime >= as.POSIXct("2019-07-25 21:45:00", tz = "UTC"))
-
-WL_01 <- rbind(WL_01,WL_01_fill)
-#rm(WL_01_fill,WL_03)
-
-WL_01 <- WL_01%>%filter(DateTime != as.POSIXct("2019-07-23 12:45:00",tz="UTC"))%>%
-  filter(DateTime != as.POSIXct("2019-07-25 16:30:00",tz="UTC"))
-
-WL_01$Station <- "Stn01"
-
-#test for dubplicates
-test <- WL_01$DateTime[duplicated(WL_01$DateTime)]
-test2 <- as.data.frame(test)
-
-```
 
 
 ### correct for barometric pressure
@@ -198,6 +103,10 @@ WL_01$Total_kpa <-
 # constant, 1 kpa = 0.101972 m water
 WL_01$WL_m <- WL_01$Corrected_kpa * 0.101972
 WL_01$Corrected_kpa <- NULL
+
+#test for duplicates
+test <- WL_01$DateTime[duplicated(WL_01$DateTime)]
+test2 <- as.data.frame(test)
 
 ```
 
@@ -321,14 +230,14 @@ p5 <- plot_ly(WL_01, x = ~DateTime, y = ~Q_Ls, type = 'scatter', mode = 'markers
 ##Now we can graph 
     ## will need to change the right limit accordingly
 
-ggplot(data = WL_01 #%>% filter(DateTime > "2021-06-10")
+ggplot(data = WL_01 %>% filter(DateTime > "2021-06-10")
        , 
        aes(DateTime, Q_Ls)) +
   geom_point(color = "steelblue") +
   labs(title = "Station 01 Discharge",
     y = "Q [L s-1]", x = "") 
 
-ggplot(data = WL_01# %>% filter(DateTime > "2021-06-10")
+ggplot(data = WL_01 %>% filter(DateTime > "2021-06-10")
        , 
        aes(DateTime, WL_m)) +
   geom_point(color = "steelblue") +
@@ -425,19 +334,17 @@ for (site in site_names){
   rm(CO2Data) #removes CO2 data so that multiple sites aren't appended together
 }
 
-#CO2_01$DateTime <- round_date(CO2_01$DateTime, "15 mins")
-#CO2wellV_01$DateTime <- round_date(CO2wellV_01$DateTime, "15 mins")
+CO2_01$DateTime <- round_date(CO2_01$DateTime, "15 mins")
+CO2wellV_01$DateTime <- round_date(CO2wellV_01$DateTime, "15 mins")
 
 CO2_01 <- unique(CO2_01)
 
-CO2_01 <- CO2_01%>%filter(ppm>20)
 CO2_01$Station <- "Stn01"
 CO2wellV_01$Station <- "Stn01"
 
-#test for dubplicates
+#test for duplicates
 test <- CO2_01$DateTime[duplicated(CO2_01$DateTime)]
 test2 <- as.data.frame(test)
-
 ```
 # 2019 data
 
@@ -498,12 +405,6 @@ CO2wellV_01 <-  CO2wellV_01%>%
 CO2wellV_01 <-  CO2wellV_01%>%
   filter(ppm> 5000)%>%
   filter(DateTime != as.POSIXct("2023-01-10 08:15:00", tz = "UTC"))
-
-#test for dubplicates
-test <- CO2_01$DateTime[duplicated(CO2_01$DateTime)]
-test2 <- as.data.frame(test)
-
-filter <- CO2_01%>%filter(DateTime>as.POSIXct("2021-07-28 00:00:00",tz='UTC'))
 ```
 
 #plot

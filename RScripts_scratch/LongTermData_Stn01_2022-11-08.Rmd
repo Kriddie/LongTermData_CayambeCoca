@@ -115,6 +115,9 @@ for (site in site_names){
 
 rm(Trash_WLData)
 
+WL_01 <- unique(WL_01)
+
+
 ```
 ##read in wl 02 and wl 03
 we also need to read in wl02 data because we will use it to fill in a gap in station 01 data
@@ -222,8 +225,18 @@ WLData <- WLData[,c("DateTime","WLPres_kpa","WLTemp_c")]
 WLData$Station <- "Stn03"
 
 WL_03 <- WLData
-
 rm(WLData)
+
+WL_03 <- unique(WL_03)
+
+
+#remove duplicates
+WL_02_select1 <- WL_02%>%filter(DateTime>=as.POSIXct("2022-06-30 12:45:00",tz="UTC")&DateTime <= as.POSIXct("2022-06-30 13:15:00",tz="UTC"))%>%filter(WLTemp_c<11)
+WL_02 <- WL_02%>%filter(DateTime<as.POSIXct("2022-06-30 12:45:00",tz="UTC")|DateTime > as.POSIXct("2022-06-30 13:15:00",tz="UTC"))%>%filter(WLTemp_c<11)
+WL_02 <- rbind(WL_02,WL_02_select1)
+
+test <- WL_03$DateTime[duplicated(WL_03$DateTime)]
+test2 <- as.data.frame(test)
 
 ```
 ## plot 
