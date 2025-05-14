@@ -364,8 +364,7 @@ There is file, currently named "CO2wellV_01_2023-04-01" at time of upload - 2023
 ```{r pressure, echo=FALSE}
 
 setwd(here::here("CO2"))
-all_files=list.files(pattern=".csv") #pulls out the csv files from WL folder in HOBOware folder
-#sites_rp=gsub("_.*","",all_files) #selects the correct pattern so as to seelct only desired files
+all_files=list.files(pattern=".csv") #pulls out the csv files from WL 
 sites_rp = sub('_[^_]+$', '', all_files)
 site_names=unique(sites_rp) #creates list of site names for following loop
 
@@ -438,6 +437,7 @@ CO2wellV_01$Station <- "Stn01"
 test <- CO2_01$DateTime[duplicated(CO2_01$DateTime)]
 test2 <- as.data.frame(test)
 
+#filter <- CO2_01%>%filter(DateTime>as.POSIXct("2021-07-28 00:00:00",tz='UTC'))
 ```
 # 2019 data
 
@@ -462,6 +462,12 @@ CO2_01 <- rbind(CO2_01,CO2_2019)
 CO2_01 <- CO2_01[ order(CO2_01$DateTime , decreasing = TRUE ),]
 
 rm(DateTime_df,CO2_2019)
+
+#test for duplicates
+test <- CO2_01$DateTime[duplicated(CO2_01$DateTime)]
+test2 <- as.data.frame(test)
+
+#filter <- CO2_01%>%filter(DateTime>as.POSIXct("2021-07-28 00:00:00",tz='UTC'))
 ```
 
 
@@ -503,7 +509,7 @@ CO2wellV_01 <-  CO2wellV_01%>%
 test <- CO2_01$DateTime[duplicated(CO2_01$DateTime)]
 test2 <- as.data.frame(test)
 
-filter <- CO2_01%>%filter(DateTime>as.POSIXct("2021-07-28 00:00:00",tz='UTC'))
+#filter <- CO2_01%>%filter(DateTime>as.POSIXct("2021-07-28 00:00:00",tz='UTC'))
 ```
 
 #plot
@@ -549,6 +555,13 @@ Stn01_newV <- right_join(WL_01,CO2wellV_01, by=c("DateTime","Station"))
 
 Stn01_newV$Total_hPa <- Stn01_newV$Total_kpa * 10
 
+
+#test for duplicates
+test <- Stn01_newV$DateTime[duplicated(Stn01_newV$DateTime)]
+test2 <- as.data.frame(test)
+
+#filter <- CO2_01%>%filter(DateTime>as.POSIXct("2021-07-28 00:00:00",tz='UTC'))
+
 ```
 
 #correction vaisala data
@@ -578,6 +591,10 @@ Stn01_newV$adjusted_ppm <- Stn01_newV$ppm * (1 + (700 - Stn01_newV$Total_hPa) * 
 Stn01_oldV <- rbind(Stn01_oldV_2019,Stn01_oldV)
 rm(Stn01_oldV_2019)
 
+#test for duplicates
+test <- Stn01_newV$DateTime[duplicated(Stn01_newV$DateTime)]
+test2 <- as.data.frame(test)
+
 
 ```
 
@@ -586,7 +603,7 @@ rm(Stn01_oldV_2019)
 ```{r plot, echo=FALSE}
 
 
-co2_1 <- ggplot(data = Stn01_oldV, aes(DateTime, adjusted_ppm)) + geom_point(color = "steelblue") +
+co2_1 <- ggplot(data = Stn01_oldV, aes(DateTime, CO2_ppm_adjusted)) + geom_point(color = "steelblue") +
   labs(y = "CO2 ppm", x = "") 
 
 co2_2 <- ggplot(data = Stn01_newV, aes(DateTime, adjusted_ppm)) + geom_point(color = "steelblue") +
@@ -603,7 +620,7 @@ Stn01_oldV <- Stn01_oldV%>%select(
   Station,DateTime,Total_hPa,WLTemp_c,ppm,adjusted_ppm
 )%>%rename(WLTemp_01_c=WLTemp_c,CO2_ppm = ppm,CO2_ppm_adjusted = adjusted_ppm)
 Stn01_oldV$max_detect_ppm <- 10000
-#write.csv(Stn01_oldV, here::here("data_cleaned/CO2_01_max1000_cleaned.csv"),row.names = FALSE)
+#write.csv(Stn01_oldV, here::here("data_cleaned/CO2_01_max10000_cleaned.csv"),row.names = FALSE)
 
 
 Stn01_newV <- Stn01_newV%>%select(
@@ -675,7 +692,7 @@ for (site in site_names){
 #    }
     
   }
-  DOData$DateTime <- round_date(DOData$DateTime, "15 mins")
+  DOData$DateTime <- round_date(DOData$DateTime, "5 mins")
   DOData$Station <- site
   DOData=unique(DOData)
   assign((paste(site,sep="_")),DOData) #creates object with new appended data
@@ -683,6 +700,10 @@ for (site in site_names){
 }
 
 DO_01$Station <- "Stn01"
+
+DO_01 <- unique(DO_01)
+
+
 
 ```
 
@@ -693,8 +714,13 @@ DO_01$Station <- "Stn01"
 #clean
 DO_01 <- DO_01%>%filter(DO_mgL > 0)
 
+#test for duplicates
+test <- DO_01$DateTime[duplicated(DO_01$DateTime)]
+test2 <- as.data.frame(test)
+
 ##check data
 p1 <- plot_ly(DO_01, x = ~DateTime, y = ~DO_mgL, type = 'scatter', mode = 'markers') 
+
 
 #read out
 #write.csv(DO_01, here::here("data_cleaned/DO_01_cleaned.csv"),row.names = FALSE)
@@ -873,7 +899,7 @@ EC_01_2 <- ggplot(data = EC_01, aes(DateTime, ECTemp_c)) + geom_point(color = "b
 #read out EC data
 ```{r read out ECdata, echo=FALSE}
 
-write.csv(EC_01, here::here("data_cleaned/EC_01_cleaned.csv"),row.names = FALSE)
+#write.csv(EC_01, here::here("data_cleaned/EC_01_cleaned.csv"),row.names = FALSE)
 
 ```
 

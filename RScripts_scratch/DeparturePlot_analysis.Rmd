@@ -25,45 +25,48 @@ In this R markdown I will use pCO2 and DO data collected at the Gavilán wetland
 https://aslopubs.onlinelibrary.wiley.com/doi/10.1002/lol2.10135
 
 
-#read in data
-```{r cars}
+#read WL data
+```{r WL data}
 WL_02 <- read.csv(here::here("data_cleaned/WL_02_cleaned.csv"))
+WL_02$DateTime_1 <- as.POSIXct(WL_02$DateTime,format="%Y-%m-%d %H:%M",tz="UTC")
+WL_02$DateTime <- ifelse(is.na(WL_02$DateTime_1)==TRUE,paste(WL_02$DateTime,"00:00:00",sep=" "),WL_02$DateTime )
 WL_02$DateTime <- as.POSIXct(WL_02$DateTime,format="%Y-%m-%d %H:%M",tz="UTC")
-WL_02 <- unique(WL_02)
-WL_02_select1 <- WL_02%>%filter(DateTime==as.POSIXct("2021-06-18 11:00:00",tz="UTC"))%>%filter(AirTemp_c<21)
-WL_02_select2 <- WL_02%>%filter(DateTime>=as.POSIXct("2022-06-30 12:45:00",tz="UTC")&DateTime <= as.POSIXct("2022-06-30 13:15:00",tz="UTC"))%>%filter(WLTemp_c<11)
-WL_02_select3 <- WL_02%>%filter(DateTime==as.POSIXct("2022-07-12 10:15:00",tz="UTC"))%>%filter(AirTemp_c<17)
-WL_02_select4 <- WL_02%>%filter(DateTime==as.POSIXct("2023-02-18 12:30:00",tz="UTC"))%>%filter(AirTemp_c<17)
+WL_02$DateTime_1 <- NULL
 
-WL_02 <- WL_02%>%filter(DateTime!=as.POSIXct("2021-06-18 11:00:00",tz="UTC"))%>%filter(DateTime<as.POSIXct("2022-06-30 12:45:00",tz="UTC")|DateTime > as.POSIXct("2022-06-30 13:15:00",tz="UTC"))%>%filter(DateTime!=as.POSIXct("2022-07-12 10:15:00",tz="UTC"))%>%filter(DateTime!=as.POSIXct("2023-02-18 12:30:00",tz="UTC"))
+#test for duplicates
+test <- WL_02$DateTime[duplicated(WL_02$DateTime)]
+test2 <- as.data.frame(test)
 
-WL_02 <- rbind(WL_02,WL_02_select1,WL_02_select2,WL_02_select3,WL_02_select4)
+```
+#read DO data
+```{r DO data}
 
+DO_df <- read.csv(here::here("data_cleaned/DO_01_cleaned.csv"))
 
-DO_df <- read.csv(here::here("data_cleaned/DO_01_cleaned.csv"))%>%select(!X)
 DO_df$DateTime_1 <- as.POSIXct(DO_df$DateTime,format="%Y-%m-%d %H:%M",tz="UTC")
-
 DO_df$DateTime <- ifelse(is.na(DO_df$DateTime_1)==TRUE,paste(DO_df$DateTime,"00:00:00",sep=" "),DO_df$DateTime )
-
 DO_df$DateTime <- as.POSIXct(DO_df$DateTime,format="%Y-%m-%d %H:%M",tz="UTC")
-
 DO_df$DateTime_1 <- NULL
 
 DO_df <- unique(DO_df)
+#test for duplicates
+test <- DO_df$DateTime[duplicated(DO_df$DateTime)]
+test2 <- as.data.frame(test)
 
-ggplot(DO_df,aes(x=DateTime,y=DO_mgL)) + geom_point()
-
+```
+#read CO2 data
+```{r CO2 data}
 
 CO2_df <- read.csv(here::here("data_cleaned/CO2_01_max10000_cleaned.csv"))
-CO2_df$DateTime <- as.POSIXct(CO2_df$DateTime, format="%Y-%m-%d %H:%M:%S",tz="UTC")
+
+CO2_df$DateTime_1 <- as.POSIXct(CO2_df$DateTime,format="%Y-%m-%d %H:%M",tz="UTC")
+CO2_df$DateTime <- ifelse(is.na(CO2_df$DateTime_1)==TRUE,paste(CO2_df$DateTime,"00:00:00",sep=" "),CO2_df$DateTime )
+CO2_df$DateTime <- as.POSIXct(CO2_df$DateTime,format="%Y-%m-%d %H:%M",tz="UTC")
+CO2_df$DateTime_1 <- NULL
+
 CO2_df <- unique(CO2_df)
-CO2_df <-CO2_df%>%filter(DateTime>as.POSIXct("2020-01-01 00:00:00",tz="UTC"))
 CO2_df <- CO2_df%>%drop_na(CO2_ppm_adjusted)
 
-filter<-CO2_df%>%filter(DateTime > as.POSIXct("2021-07-29 00:30:00",tz="UTC"))
-
-test <- CO2_df$DateTime[duplicated(CO2_df$DateTime)]
-test2 <- as.data.frame(test)
 
 #convert to umol per l
 kH_STP_mol.l.atm = .035*1/0.986923
@@ -82,6 +85,14 @@ CO2_df$CO2_mol.L <- CO2_df$KH_mol.l.atm*CO2_df$pCO2_w_atm
 CO2_df$CO2_umol.L <- CO2_df$CO2_mol.L*10^6
 
 CO2_df <- CO2_df%>%select(DateTime,CO2_ppm_adjusted,pCO2_air_ppm,air_pressure_atm,CO2_umol.L,CO2_sat_umol.L)
+
+#test for duplicates
+test <- CO2_df$DateTime[duplicated(CO2_df$DateTime)]
+test2 <- as.data.frame(test)
+
+```
+#join data
+```{r join data}
 
 Stn01 <- left_join(WL_02,DO_df, by=c("DateTime"))
 Stn01 <- full_join(Stn01,CO2_df, by=c("DateTime"))
@@ -106,6 +117,13 @@ Stn01$CO2_departure <-  Stn01$CO2_umol.L - Stn01$CO2_sat_umol.L
 Stn01$Date <- as.Date(Stn01$DateTime)
 
 Stn01 <- unique(Stn01)
+
+
+#test for duplicates
+test <- Stn01$DateTime[duplicated(Stn01$DateTime)]
+test2 <- as.data.frame(test)
+
+#write.csv(Stn01,here::here("MergedFiles/Stn01_May7.csv"))
 ```
 
 ## visualize data 
@@ -121,10 +139,13 @@ p <- ggplot(Stn01 %>%filter(Date>as.Date("2021-05-05")&Date<as.Date("2022-07-01"
 ## summarise daily data
 ```{r daily ave, echo=FALSE}
 new_df_bind <- Stn01 %>%group_by(Date)%>%
-  summarise(Q_ave = mean(Q_m3s,na.rm = T),
-            DO_ave = mean(DO_mgL,na.rm = T),
-            WLTemp_ave = mean(WLTemp_c,na.rm=T))
-  
+  summarise(Q_m3s_ave = mean(Q_m3s,na.rm = T),
+            Q_m3s_min = min(Q_m3s,na.rm = T),
+            Q_m3s_max = max(Q_m3s,na.rm = T),
+            DO_mgL_ave = mean(DO_mgL,na.rm = T),
+            WLTemp_c_ave = mean(WLTemp_c,na.rm=T))
+new_df_bind$Q_mgL_delta <- new_df_bind$Q_m3s_max - new_df_bind$Q_m3s_min
+
 new_df_bind <- unique(new_df_bind)
 
 ```
@@ -156,13 +177,13 @@ Minor axis length of 95% covariance error ellipse
 new_df <- Stn01%>%drop_na(CO2_departure)%>%drop_na(DO_departure)%>%select(Date)
 new_df <- unique(new_df)
 
-metrics <- data.frame(date=NA, meanCO2dep=NA,meanO2dep=NA,offset=NA,EQ=NA,width=NA,stretch=NA,n.obs=NA)
+metrics <- data.frame(date=NA, meanCO2dep=NA,meanO2dep=NA,minCO2dep=NA,minO2dep=NA,offset=NA,EQ=NA,width=NA,stretch=NA,slope=NA,n.obs=NA)
 
 for(i in 1:nrow(new_df)){
   Date_select <- new_df$Date[i]
   Stn01_Date_select <- Stn01%>%
     filter(Date==Date_select)%>%drop_na(CO2_departure)%>%drop_na(DO_departure)
-  if(nrow(Stn01_Date_select)> 88){ #only process days that are 
+  if(nrow(Stn01_Date_select)> 88){ #only process days that are missing 2hr or less worth of data
   n.obs <- nrow(Stn01_Date_select)
   
   x <- Stn01_Date_select$CO2_departure
@@ -170,6 +191,7 @@ for(i in 1:nrow(new_df)){
   
   #calculating means
   mu <- c(mean(x,na.rm=TRUE),mean(y,na.rm=TRUE))
+  min <- c(min(x,na.rm=TRUE),min(y,na.rm=TRUE))
   
   #ellipe axis length calculation
   corMat = cor(cbind(x,y))
@@ -185,10 +207,43 @@ for(i in 1:nrow(new_df)){
   #reg
   
   #gathering all metrics in a data frame
-  metrics_add <- data.frame(date=Date_select, meanCO2dep=mu[1],meanO2dep=mu[2],offset=mu[1]+mu[2],EQ=1/abs(slope),width=ell.len[2],stretch=ell.len[1],n.obs=n.obs)
+  metrics_add <- data.frame(date=Date_select, meanCO2dep=mu[1],meanO2dep=mu[2],minCO2dep=min[1],minO2dep=min[2],offset=mu[1]+mu[2],EQ=1/abs(slope),width=ell.len[2],stretch=ell.len[1],slope=slope,n.obs=n.obs)
   
   metrics <- rbind(metrics_add,metrics)
   }
 }
 
+departure_metrics <- left_join(metrics,new_df_bind,by=c("date"="Date"))
 ```
+#write out
+```{r write out, echo=FALSE}
+#write.csv(departure_metrics,here::here("Departure_files/departure_metrics_may6.csv"),row.names = FALSE)
+```
+
+#plot it
+```{r plot, echo=FALSE}
+
+plot_df <- left_join(departure_metrics# %>%select(date)
+                     ,Stn01,by=c("date"="Date"))
+
+ggplot(plot_df %>%filter(slope<0)) +
+#  stat_ellipse(aes(x = CO2_departure, y = DO_departure,color=as.factor(date)))+
+  geom_smooth(aes(x = CO2_departure, y = DO_departure,color=as.factor(date)), formula = y ~ x,method='lm')+
+    geom_point(aes(x = meanCO2dep, y = meanO2dep),color="black",shape=1) +
+    geom_abline(intercept = 0, slope = -1) +
+  theme(legend.position="none")
+
+```
+
+
+#plot it
+```{r plot, echo=FALSE}
+p1 <- ggplot(departure_metrics,aes(x=Q_ave,y=offset)) + geom_point()
+p2 <- ggplot(departure_metrics,aes(x=DO_ave,y=offset)) + geom_point()
+p3 <- ggplot(departure_metrics,aes(x=WLTemp_ave,y=offset)) + geom_point()
+
+p4 <- ggplot(departure_metrics,aes(x=WLTemp_ave,y=width)) + geom_point()
+p5 <- ggplot(departure_metrics ,aes(x=date,y=stretch)) + geom_point()
+
+```
+
