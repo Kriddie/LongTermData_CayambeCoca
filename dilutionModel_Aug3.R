@@ -94,7 +94,7 @@ storm1_peak = as.POSIXct("2019-07-14 14:30:00",tz="UTC")
 storm1_begin = as.POSIXct("2019-07-14 00:45:00",tz="UTC")
 storm1_end = as.POSIXct("2019-07-15 00:00:00",tz="UTC")
 
-#storm1.1_peak = as.POSIXct("2019-07-15 02:30:00",tz="UTC")
+storm1.1_peak = as.POSIXct("2019-07-15 14:00:00",tz="UTC")
 storm1.1_begin = as.POSIXct("2019-07-15 00:45:00",tz="UTC")
 storm1.1_end = as.POSIXct("2019-07-16 08:00:00",tz="UTC")
 
@@ -138,9 +138,9 @@ storm10_peak = as.POSIXct("2021-11-19 10:00:00",tz="UTC")
 storm10_begin = as.POSIXct("2021-11-18 22:15:00",tz="UTC")
 storm10_end = as.POSIXct("2021-11-20 06:00:00",tz="UTC")
 
-storm11_peak = as.POSIXct("2021-12-18 15:15:00",tz="UTC")
+storm11_peak = as.POSIXct("2021-12-16 19:00:00",tz="UTC")
 storm11_begin = as.POSIXct("2021-12-16 09:30:00",tz="UTC")
-storm11_end = as.POSIXct("2021-12-24 11:00:00",tz="UTC")
+storm11_end = as.POSIXct("2021-12-16 21:00:00",tz="UTC")
 
 storm12_peak = as.POSIXct("2022-03-15 14:15:00",tz="UTC")
 storm12_begin = as.POSIXct("2022-03-13 20:00:00",tz="UTC")
@@ -195,26 +195,26 @@ storm24_begin = as.POSIXct("2023-03-03 10:30:00",tz="UTC")
 storm24_end = as.POSIXct("2023-03-07 15:45:00",tz="UTC")
 
 
-allstn_storm1 <- all_stn%>%filter(DateTime>storm1_begin-12*60*60&DateTime<storm1_end)
-allstn_storm1.1 <- all_stn%>%filter(DateTime>storm1.1_begin-12*60*60&DateTime<storm1.1_end)
-allstn_storm2 <- all_stn%>%filter(DateTime>storm2_begin-12*60*60&DateTime<storm2_end)
-allstn_storm2.1 <- all_stn%>%filter(DateTime>storm2.1_begin-12*60*60&DateTime<storm2.1_end)
-allstn_storm3 <- all_stn%>%filter(DateTime>storm3_begin-12*60*60&DateTime<storm3_end)
-allstn_storm4 <- all_stn%>%filter(DateTime>storm4_begin-12*60*60&DateTime<storm4_end)
-allstn_storm5 <- all_stn%>%filter(DateTime>storm5_begin-12*60*60&DateTime<storm5_end)
-allstn_storm6 <- all_stn%>%filter(DateTime>storm6_begin-12*60*60&DateTime<storm6_end)
-allstn_storm7 <- all_stn%>%filter(DateTime>storm7_begin-12*60*60&DateTime<storm7_end)
-allstn_storm8 <- all_stn%>%filter(DateTime>storm8_begin-12*60*60&DateTime<storm8_end)
-allstn_storm9 <- all_stn%>%filter(DateTime>storm9_begin-12*60*60&DateTime<storm9_end)
-allstn_storm10 <- all_stn%>%filter(DateTime>storm10_begin-12*60*60&DateTime<storm10_end)
-allstn_storm11 <- all_stn%>%filter(DateTime>storm11_begin-12*60*60&DateTime<storm11_end)
-allstn_storm12 <- all_stn%>%filter(DateTime>storm12_begin-12*60*60&DateTime<storm12_end)
-allstn_storm13 <- all_stn%>%filter(DateTime>storm13_begin-12*60*60&DateTime<storm13_end)
-allstn_storm14 <- all_stn%>%filter(DateTime>storm14_begin-12*60*60&DateTime<storm14_end)
-allstn_storm15 <- all_stn%>%filter(DateTime>storm15_begin-12*60*60&DateTime<storm15_end)
-allstn_storm16 <- all_stn%>%filter(DateTime>storm16_begin-12*60*60&DateTime<storm16_end)
-allstn_storm17 <- all_stn%>%filter(DateTime>storm17_begin-12*60*60&DateTime<storm17_end)
-allstn_storm18 <- all_stn%>%filter(DateTime>storm18_begin-12*60*60&DateTime<storm18_end)
+allstn_storm1 <- all_stn%>%filter(DateTime>storm1_peak-12*60*60&DateTime<storm1_end)
+allstn_storm1.1 <- all_stn%>%filter(DateTime>storm1.1_peak-12*60*60&DateTime<storm1.1_end)
+allstn_storm2 <- all_stn%>%filter(DateTime>storm2_peak-12*60*60&DateTime<storm2_end)
+allstn_storm2.1 <- all_stn%>%filter(DateTime>storm2.1_peak-12*60*60&DateTime<storm2.1_end)
+allstn_storm3 <- all_stn%>%filter(DateTime>storm3_peak-12*60*60&DateTime<storm3_end)
+allstn_storm4 <- all_stn%>%filter(DateTime>storm4_peak-12*60*60&DateTime<storm4_end)
+allstn_storm5 <- all_stn%>%filter(DateTime>storm5_peak-12*60*60&DateTime<storm5_end)
+allstn_storm6 <- all_stn%>%filter(DateTime>storm6_peak-12*60*60&DateTime<storm6_end)
+allstn_storm7 <- all_stn%>%filter(DateTime>storm7_peak-12*60*60&DateTime<storm7_end)
+allstn_storm8 <- all_stn%>%filter(DateTime>storm8_peak-12*60*60&DateTime<storm8_end)
+allstn_storm9 <- all_stn%>%filter(DateTime>storm9_peak-12*60*60&DateTime<storm9_end)
+allstn_storm10 <- all_stn%>%filter(DateTime>storm10_peak-12*60*60&DateTime<storm10_end)
+allstn_storm11 <- all_stn%>%filter(DateTime>storm11_peak-12*60*60&DateTime<storm11_end)
+allstn_storm12 <- all_stn%>%filter(DateTime>storm12_peak-12*60*60&DateTime<storm12_end)
+allstn_storm13 <- all_stn%>%filter(DateTime>storm13_peak-12*60*60&DateTime<storm13_end)
+allstn_storm14 <- all_stn%>%filter(DateTime>storm14_peak-12*60*60&DateTime<storm14_end)
+allstn_storm15 <- all_stn%>%filter(DateTime>storm15_peak-12*60*60&DateTime<storm15_end)
+allstn_storm16 <- all_stn%>%filter(DateTime>storm16_peak-12*60*60&DateTime<storm16_end)
+allstn_storm17 <- all_stn%>%filter(DateTime>storm17_peak-12*60*60&DateTime<storm17_end)
+allstn_storm18 <- all_stn%>%filter(DateTime>storm18_peak-12*60*60&DateTime<storm18_end)
 
 allstn_storm1$storm_name <- "storm1"
 allstn_storm1.1$storm_name <- "storm1.1"
@@ -237,29 +237,6 @@ allstn_storm16$storm_name <- "storm16"
 allstn_storm17$storm_name <- "storm17"
 allstn_storm18$storm_name <- "storm18"
 
-#now calc time elapsed since storm start
-allstn_storm1$time_elapsed <- allstn_storm1$DateTime - storm1_begin
-allstn_storm1.1$time_elapsed <- allstn_storm1.1$DateTime - storm1.1_begin
-allstn_storm2$time_elapsed <- allstn_storm2$DateTime - storm2_begin
-allstn_storm2.1$time_elapsed <- allstn_storm2.1$DateTime - storm2.1_begin
-allstn_storm3$time_elapsed <- allstn_storm3$DateTime - storm3_begin
-allstn_storm4$time_elapsed <- allstn_storm4$DateTime - storm4_begin
-allstn_storm5$time_elapsed <- allstn_storm5$DateTime - storm5_begin
-allstn_storm6$time_elapsed <- allstn_storm6$DateTime - storm6_begin
-allstn_storm7$time_elapsed <- allstn_storm7$DateTime - storm7_begin
-allstn_storm8$time_elapsed <- allstn_storm8$DateTime - storm8_begin
-allstn_storm9$time_elapsed <- allstn_storm9$DateTime - storm9_begin
-allstn_storm10$time_elapsed <- allstn_storm10$DateTime - storm10_begin
-allstn_storm11$time_elapsed <- allstn_storm11$DateTime - storm11_begin
-allstn_storm12$time_elapsed <- allstn_storm12$DateTime - storm12_begin
-allstn_storm13$time_elapsed <- allstn_storm13$DateTime - storm13_begin
-allstn_storm14$time_elapsed <- allstn_storm14$DateTime - storm14_begin
-allstn_storm15$time_elapsed <- allstn_storm15$DateTime - storm15_begin
-allstn_storm16$time_elapsed <- allstn_storm16$DateTime - storm16_begin
-allstn_storm17$time_elapsed <- allstn_storm17$DateTime - storm17_begin
-allstn_storm18$time_elapsed <- allstn_storm18$DateTime - storm18_begin
-
-
 allstn_storm <- rbind(allstn_storm1,allstn_storm1.1,allstn_storm2,allstn_storm2.1,allstn_storm3,allstn_storm4,allstn_storm5,allstn_storm6,allstn_storm7,allstn_storm8,allstn_storm9,allstn_storm10,allstn_storm11,allstn_storm12,allstn_storm13,allstn_storm14,allstn_storm15,allstn_storm16,allstn_storm17,allstn_storm18)
 allstn_storm$month <- format(as.Date(allstn_storm$Date), "%m")
 allstn_storm$year_month <- format(as.Date(allstn_storm$DateTime), "%Y-%m")
@@ -276,25 +253,23 @@ allstn_storm_summary2 <- left_join(allstn_storm_summary2,
                                    allstn_storm%>%select(storm_name,DateTime,CO2_umol.L_excess)%>%rename(CO2excess_DateTime=DateTime),
                                    by=c("storm_name","CO2_umol.L_excess"))
 
-allstn_storm_summary2$Time_diff <- allstn_storm_summary2$Qpeak_DateTime-allstn_storm_summary2$CO2excess_DateTime
-
-all_stn <-  all_stn%>%
-  mutate(CO2_umol.L_excess_ave7 = rollmean(CO2_umol.L_excess, k=7, fill=NA, align='right'))
+allstn_storm_summary2$Time_diff <- difftime(allstn_storm_summary2$Qpeak_DateTime, 
+                                            allstn_storm_summary2$CO2excess_DateTime, units='hours')
 
 
 ####### excess CO2
 
 #no storms 3,4, 5, 12
-ggplot(all_stn %>%filter(DateTime>storm1_begin-12*60*60&
-                           DateTime<storm1_end)) +
+ggplot(all_stn %>%filter(DateTime>storm10_begin-12*60*60&
+                           DateTime<storm10_end)) +
   geom_point(aes(x=DateTime,y=CO2_umol.L_excess),color="grey50") +
   geom_point(aes(x=DateTime,y=Q_Ls),color="blue")+
   geom_smooth(aes(x=DateTime,y=CO2_umol.L_excess*5),color="grey10",method = lm, formula = y ~ splines::bs(x, 10), se = FALSE) 
 
-ggplot(all_stn %>%filter(DateTime>storm1.1_begin-12*60*60&
-                           DateTime<storm1.1_end)) +
+ggplot(all_stn%>%filter(DateTime>storm7_begin-12*60*60&
+                           DateTime<storm7_end)) +
   geom_point(aes(x=DateTime,y=CO2_umol.L_excess),color="grey50") +
-  geom_point(aes(x=DateTime,y=Q_Ls),color="blue")+
+  geom_point(aes(x=DateTime,y=Q_Ls),color="blue")#+
   geom_smooth(aes(x=DateTime,y=CO2_umol.L_excess*5),color="grey10",method = lm, formula = y ~ splines::bs(x, 10), se = FALSE) 
 
 ggplot(all_stn %>%filter(DateTime>storm8_begin-12*60*60&
