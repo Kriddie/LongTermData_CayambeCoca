@@ -30,10 +30,33 @@ long term data for station 2
 
 ```{r read in data, echo=FALSE}
 WL_02 <- read.csv(here::here("merged_data_raw/WL_02_merged_raw.csv"))
-WL_02$DateTime <- as.POSIXct(WL_02$DateTime, format="%Y-%m-%d %H:%M:%S",tz="UTC")
+#WL_02$DateTime <- as.POSIXct(WL_02$DateTime, format="%Y-%m-%d %H:%M:%S",tz="UTC")
+WL_02$DateTime_1 <- as.POSIXct(WL_02$DateTime,format="%Y-%m-%d %H:%M",tz="UTC")
+WL_02$DateTime <- ifelse(is.na(WL_02$DateTime_1)==TRUE,paste(WL_02$DateTime,"00:00:00",sep=" "),WL_02$DateTime )
+WL_02$DateTime <- as.POSIXct(WL_02$DateTime,format="%Y-%m-%d %H:%M",tz="UTC")
+WL_02$DateTime_1 <- NULL
+
+WL_02_sub <- WL_02%>%filter(DateTime>=as.POSIXct("2022-06-30 12:45:00",tz='UTC')&
+                            DateTime<=as.POSIXct("2022-06-30 13:30:00",tz='UTC'))
+WL_02_sub <- WL_02_sub%>%group_by(DateTime,Station)%>%
+  summarise(WLPres_kpa=mean(WLPres_kpa),
+            WLTemp_c=mean(WLTemp_c))
+WL_02 <- WL_02%>%filter(DateTime<as.POSIXct("2022-06-30 12:45:00",tz='UTC')|
+                            DateTime>as.POSIXct("2022-06-30 13:30:00",tz='UTC'))
+
+WL_02 <- rbind(WL_02,WL_02_sub)
+
 
 Baro <- read.csv(here::here("data_cleaned/Baro_cleaned.csv"))
 Baro$DateTime <- as.POSIXct(Baro$DateTime, format="%Y-%m-%d %H:%M:%S",tz="UTC")
+Baro <- Baro%>%filter(DateTime!=as.POSIXct("2021-06-18 11:00:00",tz='UTC'))%>%
+  filter(DateTime!=as.POSIXct("2022-07-12 10:15:00",tz='UTC'))%>%
+  filter(DateTime!=as.POSIXct("2023-02-18 12:30:00",tz='UTC'))
+
+#test for duplicates
+test <- Baro$DateTime[duplicated(Baro$DateTime)]
+test2 <- as.data.frame(test)
+
 
 ```
 
@@ -368,6 +391,12 @@ for (site in site_names){
 }
 
 CO2_02$Station <- "Stn02"
+CO2_02 <- unique(CO2_02)
+CO2_02 <- CO2_02%>%filter(DateTime<as.POSIXct("2023-02-19 01:00:00",tz='UTC'))
+
+#test for duplicates
+test <- CO2_02$DateTime[duplicated(CO2_02$DateTime)]
+test2 <- as.data.frame(test)
 
 ```
 
@@ -517,7 +546,7 @@ Stn02 <- Stn02%>%select(
 
 Stn02$max_detect_ppm <- 10000
 
-#write.csv(Stn02, here::here("data_cleaned/CO2_02_max10000_cleaned.csv"),row.names = FALSE)
+#write.csv(Stn02, here::here("data_cleaned/CO2_02_max10000_cleaned_may14.csv"),row.names = FALSE)
 
 ```
 

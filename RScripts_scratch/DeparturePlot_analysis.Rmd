@@ -17,6 +17,7 @@ library(ellipse)
 library(lmodel2)
 library(streamMetabolizer)
 library(ggplot2)
+library(unitted)
 ```
 
 ## About

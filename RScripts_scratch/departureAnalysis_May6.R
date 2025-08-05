@@ -46,8 +46,11 @@ ggplot(departure_metrics,aes(x=meanCO2dep,y=meanO2dep)) + geom_point()
 ########Best ones IMO#######
 
 #offset v DO_ave is strong. Q is not related if we remove high flows
-p1 <- ggplot(departure_metrics #%>%filter(Q_m3s_ave<0.02)
+p1 <- ggplot(departure_metrics# %>%filter(Q_m3s_ave<0.02)
              ,aes(x=log(Q_m3s_ave),y=offset)) + geom_point()
+p1.1 <- ggplot(departure_metrics %>%filter(Q_m3s_ave<0.02)
+             ,aes(x=Q_m3s_ave,y=offset)) + geom_point() +
+  ggtitle("high Q removed")
 p2 <- ggplot(departure_metrics #%>%filter(Q_m3s_ave<0.02)
              ,aes(x=DO_mgL_ave,y=offset,color=log(Q_m3s_ave*1000))) + geom_point()
 

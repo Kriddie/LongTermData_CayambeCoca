@@ -672,7 +672,7 @@ DO_05_sum <- DO_05%>%group_by(date)%>%summarise(
 
 ```
 
-## DOC
+## DOC read in data
 
 ```{r  DOC read in data, echo=FALSE}
 DOC_2022 <- read.csv(here::here("DOC/DOC_KW_08-25-2022.csv"))%>%select(Date,time,site,DOC..mg.L.,TDN..mg.L.)%>%rename(Time=time,DOC=DOC..mg.L.,TDN=TDN..mg.L.,Station=site)%>%filter(Station=="Stn02"|Station=="Stn05")
@@ -767,95 +767,6 @@ C6_Q_df_storm$time_elapsed <- C6_Q_df_storm$DateTime - start
 C6_Q_df <- left_join(C6_Q_df,all_stn,by="DateTime")
 C6_Q_df_storm <- left_join(C6_Q_df_storm,all_stn,by="DateTime")
 ```
-
-#plot DOC
-
-```{r  plot DOC, echo=FALSE}
-
-DOC_temporal <- ggplot(DOC_PeatlandOutlet%>%filter(DateTime  < as.POSIXct("2020-01-01 00:00")),aes(x=Q_m3s*1000, y=DOC))+
-  geom_point(shape=21,size=2,fill="black") +   geom_smooth(method='lm',color="grey50",linewidth=.5 ,se = FALSE) +
-  ylab(expression(paste('DOC (mg ' , l^-1,")"))) +
-  xlab(expression(paste('Discharge (L ' , s^-1,")"))) +
-  scale_x_continuous(transform = "log",breaks=c(10,30,100,300,1000)) + scale_y_continuous(transform = "log",breaks=c(1,2,3,4,5,6,7)) +
-   theme_bw(base_size = 14)
-
-p1.TDN <- ggplot(DOC_PeatlandOutlet%>%filter(DateTime  < as.POSIXct("2020-01-01 00:00")))+
-  geom_point(aes(x=Q_m3s*1000, y=TDN, fill=DateTime), shape=21,size=3) + 
-  ylab(expression(paste('TDN (mg ' , l^-1,")"))) +
-  xlab(expression(paste('Discharge (L ' , s^-1,")"))) +
-  scale_x_continuous(transform = "log",breaks=c(10,30,100,300,1000)) + scale_y_continuous(transform = "log",breaks=c(.08,.14,.23)) +
-   theme_bw(base_size = 14) +
-  labs(fill="Date time")
-
-#spatial variance upstream to down
-DOC_2021_plot <- DOC_2021%>%drop_na(WS)
-DOC_2021_plot$Date_format <- as.Date(DOC_2021_plot$Date,format = "%m/%d/%y")
-DOC_2021_plot$Date_plot <- as.character(format(DOC_2021_plot$Date_format,format="%d %B"))
-DOC_2021_plot$Date_plot <- reorder(DOC_2021_plot$Date_plot, DOC_2021_plot$Date_format)
-
-#with colmillo data
-p2.1 <- ggplot(DOC_2021_plot %>%filter(SampleType=="Station"))+
-  geom_point(aes(x=Distance_from_peatland, y=DOC, fill=Date_plot), shape=21,size=3) + 
-  facet_grid(.~fct_rev(WS), scales = "free_x", space='free') +
-  ylab(expression(paste('DOC (mg ' , l^-1,")"))) +
-   theme_bw(base_size = 18)
-
-#without colmillo data
-DOC_spatial <- ggplot(DOC_2021_plot %>%filter(SampleType=="Station")%>%filter(WS=="Gavilan"))+
-  geom_point(aes(x=Distance_from_peatland, y=DOC, fill=Date_plot), shape=21,size=2) + 
-    xlab("Distance from peatland outlet") +
-  ylab(expression(paste('DOC (mg ' , l^-1,")"))) +
-  theme(legend.position = "top") +
-  labs(fill="Date") +
-   theme_bw(base_size = 14)
-
-##TDN
-p2.3 <- ggplot(DOC_2021_plot %>%filter(SampleType=="Station")%>%filter(WS=="Gavilan"))+
-  geom_point(aes(x=Distance_from_peatland, y=TDN, fill=Date_plot), shape=21,size=3) + 
-    xlab("Distance from peatland outlet") +
-  ylab(expression(paste('TDN (mg ' , l^-1,")"))) +
-  labs(fill="Date") +
-   theme_bw(base_size = 18)
-
-#stn01 vs stno4 data
-DOC_2021_melt <- DOC_2021
-DOC_2021_melt$Station <- ifelse(DOC_2021_melt$SampleType=="synoptic"&DOC_2021_melt$Station=="Stn01","Stn02",DOC_2021_melt$Station)
-DOC_2021_melt <- DOC_2021_melt%>%filter(Station=="Stn02"|Station=="Stn04")%>%select(Date_format,Station,DOC)%>%spread(Station, DOC)
-DOC_2021_melt$Date_plot <- as.character(format(DOC_2021_melt$Date_format,format="%d %B"))
-DOC_2021_melt$Date_plot <- reorder(DOC_2021_melt$Date_plot, DOC_2021_melt$Date_format)
-
-p.2 <- ggplot(DOC_2021_melt)+
-  geom_point(aes(x=Stn02, y=Stn04, fill=Date_plot), shape=21,size=4)+
-  geom_abline(intercept = 0, slope = 1) +
-  annotate(geom = "text", x = 3.9, y = 4.2, label = "1:1",size=10, color = "black",
-             angle = 45) +
-  xlab(expression(paste('Upstream DOC (mg ' , l^-1,")"))) +
-    ylab(expression(paste('Downstream (mg ' , l^-1,")"))) +
-  labs(fill="Date") +
-   theme_bw(base_size = 18)
-
-
-#DOC v CDOM
-p2 <- ggplot(C6_Q_df%>%drop_na(DOC))+
-  geom_point(aes(x=CDOM_ppb,y=DOC),size=3) +
-    xlab(expression(paste('DOC (mg ' , l^-1,")"))) +
- ylab('CDOM (ppb)') + 
-    scale_y_continuous(transform = "log") +
-  scale_x_continuous(transform = "log") +
-  theme_bw()+theme(text=element_text(size=14)) 
-
-#CDOM v CO2
-p3 <- ggplot(C6_Q_df)+
-  geom_point(aes(x=CO2_ppm_01, y=CDOM_ppb, fill=DateTime), shape=21,size=3) +
- ylab('CDOM (ppb)') +  
- xlab(expression(italic(p)~CO[2] ~'upstream (ppm)')) + 
-   theme_bw(base_size = 18)
-
-p_doc_combine <- ggarrange(p1, p1.TDN, ncol=2, nrow=1, common.legend = TRUE, legend="right",labels="auto")
-
-
-```
-
 #plot paired C6 and CO2
 
 ```{r  plot CH4, echo=FALSE}
@@ -928,109 +839,6 @@ site_names <- list(
 site_labeller <- function(variable,value){
   return(site_names[value])
 }
-
-p1 <- ggplot(CH4_df_summary%>%filter(Site!="Gavilan Edges")%>%filter(Site2!="50m")%>%filter(Site2!="100m")%>%filter(DateTime<"2022-09-01")) +
-  geom_smooth(method='lm',aes(x=DO_mgL,y=pCH4_ppmv,color=Site),color="grey50",linewidth=.5 ,se = FALSE) +
-      facet_wrap(.~Site, labeller=site_labeller,ncol=1,scales="free_y") +
-    geom_point(aes(x=DO_mgL,y=pCH4_ppmv,fill=as.factor(as.Date(DateTime,format="%m-%d"))),size=3,shape=21) +
-     ylab(expression(italic(p)*CH[4] ~'(ppm)')) + xlab("DO at outlet (mg/l)")  + labs(fill="Date collected") +
-    scale_fill_manual(labels = c("June-06","July-01","July-06","July-22","July-27"),values=c("#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00")) +
-  scale_y_log10() + scale_x_log10() +
-  theme_bw(base_size = 18) 
-
-##longitudinal
-p2 <- ggplot(CH4_df_summary%>%filter(Site=="Gavilan Outlet")#%>%filter(DateTime<"2022-09-01")
-            ) +
-    geom_point(aes(x=as.numeric(gsub('m','',Site2)),y=pCH4_ppmv,
-                #   fill=as.factor(signif(Q_m3s,2))
-                   fill=as.factor(as.Date(DateTime,format="%m-%d"))
-                   ),
-               size=3,shape=21) + scale_y_continuous(transform = "log",breaks=c(2000,1000,500,200)) +
-  scale_fill_manual(labels = c("June-06","July-01","July-06"),values=c("#e41a1c","#377eb8","#4daf4a")) +
-     ylab(expression(italic(p)*CH[4] ~'(ppm)')) + xlab("Distance from outlet (m)")  + labs(fill="Date collected") +
-  theme_bw(base_size = 18)
-
-
-#get legend
-# Extract the legend. Returns a gtable
-leg <- get_legend(p1)
-
-# Convert to a ggplot and print
-p_leg <- as_ggplot(leg)
-
-
-##all
-
-p_full_1 <- plot_grid(p_leg,p2+rremove("legend"),ncol=1,labels=c("","b."),label_fontface = "bold",label_size = 18) 
-p_full_2 <- plot_grid(p1+rremove("legend"),p_full_1,ncol=2,labels=c("a.",""),label_fontface = "bold",label_size = 18)
-
-
-#discharge not as good a relationship
-
-p3 <- ggplot(CH4_df_summary%>%filter(Site!="Gavilan Edges")%>%filter(Site2!="50m")%>%filter(Site2!="100m"),
-       aes(x=Q_m3s,y=pCH4_ppmv,fill=as.factor(as.Date(DateTime)))) + geom_point(size=3,shape=21) +
-  facet_wrap(Site~., labeller=site_labeller) +
-     ylab(expression(italic(p)*CH[4] ~'(ppm)')) + xlab("Q (m3/s)")  + labs(fill="Date Collected") +
-  scale_y_log10() + scale_x_log10() +
-  theme_bw(base_size = 18)
-
-
-#stats
-model <- lm(log(pCH4_ppm) ~ log(Q_m3s), data = CH4_df_summary %>%filter(Site=="Gavilan Outlet")%>%filter(Site2!="50m")%>%filter(Site2!="100m"))
-summary(model)
-
-model <- lm(log(pCH4_ppm) ~ log(DO_mgL), data = CH4_df_summary %>%filter(Site=="Gavilan Outlet")%>%filter(Site2!="50m")%>%filter(Site2!="100m"))
-summary(model)
-
-#wetland center
-model <- lm(log(pCH4_ppm) ~ log(Q_m3s), data = CH4_df_summary %>%filter(Site=="Gavilan Center"))
-summary(model)
-
-model <- lm(log(pCH4_ppm) ~ log(DO_mgL), data = CH4_df_summary %>%filter(Site=="Gavilan Center"))
-summary(model)
-
-```
-
-#doc plot final
-```{r  plot doc final, echo=FALSE}
-#stats
-m1 <- lm(log(DOC) ~ log(Q_m3s), data = DOC_PeatlandOutlet %>%filter(DateTime  > as.POSIXct("2020-01-01 00:00")))
-summary(m1)
-
-#spatial variance upstream to down
-DOC_PeatlandOutlet$Date_format <- as.Date(DOC_PeatlandOutlet$Date,format = "%m/%d/%y")
-DOC_PeatlandOutlet$Date_plot <- as.character(format(DOC_PeatlandOutlet$Date_format,format="%Y %B %d"))
-DOC_PeatlandOutlet$Date_plot <- reorder(DOC_PeatlandOutlet$Date_plot, DOC_PeatlandOutlet$Date_format)
-
-DOC_temporal <- ggplot(DOC_PeatlandOutlet %>%filter(DateTime  > as.POSIXct("2020-01-01 00:00")))+
-  geom_point(aes(x=Q_m3s*1000, y=DOC,fill=Date_plot),shape=21,size=3) +   geom_smooth(aes(x=Q_m3s*1000, y=DOC),method='lm',color="grey50",linewidth=.5 ,se = FALSE) +
-  ylab(expression(paste('DOC (mg ' , l^-1,")"))) +
-  xlab(expression(paste('Discharge (L ' , s^-1,")"))) +
-  scale_x_continuous(transform = "log",breaks=c(10,30,100,300,1000)) + scale_y_continuous(transform = "log",breaks=c(1,2,3,4,5,6,7)) +
-  labs(fill="Date") +
-   theme_bw(base_size = 14)+
-  annotate("text", label = paste0("atop('adj. '* R^2==0.87,p-value<.0001)"),
-           x = 100, y = 2.6, size = 3, parse = TRUE)
-
-
-#spatial variance upstream to down
-DOC_2021_plot <- DOC_2021%>%drop_na(WS)
-DOC_2021_plot$Date_format <- as.Date(DOC_2021_plot$Date,format = "%m/%d/%y")
-DOC_2021_plot$Date_plot <- as.character(format(DOC_2021_plot$Date_format,format="%Y %B %d"))
-DOC_2021_plot$Date_plot <- reorder(DOC_2021_plot$Date_plot, DOC_2021_plot$Date_format)
-
-#without colmillo data
-DOC_spatial <- ggplot(DOC_2021_plot %>%filter(SampleType=="Station")%>%filter(WS=="Gavilan"))+
-  geom_point(aes(x=Distance_from_peatland, y=DOC, fill=Date_plot), shape=21,size=3) + 
-   geom_line(aes(x=Distance_from_peatland, y=DOC,color=Date_plot)) + 
-    xlab("Distance from peatland outlet") +
-  ylab(expression(paste('DOC (mg ' , l^-1,")"))) +
-  theme(legend.position = "top") +
-  labs(fill="Date",color="Date") +
-   theme_bw(base_size = 14)
-
-
-DOC_full_plot <- ggarrange(DOC_temporal,DOC_spatial,common.legend = TRUE)
 
 ```
 
@@ -1109,8 +917,6 @@ WL_df_2$Date <- as.Date(WL_df_2$DateTime)
 #  summarise(Q_m3s=mean(Q_m3s,na.rm = TRUE))
 
 DOC_2021_plot$Date <- as.Date(DOC_2021_plot$Date,format="%m/%d/%y")
-
-#DOC_2021_plot2 <- left_join(DOC_2021_plot,WL_df_2,by="Date")
 
 #without colmillo data
 DOC_spatial <- ggplot(DOC_2021_plot %>%filter(SampleType=="Station")%>%filter(WS=="Gavilan"))+
@@ -1197,16 +1003,17 @@ p1_ch4 <- ggplot(CH4_df_summary%>%filter(Site!="Gavilan Edges")%>%filter(Site2!=
 
 ```{r  O2, echo=FALSE}
 
-stn01_df <- read.csv(here::here("metabolizer_dataframe/stn01_df_march9.csv"))
-stn01$solar.time <- as.POSIXct(stn01$solar.time,format="%Y-%m-%d %H:%M:%S",tz="UTC")
+Stn01 <- read.csv(here::here("MergedFiles/Stn01_May7.csv"))
+Stn01$Date <- as.Date(Stn01$Date)
+Stn01 <- Stn01%>%drop_na(CO2_departure)%>%drop_na(DO_departure)
 
-ggplot(stn01$DateTime,aes(x=))
+Stn01_0 <- Stn01%>%group_by(Date)%>%summarise(mean_do = mean(DO_mgL,na.rm=TRUE))
 
 #how many days are DO = 0?
 #stn 1 144
 #stn 5 
 do_stn1 <- read.csv(here::here("data_cleaned/DO_01_cleaned.csv"))
-do_stn1$DateTime <- as.POSIXct(do_stn1$DateTime,format="%m/%d/%Y %H:%M",tz="UTC")
+do_stn1$DateTime <- as.POSIXct(do_stn1$DateTime,format="%Y-%m-%d %H:%M",tz="UTC")
 do_stn1$Date <- as.Date(do_stn1$DateTime)
 do_stn1 <- do_stn1%>%filter(DO_mgL<=0)%>%group_by(Date)%>%summarise(mean_do = mean(DO_mgL,na.rm=TRUE))
 ggplot(do_stn1,aes(x=DateTime,y=DO_mgL)) + geom_point()
