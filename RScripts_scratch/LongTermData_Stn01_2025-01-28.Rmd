@@ -712,7 +712,7 @@ DO_01 <- unique(DO_01)
 ```{r check CO2 data plot, echo=FALSE}
 
 #clean
-DO_01 <- DO_01%>%filter(DO_mgL > 0)
+DO_01 <- DO_01%>%filter(DO_mgL > -888.88)
 
 #test for duplicates
 test <- DO_01$DateTime[duplicated(DO_01$DateTime)]
@@ -724,6 +724,8 @@ p1 <- plot_ly(DO_01, x = ~DateTime, y = ~DO_mgL, type = 'scatter', mode = 'marke
 
 #read out
 #write.csv(DO_01, here::here("data_cleaned/DO_01_cleaned.csv"),row.names = FALSE)
+
+#write.csv(DO_01, here::here("data_cleaned/DO_01_cleaned_DataExporation.csv"),row.names = FALSE)
 
 ```
 
